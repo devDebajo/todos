@@ -10,16 +10,17 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
-import org.koin.java.KoinJavaComponent.get
 import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
 import ru.debajo.todos.di.CommonModule
 import ru.debajo.todos.di.JvmModule
+import ru.debajo.todos.di.getFromDi
 import ru.debajo.todos.ui.App
 
 fun main() {
     initDi()
+    initLog()
     startProcess()
-    Napier.base(DebugAntilog())
+
     application {
         Window(
             title = "TODOs",
@@ -44,8 +45,12 @@ private fun initDi() {
     }
 }
 
+private fun initLog() {
+    Napier.base(DebugAntilog())
+}
+
 private fun startProcess() {
-    val scope = get<CoroutineScope>(CoroutineScope::class.java)
-    val databaseSnapshotWorker = get<DatabaseSnapshotWorker>(DatabaseSnapshotWorker::class.java)
+    val scope = getFromDi<CoroutineScope>()
+    val databaseSnapshotWorker = getFromDi<DatabaseSnapshotWorker>()
     scope.launch { databaseSnapshotWorker.doWork() }
 }

@@ -5,28 +5,36 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import io.github.aakira.napier.DebugAntilog
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
-import org.koin.java.KoinJavaComponent.get
 import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
 import ru.debajo.todos.di.ActivityResultLaunchersHolder
 import ru.debajo.todos.di.AndroidModule
 import ru.debajo.todos.di.CommonModule
+import ru.debajo.todos.di.getFromDi
 import ru.debajo.todos.ui.App
 
 class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob()) {
-    companion object {
-        lateinit var INSTANCE: AndroidApp
-    }
 
     override fun onCreate() {
         super.onCreate()
-        INSTANCE = this
+        initDi()
+        initLog()
+        startProcess()
+    }
 
+    override fun onTerminate() {
+        super.onTerminate()
+        cancel()
+    }
+
+    private fun initDi() {
         startKoin {
             modules(
                 module {
@@ -37,15 +45,16 @@ class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob
                 CommonModule
             )
         }
-
-        val scope = get<CoroutineScope>(CoroutineScope::class.java)
-        val databaseSnapshotWorker = get<DatabaseSnapshotWorker>(DatabaseSnapshotWorker::class.java)
-        scope.launch { databaseSnapshotWorker.doWork() }
     }
 
-    override fun onTerminate() {
-        super.onTerminate()
-        cancel()
+    private fun initLog() {
+        Napier.base(DebugAntilog())
+    }
+
+    private fun startProcess() {
+        val scope = getFromDi<CoroutineScope>()
+        val databaseSnapshotWorker = getFromDi<DatabaseSnapshotWorker>()
+        scope.launch { databaseSnapshotWorker.doWork() }
     }
 }
 
@@ -56,9 +65,7 @@ class AppActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        get<ActivityResultLaunchersHolder>(ActivityResultLaunchersHolder::class.java)
-            .activityResultLaunchers = activityResultLaunchers
-
+        getFromDi<ActivityResultLaunchersHolder>().activityResultLaunchers = activityResultLaunchers
         setContent { App() }
     }
 }
