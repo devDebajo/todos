@@ -2,6 +2,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import io.github.aakira.napier.DebugAntilog
+import io.github.aakira.napier.Napier
 import java.awt.Dimension
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -17,7 +19,7 @@ import ru.debajo.todos.ui.App
 fun main() {
     initDi()
     startProcess()
-
+    Napier.base(DebugAntilog())
     application {
         Window(
             title = "TODOs",

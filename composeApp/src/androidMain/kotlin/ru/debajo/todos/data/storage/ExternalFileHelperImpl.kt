@@ -2,9 +2,9 @@ package ru.debajo.todos.data.storage
 
 import android.content.ContentResolver
 import android.content.Intent
-import android.content.SharedPreferences
 import android.net.Uri
 import androidx.annotation.WorkerThread
+import com.russhwolf.settings.Settings
 import java.io.InputStream
 import java.io.OutputStream
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +21,7 @@ import ru.debajo.todos.common.canRead
 
 internal class ExternalFileHelperImpl(
     private val activityResultLaunchersProvider: () -> ActivityResultLaunchers,
-    private val sharedPreferences: SharedPreferences,
+    private val settings: Settings,
     private val contentResolver: ContentResolver,
     private val appScope: CoroutineScope,
 ) : ExternalFileHelper {
@@ -72,7 +72,7 @@ internal class ExternalFileHelperImpl(
         return withContext(Dispatchers.IO) {
             if (contentResolver.canRead(Uri.parse(uri))) {
                 _fileUri.value = uri
-                sharedPreferences.edit().putString(FILE_URI_KEY, uri).apply()
+                settings.putString(FILE_URI_KEY, uri)
                 true
             } else {
                 false
@@ -88,8 +88,8 @@ internal class ExternalFileHelperImpl(
 
     @WorkerThread
     private fun loadUriBlocking(): Uri? {
-        val uri = sharedPreferences.getString(FILE_URI_KEY, "")
-        if (uri.isNullOrEmpty()) {
+        val uri = settings.getString(FILE_URI_KEY, "")
+        if (uri.isEmpty()) {
             return null
         }
 

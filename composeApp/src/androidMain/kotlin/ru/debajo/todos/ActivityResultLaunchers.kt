@@ -22,8 +22,8 @@ internal class ActivityResultLaunchers(private val activity: ComponentActivity) 
             }
         }
 
-    private val openDocumentLauncher: ActivityResultLauncher<String> =
-        activity.registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+    private val openDocumentLauncher: ActivityResultLauncher<Array<String>> =
+        activity.registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
             if (uri != null) {
                 activity.lifecycleScope.launch { eventBus.emit(Event.FileSelected(uri)) }
             } else {
@@ -42,7 +42,7 @@ internal class ActivityResultLaunchers(private val activity: ComponentActivity) 
     }
 
     fun selectDocument(callback: (Uri) -> Unit) {
-        openDocumentLauncher.launch("*/*")
+        openDocumentLauncher.launch(arrayOf("*/*"))
         activity.lifecycleScope.launch {
             val event = eventBus.filterIsInstance<Event.FileSelected>().firstOrNull()
             if (event != null) {
@@ -58,23 +58,3 @@ internal class ActivityResultLaunchers(private val activity: ComponentActivity) 
         data object FileSelectCancelled : Event
     }
 }
-
-//    class OpenDocument : ActivityResultContracts.OpenDocument() {
-//        override fun createIntent(context: Context, input: Array<String>): Intent {
-//            return super.createIntent(context, input).apply {
-//                addCategory(Intent.CATEGORY_OPENABLE)
-//                addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
-//                addFlags(Intent.FLAG_GRANT_PREFIX_URI_PERMISSION)
-//                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-//                addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-//            }
-//        }
-//    }
-//
-//    class CreateDocument(typeString: String) : ActivityResultContracts.CreateDocument(typeString) {
-//        override fun createIntent(context: Context, input: String): Intent {
-//            return super.createIntent(context, input).apply {
-//                addCategory(Intent.CATEGORY_OPENABLE)
-//            }
-//        }
-//    }
