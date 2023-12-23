@@ -59,6 +59,7 @@ kotlin {
             implementation(compose.desktop.common)
             implementation(compose.desktop.currentOs)
             implementation(libs.sqlDelight.driver.sqlite)
+            implementation(libs.kotlinx.coroutines.jvm)
         }
     }
 }

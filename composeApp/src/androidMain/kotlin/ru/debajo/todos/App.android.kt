@@ -8,8 +8,13 @@ import androidx.activity.compose.setContent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import org.koin.java.KoinJavaComponent.get
+import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
+import ru.debajo.todos.di.ActivityResultLaunchersHolder
+import ru.debajo.todos.di.AndroidModule
 import ru.debajo.todos.di.CommonModule
 import ru.debajo.todos.ui.App
 
@@ -28,9 +33,14 @@ class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob
                     single<Context> { this@AndroidApp }
                     single<CoroutineScope> { this@AndroidApp }
                 },
+                AndroidModule,
                 CommonModule
             )
         }
+
+        val scope = get<CoroutineScope>(CoroutineScope::class.java)
+        val databaseSnapshotWorker = get<DatabaseSnapshotWorker>(DatabaseSnapshotWorker::class.java)
+        scope.launch { databaseSnapshotWorker.doWork() }
     }
 
     override fun onTerminate() {
@@ -40,10 +50,15 @@ class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob
 }
 
 class AppActivity : ComponentActivity() {
+
+    private val activityResultLaunchers: ActivityResultLaunchers = ActivityResultLaunchers(this)
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            App()
-        }
+        get<ActivityResultLaunchersHolder>(ActivityResultLaunchersHolder::class.java)
+            .activityResultLaunchers = activityResultLaunchers
+
+        setContent { App() }
     }
 }
