@@ -19,6 +19,7 @@ import ru.debajo.todos.domain.TodoGroupRepository
 import ru.debajo.todos.domain.TodoItemRepository
 import ru.debajo.todos.domain.TodoItemUseCase
 import ru.debajo.todos.ui.fileconfig.FileConfigViewModel
+import ru.debajo.todos.ui.todolist.TodoListViewModel
 
 val CommonModule: Module = module {
     single {
@@ -32,6 +33,7 @@ val CommonModule: Module = module {
     singleOf(::DatabaseSnapshotSaver)
     singleOf(::DatabaseSnapshotWorker)
     factoryOf(::FileConfigViewModel)
+    factoryOf(::TodoListViewModel)
 
     single {
         val driver = get<DriverFactory>().createDriver()

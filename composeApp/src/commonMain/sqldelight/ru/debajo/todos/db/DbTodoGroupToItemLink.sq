@@ -1,4 +1,4 @@
-CREATE TABLE DbTodoGroupToItemLink (
+CREATE TABLE IF NOT EXISTS DbTodoGroupToItemLink (
   `groupId` TEXT NOT NULL,
   `todoId` TEXT NOT NULL,
   PRIMARY KEY(`groupId`, `todoId`)

@@ -1,4 +1,4 @@
-CREATE TABLE DbTodoGroup (
+CREATE TABLE IF NOT EXISTS DbTodoGroup (
   `id` TEXT NOT NULL,
   `name` TEXT NOT NULL,
   PRIMARY KEY(`id`)
