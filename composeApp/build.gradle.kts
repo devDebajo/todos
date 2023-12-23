@@ -33,6 +33,7 @@ kotlin {
             @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
             implementation(compose.components.resources)
             implementation(libs.voyager.navigator)
+            implementation(libs.voyager.screenmodel)
             implementation(libs.napier)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
@@ -110,9 +111,7 @@ buildConfig {
 
 sqldelight {
     databases {
-        create("MyDatabase") {
-            // Database configuration here.
-            // https://cashapp.github.io/sqldelight
+        create("TodosDatabase") {
             packageName.set("ru.debajo.todos.db")
         }
     }

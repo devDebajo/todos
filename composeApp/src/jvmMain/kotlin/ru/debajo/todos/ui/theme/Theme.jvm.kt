@@ -1,4 +1,4 @@
-package ru.debajo.todos.theme
+package ru.debajo.todos.ui.theme
 
 import androidx.compose.runtime.Composable
 
