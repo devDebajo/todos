@@ -1,0 +1,27 @@
+CREATE TABLE DbTodoGroupToItemLink (
+  `groupId` TEXT NOT NULL,
+  `todoId` TEXT NOT NULL,
+  PRIMARY KEY(`groupId`, `todoId`)
+);
+
+save:
+INSERT INTO DbTodoGroupToItemLink(groupId, todoId)
+VALUES (?, ?);
+
+deleteByGroupId:
+DELETE FROM DbTodoGroupToItemLink WHERE groupId=?;
+
+deleteByTodoId:
+DELETE FROM DbTodoGroupToItemLink WHERE todoId=?;
+
+deleteByTodoIds:
+DELETE FROM DbTodoGroupToItemLink WHERE todoId IN ?;
+
+delete:
+DELETE FROM DbTodoGroupToItemLink WHERE groupId=? AND todoId=?;
+
+getByGroupId:
+SELECT * FROM DbTodoGroupToItemLink WHERE groupId=?;
+
+getAll:
+SELECT * FROM DbTodoGroupToItemLink;

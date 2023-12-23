@@ -1,0 +1,15 @@
+CREATE TABLE DbTodoGroup (
+  `id` TEXT NOT NULL,
+  `name` TEXT NOT NULL,
+  PRIMARY KEY(`id`)
+);
+
+getAll:
+SELECT * FROM DbTodoGroup;
+
+save:
+INSERT INTO DbTodoGroup(id, name)
+VALUES (?, ?);
+
+delete:
+DELETE FROM DbTodoGroup WHERE id=?;

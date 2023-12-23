@@ -1,0 +1,24 @@
+CREATE TABLE DbTodoItem (
+  `id` TEXT NOT NULL,
+  `text` TEXT NOT NULL,
+  `createTimestamp` INTEGER NOT NULL,
+  `updateTimestamp` INTEGER NOT NULL,
+  `done` INTEGER NOT NULL,
+  PRIMARY KEY(`id`)
+);
+
+save:
+INSERT INTO DbTodoItem(id, text, createTimestamp, updateTimestamp, done)
+VALUES (?, ?, ?, ?, ?);
+
+get:
+SELECT * FROM DbTodoItem WHERE id=?;
+
+delete:
+DELETE FROM DbTodoItem WHERE id=?;
+
+deleteByIds:
+DELETE FROM DbTodoItem WHERE id IN ?;
+
+getAll:
+SELECT * FROM DbTodoItem;

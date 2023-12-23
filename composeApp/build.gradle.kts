@@ -41,6 +41,7 @@ kotlin {
             implementation(libs.multiplatformSettings)
             implementation(libs.koin.core)
             implementation(libs.kstore)
+            implementation(libs.sqlDelight.coroutines)
         }
 
         commonTest.dependencies {

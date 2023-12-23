@@ -2,12 +2,15 @@ package ru.debajo.todos.di
 
 import android.content.ContentResolver
 import android.content.Context
+import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SharedPreferencesSettings
 import org.koin.core.module.Module
 import org.koin.dsl.module
+import ru.debajo.todos.data.db.DriverFactory
 import ru.debajo.todos.data.storage.ExternalFileHelper
 import ru.debajo.todos.data.storage.ExternalFileHelperImpl
+import ru.debajo.todos.db.TodosDatabase
 
 internal val AndroidModule: Module = module {
     single<Settings> {
@@ -25,5 +28,10 @@ internal val AndroidModule: Module = module {
             contentResolver = get(),
             appScope = get(),
         )
+    }
+    single {
+        DriverFactory {
+              AndroidSqliteDriver(TodosDatabase.Schema, get(), "todos.db")
+        }
     }
 }
