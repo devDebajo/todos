@@ -11,15 +11,7 @@ import ru.debajo.todos.data.storage.ExternalFileHelper
 import ru.debajo.todos.data.storage.ExternalFileHelperImpl
 
 internal val JvmModule: Module = module {
-    single<ExternalFileHelper> {
-        ExternalFileHelperImpl(get(), get())
-    }
-    single<Settings> {
-        PreferencesSettings(Preferences.userRoot().node("todo_prefs"))
-    }
-    single {
-        DriverFactory {
-            JdbcSqliteDriver("jdbc:sqlite:todos.db")
-        }
-    }
+    single<ExternalFileHelper> { ExternalFileHelperImpl(get(), get()) }
+    single<Settings> { PreferencesSettings(Preferences.userRoot().node("todo_prefs")) }
+    single { DriverFactory { JdbcSqliteDriver("jdbc:sqlite:todos.db") } }
 }
