@@ -1,3 +1,5 @@
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -15,12 +17,15 @@ import ru.debajo.todos.di.CommonModule
 import ru.debajo.todos.di.JvmModule
 import ru.debajo.todos.di.getFromDi
 import ru.debajo.todos.ui.App
+import ru.debajo.todos.ui.LocalNavigatorMediator
+import ru.debajo.todos.ui.NavigatorMediator
 
 fun main() {
     initDi()
     initLog()
     startProcess()
 
+    val navigatorMediator = getFromDi<NavigatorMediator>()
     application {
         Window(
             title = "TODOs",
@@ -28,7 +33,11 @@ fun main() {
             onCloseRequest = ::exitApplication,
         ) {
             window.minimumSize = Dimension(350, 600)
-            App()
+            CompositionLocalProvider(
+                LocalNavigatorMediator provides remember { navigatorMediator }
+            ) {
+                App()
+            }
         }
     }
 }

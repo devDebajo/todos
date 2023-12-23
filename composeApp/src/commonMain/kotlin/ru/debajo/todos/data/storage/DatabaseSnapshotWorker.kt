@@ -12,7 +12,7 @@ class DatabaseSnapshotWorker(
 
     @OptIn(FlowPreview::class)
     suspend fun doWork() {
-        updates.debounce(500).collect {
+        updates.debounce(2000).collect {
             runCatchingAsync {
                 databaseSnapshotSaver.save()
             }

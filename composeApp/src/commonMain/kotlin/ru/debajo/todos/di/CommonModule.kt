@@ -18,6 +18,7 @@ import ru.debajo.todos.db.TodosDatabase
 import ru.debajo.todos.domain.TodoGroupRepository
 import ru.debajo.todos.domain.TodoItemRepository
 import ru.debajo.todos.domain.TodoItemUseCase
+import ru.debajo.todos.ui.NavigatorMediator
 import ru.debajo.todos.ui.fileconfig.FileConfigViewModel
 import ru.debajo.todos.ui.todolist.TodoListViewModel
 
@@ -32,6 +33,8 @@ val CommonModule: Module = module {
     factoryOf(::DatabaseSnapshotHelper)
     singleOf(::DatabaseSnapshotSaver)
     singleOf(::DatabaseSnapshotWorker)
+
+    singleOf(::NavigatorMediator)
     factoryOf(::FileConfigViewModel)
     factoryOf(::TodoListViewModel)
 
