@@ -6,6 +6,7 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import ru.debajo.todos.data.db.DriverFactory
+import ru.debajo.todos.data.db.createSchema
 import ru.debajo.todos.data.db.dao.DbTodoGroupDao
 import ru.debajo.todos.data.db.dao.DbTodoGroupToItemLinkDao
 import ru.debajo.todos.data.db.dao.DbTodoItemDao
@@ -32,11 +33,19 @@ val CommonModule: Module = module {
     singleOf(::DatabaseSnapshotWorker)
     factoryOf(::FileConfigViewModel)
 
-    single { TodosDatabase(driver = get<DriverFactory>().createDriver()) }
-    single { DbTodoGroupDao(get<TodosDatabase>().dbTodoGroupQueries) }
-    single { DbTodoGroupToItemLinkDao(get<TodosDatabase>().dbTodoGroupToItemLinkQueries) }
-    single { DbTodoItemDao(get<TodosDatabase>().dbTodoItemQueries) }
-    single { ReplaceDao() }
+    single {
+        val driver = get<DriverFactory>().createDriver()
+        val database = TodosDatabase(driver)
+        createSchema(driver)
+        database
+    }
+    single { get<TodosDatabase>().dbTodoGroupQueries }
+    single { get<TodosDatabase>().dbTodoGroupToItemLinkQueries }
+    single { get<TodosDatabase>().dbTodoItemQueries }
+    singleOf(::DbTodoGroupDao)
+    singleOf(::DbTodoGroupToItemLinkDao)
+    singleOf(::DbTodoItemDao)
+    singleOf(::ReplaceDao)
 
     factoryOf(::TodoGroupRepository)
     factoryOf(::TodoItemRepository)

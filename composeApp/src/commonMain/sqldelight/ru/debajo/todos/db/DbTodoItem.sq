@@ -17,6 +17,9 @@ SELECT * FROM DbTodoItem WHERE id=?;
 delete:
 DELETE FROM DbTodoItem WHERE id=?;
 
+deleteAll:
+DELETE FROM DbTodoItem;
+
 deleteByIds:
 DELETE FROM DbTodoItem WHERE id IN ?;
 

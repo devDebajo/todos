@@ -13,3 +13,6 @@ VALUES (?, ?);
 
 delete:
 DELETE FROM DbTodoGroup WHERE id=?;
+
+deleteAll:
+DELETE FROM DbTodoGroup;

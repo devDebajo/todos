@@ -20,6 +20,9 @@ DELETE FROM DbTodoGroupToItemLink WHERE todoId IN ?;
 delete:
 DELETE FROM DbTodoGroupToItemLink WHERE groupId=? AND todoId=?;
 
+deleteAll:
+DELETE FROM DbTodoGroupToItemLink;
+
 getByGroupId:
 SELECT * FROM DbTodoGroupToItemLink WHERE groupId=?;
 
