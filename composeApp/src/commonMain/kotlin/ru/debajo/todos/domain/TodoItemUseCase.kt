@@ -8,8 +8,8 @@ class TodoItemUseCase(
 ) {
     fun observeGroups(): Flow<List<TodoGroup>> = todoGroupRepository.observe()
 
-    suspend fun createGroup(name: String) {
-        todoGroupRepository.createGroup(name)
+    suspend fun createGroup(name: String): TodoGroup {
+        return todoGroupRepository.createGroup(name)
     }
 
     suspend fun createTodo(text: String, groupId: GroupId): TodoItem {

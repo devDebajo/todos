@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package ru.debajo.todos.ui.todolist
 
 import androidx.compose.foundation.background
@@ -227,6 +225,7 @@ private fun ContextItemPopup(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GroupsSpace(
     modifier: Modifier = Modifier,

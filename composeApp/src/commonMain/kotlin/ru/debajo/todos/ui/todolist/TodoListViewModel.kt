@@ -94,8 +94,11 @@ class TodoListViewModel(
         val name = state.value.newGroupName.text
         if (name.isNotEmpty()) {
             screenModelScope.launch {
-                todoItemUseCase.createGroup(name)
+                val newGroup = todoItemUseCase.createGroup(name)
                 hideNewGroupDialog()
+                updateState {
+                    copy(selectedGroupId = newGroup.id)
+                }
             }
         }
     }
