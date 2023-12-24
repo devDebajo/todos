@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -33,6 +35,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -72,11 +75,22 @@ import ru.debajo.todos.common.toIntOffset
 import ru.debajo.todos.domain.GroupId
 import ru.debajo.todos.domain.TodoItem
 import ru.debajo.todos.ui.todolist.model.TodoItemAction
+import ru.debajo.todos.ui.todolist.model.TodoListNews
 import ru.debajo.todos.ui.todolist.model.TodoListState
 
 @Composable
 fun TodoListScreen(viewModel: TodoListViewModel) {
     val state by viewModel.state.collectAsState()
+    val groupsLazyListState = rememberLazyListState()
+
+    LaunchedEffect(groupsLazyListState, viewModel) {
+        viewModel.news.collect { news ->
+            when (news) {
+                is TodoListNews.ScrollToGroup -> groupsLazyListState.animateScrollToItem(news.index)
+            }
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         Box {
             Row(
@@ -110,6 +124,7 @@ fun TodoListScreen(viewModel: TodoListViewModel) {
         val haptic = LocalHapticFeedback.current
         GroupsSpace(
             state = state,
+            lazyListState = groupsLazyListState,
             onGroupClick = { id ->
                 viewModel.selectGroup(id)
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -229,12 +244,14 @@ private fun ContextItemPopup(
 @Composable
 private fun GroupsSpace(
     modifier: Modifier = Modifier,
+    lazyListState: LazyListState,
     state: TodoListState,
     onGroupClick: (GroupId) -> Unit,
     onNewGroupClick: () -> Unit,
 ) {
     LazyRow(
         modifier = modifier,
+        state = lazyListState,
         contentPadding = remember { PaddingValues(horizontal = 16.dp) },
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {

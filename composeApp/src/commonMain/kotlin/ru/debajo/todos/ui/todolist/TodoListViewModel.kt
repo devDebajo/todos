@@ -5,20 +5,30 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.russhwolf.settings.Settings
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.domain.GroupId
+import ru.debajo.todos.domain.TodoGroup
 import ru.debajo.todos.domain.TodoItem
 import ru.debajo.todos.domain.TodoItemUseCase
 import ru.debajo.todos.ui.todolist.model.TodoItemAction
 import ru.debajo.todos.ui.todolist.model.TodoItemContextMenuState
+import ru.debajo.todos.ui.todolist.model.TodoListNews
 import ru.debajo.todos.ui.todolist.model.TodoListState
 
 @Stable
 class TodoListViewModel(
     private val todoItemUseCase: TodoItemUseCase,
     private val databaseSnapshotSaver: DatabaseSnapshotSaver,
+    private val settings: Settings,
 ) : StateScreenModel<TodoListState>(TodoListState()) {
+
+    private val _news: MutableSharedFlow<TodoListNews> = MutableSharedFlow()
+    val news: SharedFlow<TodoListNews> = _news.asSharedFlow()
 
     fun init() {
         screenModelScope.launch {
@@ -27,9 +37,11 @@ class TodoListViewModel(
                 updateState {
                     if (first) {
                         first = false
+                        val (groupId, groupIndex) = findInitialGroupId(groups)
+                        _news.emit(TodoListNews.ScrollToGroup(groupIndex))
                         copy(
                             groups = groups,
-                            selectedGroupId = groups.first().id,
+                            selectedGroupId = groupId,
                         )
                     } else {
                         copy(groups = groups)
@@ -96,9 +108,7 @@ class TodoListViewModel(
             screenModelScope.launch {
                 val newGroup = todoItemUseCase.createGroup(name)
                 hideNewGroupDialog()
-                updateState {
-                    copy(selectedGroupId = newGroup.id)
-                }
+                selectGroup(newGroup.id)
             }
         }
     }
@@ -107,6 +117,7 @@ class TodoListViewModel(
         updateState {
             copy(selectedGroupId = id)
         }
+        settings.putString(LastGroupIdKey, id.id)
     }
 
     fun onDeleteCurrentGroupClick() {
@@ -270,7 +281,22 @@ class TodoListViewModel(
         }
     }
 
+    private fun findInitialGroupId(groups: List<TodoGroup>): Pair<GroupId, Int> {
+        val lastId = settings.getString(LastGroupIdKey, "")
+        for (index in groups.indices) {
+            val group = groups[index]
+            if (group.id.id == lastId) {
+                return group.id to index
+            }
+        }
+        return groups.first().id to 0
+    }
+
     private inline fun updateState(block: TodoListState.() -> TodoListState) {
         mutableState.value = mutableState.value.block()
+    }
+
+    private companion object {
+        const val LastGroupIdKey: String = "LastGroupId"
     }
 }
