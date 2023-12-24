@@ -39,4 +39,12 @@ class TodoItemUseCase(
     suspend fun renameGroup(groupId: GroupId, name: String) {
         todoGroupRepository.renameGroup(groupId, name)
     }
+
+    suspend fun moveLeft(groupId: GroupId) {
+        todoGroupRepository.moveLeft(groupId)
+    }
+
+    suspend fun moveRight(groupId: GroupId) {
+        todoGroupRepository.moveRight(groupId)
+    }
 }

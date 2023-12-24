@@ -27,7 +27,7 @@ class TodoGroupRepository(
 
     suspend fun createGroup(name: String): TodoGroup {
         val id = UUID.randomUUID().toString()
-        dbTodoGroupDao.save(DbTodoGroup(id, name))
+        dbTodoGroupDao.save(id, name)
         databaseSnapshotWorker.onUpdate()
         return TodoGroup(
             id = GroupId(id),
@@ -54,8 +54,17 @@ class TodoGroupRepository(
     }
 
     suspend fun link(groupId: GroupId, todoId: TodoId) {
-        dbTodoGroupToItemLinkDao.deleteByTodoId(todoId.id)
         dbTodoGroupToItemLinkDao.save(DbTodoGroupToItemLink(groupId.id, todoId.id))
+        databaseSnapshotWorker.onUpdate()
+    }
+
+    suspend fun moveLeft(groupId: GroupId) {
+        dbTodoGroupDao.updateOrder(groupId.id, moveRight = false)
+        databaseSnapshotWorker.onUpdate()
+    }
+
+    suspend fun moveRight(groupId: GroupId) {
+        dbTodoGroupDao.updateOrder(groupId.id, moveRight = true)
         databaseSnapshotWorker.onUpdate()
     }
 

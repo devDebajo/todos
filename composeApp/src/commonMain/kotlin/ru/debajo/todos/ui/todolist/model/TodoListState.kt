@@ -20,6 +20,20 @@ data class TodoListState(
     val currentRenamingGroup: TodoGroup? = null,
     val currentRenamingGroupName: TextFieldValue = TextFieldValue(""),
 ) {
+    fun canMoveCurrentGroupLeft(): Boolean {
+        if (!currentGroup.editable) {
+            return false
+        }
+        return selectedGroup > 0
+    }
+
+    fun canMoveCurrentGroupRight(): Boolean {
+        if (!currentGroup.editable) {
+            return false
+        }
+        return groups.getOrNull(selectedGroup + 1)?.editable == true
+    }
+
     val currentGroup: TodoGroup = groups[selectedGroup.coerceIn(groups.indices)]
     val actual: List<TodoItem> = currentGroup.actualTodos
     val done: List<TodoItem> = currentGroup.doneTodos

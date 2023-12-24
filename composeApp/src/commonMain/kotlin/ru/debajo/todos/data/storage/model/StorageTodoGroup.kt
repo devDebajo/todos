@@ -10,4 +10,7 @@ class StorageTodoGroup(
 
     @SerialName("n")
     val name: String,
+
+    @SerialName("o")
+    val order: Int = 0,
 )

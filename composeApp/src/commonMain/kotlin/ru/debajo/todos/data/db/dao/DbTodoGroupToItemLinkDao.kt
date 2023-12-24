@@ -11,7 +11,10 @@ import ru.debajo.todos.db.DbTodoGroupToItemLinkQueries
 class DbTodoGroupToItemLinkDao(private val queries: DbTodoGroupToItemLinkQueries) {
     suspend fun save(link: DbTodoGroupToItemLink) {
         withContext(IO) {
-            queries.save(groupId = link.groupId, todoId = link.todoId)
+            queries.transaction {
+                queries.deleteByTodoId(todoId = link.todoId)
+                queries.save(groupId = link.groupId, todoId = link.todoId)
+            }
         }
     }
 

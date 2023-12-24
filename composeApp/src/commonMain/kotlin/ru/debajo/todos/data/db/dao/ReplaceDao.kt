@@ -30,7 +30,8 @@ class ReplaceDao(
                 for (group in groups) {
                     dbTodoGroupQueries.save(
                         id = group.id,
-                        name = group.name
+                        name = group.name,
+                        position = group.position,
                     )
                 }
 

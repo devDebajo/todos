@@ -95,8 +95,12 @@ fun TodoListScreen(viewModel: TodoListViewModel) {
                 Spacer(modifier = Modifier.weight(1f))
                 if (state.currentGroup.editable) {
                     GroupMenu(
+                        canMoveLeft = remember(state) { state.canMoveCurrentGroupLeft() },
+                        canMoveRight = remember(state) { state.canMoveCurrentGroupRight() },
                         onRenameClick = { viewModel.onRenameCurrentGroupClick() },
-                        onDeleteClick = { viewModel.onDeleteCurrentGroupClick() }
+                        onDeleteClick = { viewModel.onDeleteCurrentGroupClick() },
+                        onMoveLeftClick = { viewModel.moveCurrentGroupLeft() },
+                        onMoveRightClick = { viewModel.moveCurrentGroupRight() }
                     )
                 }
             }
@@ -193,14 +197,6 @@ private fun ContextItemPopup(
                 TextButton(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RectangleShape,
-                    onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Edit) }
-                ) {
-                    Text("Edit")
-                }
-
-                TextButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RectangleShape,
                     onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Archive) }
                 ) {
                     if (todoItemContextMenuState.item.done) {
@@ -208,6 +204,14 @@ private fun ContextItemPopup(
                     } else {
                         Text("Done")
                     }
+                }
+
+                TextButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RectangleShape,
+                    onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Edit) }
+                ) {
+                    Text("Edit")
                 }
 
                 TextButton(
@@ -445,8 +449,12 @@ private fun Instant.format(): String {
 
 @Composable
 private fun GroupMenu(
+    canMoveLeft: Boolean,
+    canMoveRight: Boolean,
     onRenameClick: () -> Unit,
     onDeleteClick: () -> Unit,
+    onMoveLeftClick: () -> Unit,
+    onMoveRightClick: () -> Unit,
 ) {
     var popupVisible by remember { mutableStateOf(false) }
     IconButton({ popupVisible = true }) {
@@ -464,6 +472,7 @@ private fun GroupMenu(
             var columnWidth by remember { mutableIntStateOf(0) }
             Column(
                 modifier = Modifier
+                    .shadow(elevation = 10.dp, shape = RoundedCornerShape(14.dp))
                     .onSizeChanged { columnWidth = it.width }
                     .clip(RoundedCornerShape(14.dp))
                     .background(MaterialTheme.colorScheme.secondaryContainer)
@@ -476,7 +485,7 @@ private fun GroupMenu(
                         popupVisible = false
                     }
                 ) {
-                    Text("Rename group")
+                    Text("Rename folder")
                 }
 
                 TextButton(
@@ -487,7 +496,25 @@ private fun GroupMenu(
                         popupVisible = false
                     }
                 ) {
-                    Text("Delete group")
+                    Text("Delete folder")
+                }
+                if (canMoveLeft) {
+                    TextButton(
+                        modifier = Modifier.widthIn(min = columnWidth.toDp()),
+                        shape = RectangleShape,
+                        onClick = onMoveLeftClick
+                    ) {
+                        Text("Move left")
+                    }
+                }
+                if (canMoveRight) {
+                    TextButton(
+                        modifier = Modifier.widthIn(min = columnWidth.toDp()),
+                        shape = RectangleShape,
+                        onClick = onMoveRightClick
+                    ) {
+                        Text("Move right")
+                    }
                 }
             }
         }

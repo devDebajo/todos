@@ -248,6 +248,18 @@ class TodoListViewModel(
         }
     }
 
+    fun moveCurrentGroupLeft() {
+        screenModelScope.launch {
+            todoItemUseCase.moveLeft(state.value.currentGroup.id)
+        }
+    }
+
+    fun moveCurrentGroupRight() {
+        screenModelScope.launch {
+            todoItemUseCase.moveRight(state.value.currentGroup.id)
+        }
+    }
+
     private inline fun updateState(block: TodoListState.() -> TodoListState) {
         mutableState.value = mutableState.value.block()
     }

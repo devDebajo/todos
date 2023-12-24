@@ -1,19 +1,25 @@
 CREATE TABLE IF NOT EXISTS DbTodoGroup (
   `id` TEXT NOT NULL,
   `name` TEXT NOT NULL,
+  `position` INTEGER NOT NULL,
   PRIMARY KEY(`id`)
 );
 
 getAll:
-SELECT * FROM DbTodoGroup;
+SELECT * FROM DbTodoGroup ORDER BY position;
 
 save:
-INSERT INTO DbTodoGroup(id, name)
-VALUES (?, ?);
+INSERT INTO DbTodoGroup(id, name, position)
+VALUES (?, ?, ?);
 
 rename:
 UPDATE DbTodoGroup
 SET name=?
+WHERE id=?;
+
+changePosition:
+UPDATE DbTodoGroup
+SET position=?
 WHERE id=?;
 
 delete:
@@ -21,3 +27,6 @@ DELETE FROM DbTodoGroup WHERE id=?;
 
 deleteAll:
 DELETE FROM DbTodoGroup;
+
+count:
+SELECT count(*) FROM DbTodoGroup;

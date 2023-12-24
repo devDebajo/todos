@@ -38,6 +38,7 @@ class DatabaseSnapshotHelper(
         return StorageTodoGroup(
             id = id,
             name = name,
+            order = position.toInt(),
         )
     }
 
@@ -45,6 +46,7 @@ class DatabaseSnapshotHelper(
         return DbTodoGroup(
             id = id,
             name = name,
+            position = order.toLong()
         )
     }
 
