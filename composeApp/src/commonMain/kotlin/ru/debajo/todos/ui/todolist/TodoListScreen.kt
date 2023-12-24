@@ -57,7 +57,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -113,10 +115,17 @@ fun TodoListScreen(viewModel: TodoListViewModel) {
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 }
             }
+            val haptic = LocalHapticFeedback.current
             GroupsSpace(
                 state = state,
-                onGroupClick = { index -> viewModel.selectGroup(index) },
-                onNewGroupClick = { viewModel.onNewGroupClick() },
+                onGroupClick = { index ->
+                    viewModel.selectGroup(index)
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                },
+                onNewGroupClick = {
+                    viewModel.onNewGroupClick()
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                },
             )
             TodosListWithPlaceholder(
                 modifier = Modifier
@@ -128,7 +137,10 @@ fun TodoListScreen(viewModel: TodoListViewModel) {
             EditSpace(
                 state = state,
                 onTextChanged = { viewModel.updateCurrentTodo(it) },
-                onSaveClick = { viewModel.saveCurrentTodo() },
+                onSaveClick = {
+                    viewModel.saveCurrentTodo()
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                },
             )
         }
 

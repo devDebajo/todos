@@ -40,7 +40,7 @@ internal class ExternalFileHelperImpl(
 
     override suspend fun openOutputStream(): OutputStream {
         val uri = fileUri.filterNotNull().first()
-        return contentResolver.openOutputStream(Uri.parse(uri), "w")!!
+        return contentResolver.openOutputStream(Uri.parse(uri), "wt")!!
     }
 
     override suspend fun openInputStream(): InputStream {

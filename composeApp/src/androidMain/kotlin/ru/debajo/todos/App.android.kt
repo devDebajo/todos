@@ -17,6 +17,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import ru.debajo.todos.common.isDebug
 import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
 import ru.debajo.todos.data.storage.ExternalFileHelper
 import ru.debajo.todos.di.ActivityResultLaunchersHolder
@@ -56,7 +57,9 @@ class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob
     }
 
     private fun initLog() {
-        Napier.base(DebugAntilog())
+        if (isDebug) {
+            Napier.base(DebugAntilog())
+        }
     }
 
     private fun startProcess() {

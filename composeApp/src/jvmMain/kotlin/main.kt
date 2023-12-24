@@ -12,6 +12,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import ru.debajo.todos.common.isDebug
 import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
 import ru.debajo.todos.di.CommonModule
 import ru.debajo.todos.di.JvmModule
@@ -55,7 +56,9 @@ private fun initDi() {
 }
 
 private fun initLog() {
-    Napier.base(DebugAntilog())
+    if (isDebug) {
+        Napier.base(DebugAntilog())
+    }
 }
 
 private fun startProcess() {

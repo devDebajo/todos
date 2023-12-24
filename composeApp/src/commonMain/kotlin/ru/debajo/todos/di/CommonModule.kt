@@ -5,6 +5,7 @@ import org.koin.core.module.Module
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
+import ru.debajo.todos.common.isDebug
 import ru.debajo.todos.data.db.DriverFactory
 import ru.debajo.todos.data.db.createSchema
 import ru.debajo.todos.data.db.dao.DbTodoGroupDao
@@ -27,7 +28,7 @@ val CommonModule: Module = module {
         Json {
             isLenient = true
             ignoreUnknownKeys = true
-            prettyPrint = false
+            prettyPrint = isDebug
         }
     }
     factoryOf(::DatabaseSnapshotHelper)
