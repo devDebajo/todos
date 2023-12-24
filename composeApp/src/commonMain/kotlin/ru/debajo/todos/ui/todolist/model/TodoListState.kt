@@ -4,13 +4,14 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import ru.debajo.todos.domain.AllTodosGroup
+import ru.debajo.todos.domain.GroupId
 import ru.debajo.todos.domain.TodoGroup
 import ru.debajo.todos.domain.TodoItem
 
 @Immutable
 data class TodoListState(
     val groups: List<TodoGroup> = listOf(AllTodosGroup),
-    val selectedGroup: Int = 0,
+    val selectedGroupId: GroupId = AllTodosGroup.id,
     val textFieldState: TextFieldValue = TextFieldValue(""),
     val newGroupName: TextFieldValue = TextFieldValue(""),
     val newGroupDialogVisible: Boolean = false,
@@ -20,6 +21,8 @@ data class TodoListState(
     val currentRenamingGroup: TodoGroup? = null,
     val currentRenamingGroupName: TextFieldValue = TextFieldValue(""),
 ) {
+    private val selectedGroup: Int = groups.indexOfFirst { it.id == selectedGroupId }.takeIf { it >= 0 } ?: 0
+
     fun canMoveCurrentGroupLeft(): Boolean {
         if (!currentGroup.editable) {
             return false

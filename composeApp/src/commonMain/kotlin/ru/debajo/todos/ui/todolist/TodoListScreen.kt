@@ -71,6 +71,7 @@ import ru.debajo.todos.common.contextClickable
 import ru.debajo.todos.common.roundToPx
 import ru.debajo.todos.common.toDp
 import ru.debajo.todos.common.toIntOffset
+import ru.debajo.todos.domain.GroupId
 import ru.debajo.todos.domain.TodoItem
 import ru.debajo.todos.ui.todolist.model.TodoItemAction
 import ru.debajo.todos.ui.todolist.model.TodoListState
@@ -111,8 +112,8 @@ fun TodoListScreen(viewModel: TodoListViewModel) {
         val haptic = LocalHapticFeedback.current
         GroupsSpace(
             state = state,
-            onGroupClick = { index ->
-                viewModel.selectGroup(index)
+            onGroupClick = { id ->
+                viewModel.selectGroup(id)
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             },
             onNewGroupClick = {
@@ -230,7 +231,7 @@ private fun ContextItemPopup(
 private fun GroupsSpace(
     modifier: Modifier = Modifier,
     state: TodoListState,
-    onGroupClick: (Int) -> Unit,
+    onGroupClick: (GroupId) -> Unit,
     onNewGroupClick: () -> Unit,
 ) {
     LazyRow(
@@ -245,7 +246,7 @@ private fun GroupsSpace(
                 val group = state.groups[index]
                 FilterChip(
                     selected = state.currentGroup.id == group.id,
-                    onClick = { onGroupClick(index) },
+                    onClick = { onGroupClick(group.id) },
                     label = { Text(text = group.name) }
                 )
             }

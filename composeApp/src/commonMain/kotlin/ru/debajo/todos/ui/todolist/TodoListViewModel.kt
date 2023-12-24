@@ -5,9 +5,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import com.russhwolf.settings.Settings
 import kotlinx.coroutines.launch
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
+import ru.debajo.todos.domain.GroupId
 import ru.debajo.todos.domain.TodoItem
 import ru.debajo.todos.domain.TodoItemUseCase
 import ru.debajo.todos.ui.todolist.model.TodoItemAction
@@ -18,14 +18,22 @@ import ru.debajo.todos.ui.todolist.model.TodoListState
 class TodoListViewModel(
     private val todoItemUseCase: TodoItemUseCase,
     private val databaseSnapshotSaver: DatabaseSnapshotSaver,
-    private val settings: Settings,
 ) : StateScreenModel<TodoListState>(TodoListState()) {
 
     fun init() {
         screenModelScope.launch {
+            var first = true
             todoItemUseCase.observeGroups().collect { groups ->
                 updateState {
-                    copy(groups = groups)
+                    if (first) {
+                        first = false
+                        copy(
+                            groups = groups,
+                            selectedGroupId = groups.first().id,
+                        )
+                    } else {
+                        copy(groups = groups)
+                    }
                 }
             }
         }
@@ -92,10 +100,9 @@ class TodoListViewModel(
         }
     }
 
-    fun selectGroup(index: Int) {
+    fun selectGroup(id: GroupId) {
         updateState {
-            settings
-            copy(selectedGroup = index)
+            copy(selectedGroupId = id)
         }
     }
 
