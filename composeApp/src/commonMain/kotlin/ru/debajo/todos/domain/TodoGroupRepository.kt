@@ -49,7 +49,7 @@ class TodoGroupRepository(
     }
 
     suspend fun renameGroup(groupId: GroupId, name: String) {
-        dbTodoGroupDao.save(DbTodoGroup(groupId.id, name))
+        dbTodoGroupDao.rename(groupId.id, name)
         databaseSnapshotWorker.onUpdate()
     }
 
@@ -69,7 +69,7 @@ class TodoGroupRepository(
             keySelector = { it.groupId },
             valueTransform = { it.todoId }
         )
-        val result = mutableListOf(createAllGroup(todos))
+        val result = mutableListOf<TodoGroup>()
         for (group in groups) {
             val todosIds = groupsMapping[group.id].orEmpty().toHashSet()
             val groupTodos = todos.filter { it.id.id in todosIds }
@@ -78,6 +78,7 @@ class TodoGroupRepository(
             }
             result.add(createGroup(GroupId(group.id), group.name, groupTodos))
         }
+        result.add(createAllGroup(todos))
         if (unlinkedTodos.isNotEmpty() && unlinkedTodos.size != todos.size) {
             result.add(createOtherGroup(unlinkedTodos.toList()))
         }

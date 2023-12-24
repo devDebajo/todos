@@ -11,6 +11,11 @@ save:
 INSERT INTO DbTodoGroup(id, name)
 VALUES (?, ?);
 
+rename:
+UPDATE DbTodoGroup
+SET name=?
+WHERE id=?;
+
 delete:
 DELETE FROM DbTodoGroup WHERE id=?;
 

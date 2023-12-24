@@ -11,14 +11,16 @@ import ru.debajo.todos.db.DbTodoItemQueries
 class DbTodoItemDao(private val queries: DbTodoItemQueries) {
     suspend fun save(item: DbTodoItem) {
         withContext(IO) {
-            queries.delete(item.id)
-            queries.save(
-                id = item.id,
-                text = item.text,
-                createTimestamp = item.createTimestamp,
-                updateTimestamp = item.updateTimestamp,
-                done = item.done,
-            )
+            queries.transaction {
+                queries.delete(item.id)
+                queries.save(
+                    id = item.id,
+                    text = item.text,
+                    createTimestamp = item.createTimestamp,
+                    updateTimestamp = item.updateTimestamp,
+                    done = item.done,
+                )
+            }
         }
     }
 

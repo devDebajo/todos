@@ -24,6 +24,12 @@ class DbTodoGroupDao(private val queries: DbTodoGroupQueries) {
         }
     }
 
+    suspend fun rename(groupId: String, name: String) {
+        withContext(IO) {
+            queries.rename(id = groupId, name = name)
+        }
+    }
+
     suspend fun delete(id: String) {
         withContext(IO) {
             queries.delete(id)

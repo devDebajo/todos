@@ -17,6 +17,9 @@ data class TodoListState(
     val currentDeletingGroup: TodoGroup? = null,
     val currentDeletingItem: TodoItem? = null,
     val savingToFile: Boolean = false,
+
+    val currentRenamingGroup: TodoGroup? = null,
+    val currentRenamingGroupName: TextFieldValue = TextFieldValue(""),
 ) {
     val currentGroup: TodoGroup = groups[selectedGroup.coerceIn(groups.indices)]
     val actual: List<TodoItem> = currentGroup.actualTodos

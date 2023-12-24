@@ -16,18 +16,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,7 +39,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -47,27 +46,34 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toLocalDateTime
-import ru.debajo.todos.common.ellipsize
+import ru.debajo.todos.common.roundToPx
+import ru.debajo.todos.common.toDp
 import ru.debajo.todos.domain.TodoItem
 import ru.debajo.todos.ui.todolist.model.TodoItemAction
 import ru.debajo.todos.ui.todolist.model.TodoListNews
@@ -97,9 +103,10 @@ fun TodoListScreen(viewModel: TodoListViewModel) {
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     if (state.currentGroup.editable) {
-                        TextButton(onClick = { viewModel.onDeleteGroup(state.currentGroup) }) {
-                            Text("Delete folder")
-                        }
+                        GroupMenu(
+                            onRenameClick = { viewModel.onRenameCurrentGroupClick() },
+                            onDeleteClick = { viewModel.onDeleteCurrentGroupClick() }
+                        )
                     }
                 }
                 if (state.savingToFile) {
@@ -140,6 +147,12 @@ fun TodoListScreen(viewModel: TodoListViewModel) {
             state = state,
             onConfirm = { viewModel.deleteItem() },
             onHide = { viewModel.hideTodoItemDialog() }
+        )
+        RenameGroupDialog(
+            state = state,
+            onNameChanged = { viewModel.updateCurrentGroupName(it) },
+            onHide = { viewModel.hideRenameGroupDialog() },
+            onConfirm = { viewModel.renameCurrentGroup() }
         )
     }
 }
@@ -366,109 +379,6 @@ private fun EditSpace(
     }
 }
 
-@Composable
-private fun NewGroupDialog(
-    state: TodoListState,
-    onNameChanged: (TextFieldValue) -> Unit,
-    onHide: () -> Unit,
-    onConfirm: () -> Unit,
-) {
-    if (state.newGroupDialogVisible) {
-        AlertDialog(
-            title = { Text("Create folder") },
-            text = {
-                TextField(
-                    placeholder = { Text("Folder name") },
-                    value = state.newGroupName,
-                    onValueChange = onNameChanged,
-                    keyboardOptions = remember {
-                        KeyboardOptions(
-                            capitalization = KeyboardCapitalization.Sentences,
-                            imeAction = ImeAction.Send,
-                        )
-                    },
-                    keyboardActions = remember(onConfirm) {
-                        KeyboardActions(
-                            onSend = { onConfirm() }
-                        )
-                    }
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = onConfirm) {
-                    Text("Save")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onHide) {
-                    Text("Cancel")
-                }
-            },
-            onDismissRequest = onHide
-        )
-    }
-}
-
-@Composable
-private fun DeleteGroupDialog(
-    state: TodoListState,
-    onConfirm: (withTodos: Boolean) -> Unit,
-    onHide: () -> Unit,
-) {
-    val currentDeletingGroup = state.currentDeletingGroup
-    if (currentDeletingGroup != null) {
-        AlertDialog(
-            title = { Text("Delete folder?") },
-            text = {
-                Text("Are you sure to delete folder ${currentDeletingGroup.name}?")
-            },
-            confirmButton = {
-                Column(horizontalAlignment = Alignment.End) {
-                    TextButton(onClick = { onConfirm(false) }) {
-                        Text("Delete only folder")
-                    }
-
-                    TextButton(onClick = { onConfirm(true) }) {
-                        Text("Delete folder with todos")
-                    }
-
-                    TextButton(onClick = onHide) {
-                        Text("Cancel")
-                    }
-                }
-            },
-            onDismissRequest = onHide
-        )
-    }
-}
-
-@Composable
-private fun DeleteTodoItemDialog(
-    state: TodoListState,
-    onConfirm: () -> Unit,
-    onHide: () -> Unit,
-) {
-    val currentDeletingItem = state.currentDeletingItem
-    if (currentDeletingItem != null) {
-        AlertDialog(
-            title = { Text("Delete TODO?") },
-            text = {
-                Text("Are you sure to delete TODO ${currentDeletingItem.text.ellipsize(10)}?")
-            },
-            dismissButton = {
-                TextButton(onClick = onHide) {
-                    Text("Cancel")
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = onConfirm) {
-                    Text("Delete")
-                }
-            },
-            onDismissRequest = onHide
-        )
-    }
-}
 
 @Composable
 private fun TodoCard(
@@ -507,4 +417,55 @@ private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-
 
 private fun Instant.format(): String {
     return formatter.format(toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime())
+}
+
+@Composable
+private fun GroupMenu(
+    onRenameClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+) {
+    var popupVisible by remember { mutableStateOf(false) }
+    IconButton({ popupVisible = true }) {
+        Icon(
+            imageVector = Icons.Default.MoreVert,
+            contentDescription = null,
+        )
+    }
+    if (popupVisible) {
+        Popup(
+            alignment = Alignment.TopEnd,
+            offset = IntOffset(x = 0, y = 60.dp.roundToPx()),
+            onDismissRequest = { popupVisible = false }
+        ) {
+            var columnWidth by remember { mutableIntStateOf(0) }
+            Column(
+                modifier = Modifier
+                    .onSizeChanged { columnWidth = it.width }
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
+            ) {
+                TextButton(
+                    modifier = Modifier.widthIn(min = columnWidth.toDp()),
+                    shape = RectangleShape,
+                    onClick = {
+                        onRenameClick()
+                        popupVisible = false
+                    }
+                ) {
+                    Text("Rename group")
+                }
+
+                TextButton(
+                    modifier = Modifier.widthIn(min = columnWidth.toDp()),
+                    shape = RectangleShape,
+                    onClick = {
+                        onDeleteClick()
+                        popupVisible = false
+                    }
+                ) {
+                    Text("Delete group")
+                }
+            }
+        }
+    }
 }

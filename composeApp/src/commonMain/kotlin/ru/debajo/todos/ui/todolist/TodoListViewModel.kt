@@ -4,12 +4,12 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.input.TextFieldValue
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.russhwolf.settings.Settings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
-import ru.debajo.todos.domain.TodoGroup
 import ru.debajo.todos.domain.TodoItem
 import ru.debajo.todos.domain.TodoItemUseCase
 import ru.debajo.todos.ui.todolist.model.TodoItemAction
@@ -20,6 +20,7 @@ import ru.debajo.todos.ui.todolist.model.TodoListState
 class TodoListViewModel(
     private val todoItemUseCase: TodoItemUseCase,
     private val databaseSnapshotSaver: DatabaseSnapshotSaver,
+    private val settings: Settings,
 ) : StateScreenModel<TodoListState>(TodoListState()) {
 
     private val _news: MutableSharedFlow<TodoListNews> = MutableSharedFlow()
@@ -106,13 +107,52 @@ class TodoListViewModel(
 
     fun selectGroup(index: Int) {
         updateState {
+            settings
             copy(selectedGroup = index)
         }
     }
 
-    fun onDeleteGroup(group: TodoGroup) {
+    fun onDeleteCurrentGroupClick() {
         updateState {
-            copy(currentDeletingGroup = group)
+            copy(currentDeletingGroup = currentGroup)
+        }
+    }
+
+    fun onRenameCurrentGroupClick() {
+        updateState {
+            copy(
+                currentRenamingGroup = currentGroup,
+                currentRenamingGroupName = TextFieldValue(currentGroup.name)
+            )
+        }
+    }
+
+    fun hideRenameGroupDialog() {
+        updateState {
+            copy(
+                currentRenamingGroup = null,
+                currentRenamingGroupName = TextFieldValue(""),
+            )
+        }
+    }
+
+    fun updateCurrentGroupName(name: TextFieldValue) {
+        updateState {
+            copy(currentRenamingGroupName = name)
+        }
+    }
+
+    fun renameCurrentGroup() {
+        val currentRenamingGroup = state.value.currentRenamingGroup ?: return
+        val newName = state.value.currentRenamingGroupName.text.trim()
+        if (newName.isEmpty()) {
+            hideRenameGroupDialog()
+            return
+        }
+
+        screenModelScope.launch {
+            todoItemUseCase.renameGroup(currentRenamingGroup.id, newName)
+            hideRenameGroupDialog()
         }
     }
 
