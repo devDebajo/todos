@@ -2,7 +2,6 @@
 
 package ru.debajo.todos.ui.todolist
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -24,41 +24,35 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material3.Card
-import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -69,103 +63,162 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import java.time.format.DateTimeFormatter
-import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toLocalDateTime
+import ru.debajo.todos.common.contextClickable
 import ru.debajo.todos.common.roundToPx
 import ru.debajo.todos.common.toDp
+import ru.debajo.todos.common.toIntOffset
 import ru.debajo.todos.domain.TodoItem
 import ru.debajo.todos.ui.todolist.model.TodoItemAction
-import ru.debajo.todos.ui.todolist.model.TodoListNews
 import ru.debajo.todos.ui.todolist.model.TodoListState
-
-val LocalNews: ProvidableCompositionLocal<Flow<TodoListNews>> = staticCompositionLocalOf { error("") }
 
 @Composable
 fun TodoListScreen(viewModel: TodoListViewModel) {
-    CompositionLocalProvider(
-        LocalNews provides remember(viewModel) { viewModel.news }
-    ) {
-        val state by viewModel.state.collectAsState()
-        Column(modifier = Modifier.fillMaxSize()) {
-            Box {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        modifier = Modifier.padding(vertical = 16.dp),
-                        text = "// TODO",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Medium,
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    if (state.currentGroup.editable) {
-                        GroupMenu(
-                            onRenameClick = { viewModel.onRenameCurrentGroupClick() },
-                            onDeleteClick = { viewModel.onDeleteCurrentGroupClick() }
-                        )
-                    }
-                }
-                if (state.savingToFile) {
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                }
-            }
-            val haptic = LocalHapticFeedback.current
-            GroupsSpace(
-                state = state,
-                onGroupClick = { index ->
-                    viewModel.selectGroup(index)
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                },
-                onNewGroupClick = {
-                    viewModel.onNewGroupClick()
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                },
-            )
-            TodosListWithPlaceholder(
+    val state by viewModel.state.collectAsState()
+    Column(modifier = Modifier.fillMaxSize()) {
+        Box {
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
-                state = state,
-                onTodoAction = { item, action -> viewModel.onTodoAction(item, action) },
-            )
-            EditSpace(
-                state = state,
-                onTextChanged = { viewModel.updateCurrentTodo(it) },
-                onSaveClick = {
-                    viewModel.saveCurrentTodo()
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                },
-            )
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    modifier = Modifier.padding(vertical = 16.dp),
+                    text = "// TODO",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Medium,
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                if (state.currentGroup.editable) {
+                    GroupMenu(
+                        onRenameClick = { viewModel.onRenameCurrentGroupClick() },
+                        onDeleteClick = { viewModel.onDeleteCurrentGroupClick() }
+                    )
+                }
+            }
+            if (state.savingToFile) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
         }
+        val haptic = LocalHapticFeedback.current
+        GroupsSpace(
+            state = state,
+            onGroupClick = { index ->
+                viewModel.selectGroup(index)
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            },
+            onNewGroupClick = {
+                viewModel.onNewGroupClick()
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            },
+        )
+        TodosListWithPlaceholder(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            state = state,
+            onContextClick = { item, coordinates ->
+                viewModel.onItemContextClick(item, coordinates.positionInRoot().toIntOffset())
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            },
+        )
+        EditSpace(
+            state = state,
+            onTextChanged = { viewModel.updateCurrentTodo(it) },
+            onSaveClick = {
+                viewModel.saveCurrentTodo()
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            },
+        )
+    }
 
-        NewGroupDialog(
-            state = state,
-            onNameChanged = { viewModel.updateCurrentGroup(it) },
-            onHide = { viewModel.hideNewGroupDialog() },
-            onConfirm = { viewModel.saveNewGroup() }
-        )
-        DeleteGroupDialog(
-            state = state,
-            onConfirm = { withTodos -> viewModel.deleteGroup(withTodos = withTodos) },
-            onHide = { viewModel.hideDeleteGroupDialog() }
-        )
-        DeleteTodoItemDialog(
-            state = state,
-            onConfirm = { viewModel.deleteItem() },
-            onHide = { viewModel.hideTodoItemDialog() }
-        )
-        RenameGroupDialog(
-            state = state,
-            onNameChanged = { viewModel.updateCurrentGroupName(it) },
-            onHide = { viewModel.hideRenameGroupDialog() },
-            onConfirm = { viewModel.renameCurrentGroup() }
-        )
+    NewGroupDialog(
+        state = state,
+        onNameChanged = { viewModel.updateCurrentGroup(it) },
+        onHide = { viewModel.hideNewGroupDialog() },
+        onConfirm = { viewModel.saveNewGroup() }
+    )
+    DeleteGroupDialog(
+        state = state,
+        onConfirm = { withTodos -> viewModel.deleteGroup(withTodos = withTodos) },
+        onHide = { viewModel.hideDeleteGroupDialog() }
+    )
+    DeleteTodoItemDialog(
+        state = state,
+        onConfirm = { viewModel.deleteItem() },
+        onHide = { viewModel.hideDeleteTodoItemDialog() }
+    )
+    RenameGroupDialog(
+        state = state,
+        onNameChanged = { viewModel.updateCurrentGroupName(it) },
+        onHide = { viewModel.hideRenameGroupDialog() },
+        onConfirm = { viewModel.renameCurrentGroup() }
+    )
+    ContextItemPopup(
+        state = state,
+        onTodoAction = { item, action -> viewModel.onTodoAction(item, action) },
+        onHide = { viewModel.hideContextPopup() }
+    )
+    UpdateItemTextDialog(
+        state = state,
+        onNameChanged = { viewModel.onUpdateItemTextChanged(it) },
+        onHide = { viewModel.hideUpdateItemTextDialog() },
+        onConfirm = { viewModel.updateItemText() }
+    )
+}
+
+@Composable
+private fun ContextItemPopup(
+    state: TodoListState,
+    onTodoAction: (TodoItem, TodoItemAction) -> Unit,
+    onHide: () -> Unit,
+) {
+    val todoItemContextMenuState = state.todoItemContextMenuState
+    if (todoItemContextMenuState?.visible == true) {
+        Popup(
+            offset = remember(todoItemContextMenuState.item) { todoItemContextMenuState.position + IntOffset(50, 50) },
+            onDismissRequest = onHide
+        ) {
+            Column(
+                modifier = Modifier
+                    .shadow(elevation = 10.dp, shape = RoundedCornerShape(14.dp))
+                    .width(100.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
+            ) {
+                TextButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RectangleShape,
+                    onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Edit) }
+                ) {
+                    Text("Edit")
+                }
+
+                TextButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RectangleShape,
+                    onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Archive) }
+                ) {
+                    if (todoItemContextMenuState.item.done) {
+                        Text("Undone")
+                    } else {
+                        Text("Done")
+                    }
+                }
+
+                TextButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RectangleShape,
+                    onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Delete) }
+                ) {
+                    Text("Delete")
+                }
+            }
+        }
     }
 }
 
@@ -209,7 +262,7 @@ private fun GroupsSpace(
 private fun TodosListWithPlaceholder(
     modifier: Modifier = Modifier,
     state: TodoListState,
-    onTodoAction: (TodoItem, TodoItemAction) -> Unit,
+    onContextClick: (TodoItem, LayoutCoordinates) -> Unit,
 ) {
     Box(modifier = modifier) {
         if (state.isEmpty) {
@@ -221,7 +274,7 @@ private fun TodosListWithPlaceholder(
             TodosList(
                 modifier = Modifier.fillMaxSize(),
                 state = state,
-                onTodoAction = onTodoAction,
+                onContextClick = onContextClick,
             )
         }
     }
@@ -231,7 +284,7 @@ private fun TodosListWithPlaceholder(
 private fun TodosList(
     modifier: Modifier = Modifier,
     state: TodoListState,
-    onTodoAction: (TodoItem, TodoItemAction) -> Unit,
+    onContextClick: (TodoItem, LayoutCoordinates) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier,
@@ -251,8 +304,7 @@ private fun TodosList(
                     DismissableTodoCard(
                         item = state.actual[index],
                         modifier = Modifier.fillMaxWidth(),
-                        focus = state.currentEditingItem?.id == state.actual[index].id,
-                        onTodoAction = onTodoAction
+                        onContextClick = onContextClick
                     )
                 }
             )
@@ -270,9 +322,8 @@ private fun TodosList(
                 itemContent = { index ->
                     DismissableTodoCard(
                         item = state.done[index],
+                        onContextClick = onContextClick,
                         modifier = Modifier.fillMaxWidth(),
-                        focus = state.currentEditingItem?.id == state.done[index].id,
-                        onTodoAction = onTodoAction
                     )
                 }
             )
@@ -280,60 +331,21 @@ private fun TodosList(
     )
 }
 
+private val itemShape: Shape = RoundedCornerShape(12.dp)
+
 @Composable
 private fun DismissableTodoCard(
     modifier: Modifier = Modifier,
-    onTodoAction: (TodoItem, TodoItemAction) -> Unit,
+    onContextClick: (TodoItem, LayoutCoordinates) -> Unit,
     item: TodoItem,
-    focus: Boolean,
 ) {
-    val dismissState = rememberDismissState(confirmValueChange = {
-        val action = when (it) {
-            DismissValue.Default -> null
-            DismissValue.DismissedToEnd -> TodoItemAction.Delete
-            DismissValue.DismissedToStart -> TodoItemAction.Archive
-        }
-        if (action != null) {
-            onTodoAction(item, action)
-        }
-        true
-    })
-
-    val news = LocalNews.current
-    LaunchedEffect(dismissState, news) {
-        news.collect { news ->
-            when (news) {
-                TodoListNews.ResetSwipeToDismiss -> dismissState.snapTo(DismissValue.Default)
-            }
-        }
-    }
-
-    SwipeToDismiss(
-        state = dismissState,
-        background = {
-            Spacer(modifier = Modifier.size(10.dp))
-            Icon(
-                modifier = Modifier.align(Alignment.CenterVertically),
-                imageVector = Icons.Default.Delete,
-                contentDescription = null,
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Icon(
-                modifier = Modifier.align(Alignment.CenterVertically),
-                imageVector = Icons.Default.Done,
-                contentDescription = null,
-            )
-            Spacer(modifier = Modifier.size(10.dp))
-        },
-        modifier = modifier,
-        dismissContent = {
-            TodoCard(
-                item = item,
-                onClick = { onTodoAction(item, TodoItemAction.Edit) },
-                modifier = Modifier.fillMaxWidth(),
-                focus = focus,
-            )
-        },
+    var position by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    TodoCard(
+        item = item,
+        onContextClick = { position?.let { onContextClick(item, it) } },
+        modifier = modifier
+            .fillMaxWidth()
+            .onGloballyPositioned { position = it }
     )
 }
 
@@ -395,22 +407,22 @@ private fun EditSpace(
 @Composable
 private fun TodoCard(
     item: TodoItem,
-    onClick: (TodoItem) -> Unit,
-    focus: Boolean,
+    onContextClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val scale by animateFloatAsState(targetValue = if (focus) 1.05f else 1f, label = "scale")
-    Card(modifier = modifier.scale(scale), onClick = { onClick(item) }) {
-        Column(
-            modifier = Modifier.padding(vertical = 10.dp, horizontal = 6.dp)
-        ) {
-            Text(item.text)
-            Spacer(Modifier.size(3.dp))
-            Text(
-                text = formatDate(item),
-                fontSize = 10.sp
-            )
-        }
+    Column(
+        modifier = modifier
+            .clip(itemShape)
+            .contextClickable(onClick = onContextClick)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(vertical = 10.dp, horizontal = 6.dp)
+    ) {
+        Text(item.text)
+        Spacer(Modifier.size(3.dp))
+        Text(
+            text = formatDate(item),
+            fontSize = 10.sp
+        )
     }
 }
 

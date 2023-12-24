@@ -2,18 +2,16 @@ package ru.debajo.todos.ui.todolist
 
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.IntOffset
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.russhwolf.settings.Settings
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.domain.TodoItem
 import ru.debajo.todos.domain.TodoItemUseCase
 import ru.debajo.todos.ui.todolist.model.TodoItemAction
-import ru.debajo.todos.ui.todolist.model.TodoListNews
+import ru.debajo.todos.ui.todolist.model.TodoItemContextMenuState
 import ru.debajo.todos.ui.todolist.model.TodoListState
 
 @Stable
@@ -22,9 +20,6 @@ class TodoListViewModel(
     private val databaseSnapshotSaver: DatabaseSnapshotSaver,
     private val settings: Settings,
 ) : StateScreenModel<TodoListState>(TodoListState()) {
-
-    private val _news: MutableSharedFlow<TodoListNews> = MutableSharedFlow()
-    val news: Flow<TodoListNews> = _news.asSharedFlow()
 
     fun init() {
         screenModelScope.launch {
@@ -51,20 +46,12 @@ class TodoListViewModel(
             return
         }
 
-        val currentEditingItem = state.currentEditingItem
         updateState {
-            copy(
-                textFieldState = TextFieldValue(""),
-                currentEditingItem = null
-            )
+            copy(textFieldState = TextFieldValue(""))
         }
 
         screenModelScope.launch {
-            if (currentEditingItem != null) {
-                todoItemUseCase.updateTodo(currentEditingItem.id, text)
-            } else {
-                todoItemUseCase.createTodo(text, state.currentGroup.id)
-            }
+            todoItemUseCase.createTodo(text, state.currentGroup.id)
         }
     }
 
@@ -170,20 +157,15 @@ class TodoListViewModel(
         }
     }
 
-    fun hideTodoItemDialog() {
-        screenModelScope.launch {
-            updateState {
-                copy(currentDeletingItem = null)
-            }
-            _news.emit(TodoListNews.ResetSwipeToDismiss)
-        }
+    fun hideDeleteTodoItemDialog() {
+        hideContextPopup()
     }
 
     fun deleteItem() {
-        val item = state.value.currentDeletingItem ?: return
+        val item = state.value.todoItemContextMenuState?.item ?: return
         screenModelScope.launch {
             todoItemUseCase.delete(item.id)
-            hideTodoItemDialog()
+            hideContextPopup()
         }
     }
 
@@ -191,26 +173,78 @@ class TodoListViewModel(
         screenModelScope.launch {
             when (action) {
                 TodoItemAction.Delete -> updateState {
-                    copy(currentDeletingItem = item)
+                    copy(
+                        todoItemContextMenuState = todoItemContextMenuState?.copy(
+                            showDeleteDialog = true,
+                            visible = false,
+                        )
+                    )
                 }
 
-                TodoItemAction.Archive -> todoItemUseCase.updateDone(item.id, !item.done)
+                TodoItemAction.Archive -> {
+                    todoItemUseCase.updateDone(item.id, !item.done)
+                    hideContextPopup()
+                }
 
                 TodoItemAction.Edit -> updateState {
-                    if (item.id == this.currentEditingItem?.id) {
-                        copy(
-                            currentEditingItem = null,
-                            textFieldState = TextFieldValue(""),
+                    copy(
+                        todoItemContextMenuState = todoItemContextMenuState?.copy(
+                            changeTextDialogVisible = true,
+                            showDeleteDialog = false,
+                            visible = false,
                         )
-                    } else {
-                        copy(
-                            currentEditingItem = item,
-                            textFieldState = TextFieldValue(item.text),
-                        )
-                    }
+                    )
                 }
-
             }
+        }
+    }
+
+    fun onItemContextClick(item: TodoItem, coordinates: IntOffset) {
+        updateState {
+            copy(
+                todoItemContextMenuState = TodoItemContextMenuState(
+                    item = item,
+                    position = coordinates,
+                )
+            )
+        }
+    }
+
+    fun hideContextPopup() {
+        updateState {
+            copy(todoItemContextMenuState = null)
+        }
+    }
+
+    fun onUpdateItemTextChanged(text: TextFieldValue) {
+        updateState {
+            copy(
+                todoItemContextMenuState = todoItemContextMenuState?.copy(
+                    changeTextDialogValue = text
+                )
+            )
+        }
+    }
+
+    fun hideUpdateItemTextDialog() {
+        hideContextPopup()
+    }
+
+    fun updateItemText() {
+        val todoItemContextMenuState = state.value.todoItemContextMenuState
+        if (todoItemContextMenuState == null) {
+            hideContextPopup()
+            return
+        }
+        val text = todoItemContextMenuState.changeTextDialogValue.text.trim()
+        if (text.isEmpty()) {
+            hideContextPopup()
+            return
+        }
+
+        screenModelScope.launch {
+            todoItemUseCase.updateTodo(todoItemContextMenuState.item.id, text)
+            hideContextPopup()
         }
     }
 

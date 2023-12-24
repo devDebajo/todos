@@ -89,17 +89,37 @@ internal fun RenameGroupDialog(
 }
 
 @Composable
+internal fun UpdateItemTextDialog(
+    state: TodoListState,
+    onNameChanged: (TextFieldValue) -> Unit,
+    onHide: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    val todoItemContextMenuState = state.todoItemContextMenuState
+    if (todoItemContextMenuState?.changeTextDialogVisible == true) {
+        TextFieldDialog(
+            title = "Update TODO",
+            placeholder = "Text",
+            value = todoItemContextMenuState.changeTextDialogValue,
+            onValueChanged = onNameChanged,
+            onHide = onHide,
+            onConfirm = onConfirm,
+        )
+    }
+}
+
+@Composable
 internal fun DeleteTodoItemDialog(
     state: TodoListState,
     onConfirm: () -> Unit,
     onHide: () -> Unit,
 ) {
-    val currentDeletingItem = state.currentDeletingItem
-    if (currentDeletingItem != null) {
+    val todoItemContextMenuState = state.todoItemContextMenuState
+    if (todoItemContextMenuState?.showDeleteDialog == true) {
         AlertDialog(
             title = { Text("Delete TODO?") },
             text = {
-                Text("Are you sure to delete TODO ${currentDeletingItem.text.ellipsize(10)}?")
+                Text("Are you sure to delete TODO ${todoItemContextMenuState.item.text.ellipsize(20)}?")
             },
             dismissButton = {
                 TextButton(onClick = onHide) {
