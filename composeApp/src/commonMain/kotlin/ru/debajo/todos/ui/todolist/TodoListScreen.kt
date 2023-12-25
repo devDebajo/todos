@@ -34,7 +34,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -47,14 +46,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -227,35 +227,52 @@ private fun ContextItemPopup(
                     .clip(RoundedCornerShape(14.dp))
                     .background(MaterialTheme.colorScheme.secondaryContainer)
             ) {
-                TextButton(
+                PopupItem(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RectangleShape,
+                    text = if (todoItemContextMenuState.item.done) "Undone" else "Done",
                     onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Archive) }
-                ) {
-                    if (todoItemContextMenuState.item.done) {
-                        Text("Undone")
-                    } else {
-                        Text("Done")
-                    }
-                }
+                )
 
-                TextButton(
+                PopupItem(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RectangleShape,
+                    text = "Edit",
                     onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Edit) }
-                ) {
-                    Text("Edit")
-                }
+                )
 
-                TextButton(
+                val clipboardManager = LocalClipboardManager.current
+                PopupItem(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RectangleShape,
+                    text = "Copy",
+                    onClick = {
+                        clipboardManager.setText(AnnotatedString(todoItemContextMenuState.item.text))
+                        onTodoAction(todoItemContextMenuState.item, TodoItemAction.Copy)
+                    }
+                )
+
+                PopupItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = "Delete",
                     onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Delete) }
-                ) {
-                    Text("Delete")
-                }
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun PopupItem(
+    modifier: Modifier = Modifier,
+    text: String,
+    onClick: () -> Unit,
+) {
+    Box(
+        contentAlignment = Alignment.CenterStart,
+        modifier = modifier
+            .height(46.dp)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp),
+    ) {
+        Text(text = text)
     }
 }
 
@@ -513,52 +530,36 @@ private fun GroupMenu(
                     .clip(RoundedCornerShape(14.dp))
                     .background(MaterialTheme.colorScheme.secondaryContainer)
             ) {
-                TextButton(
+                PopupItem(
                     modifier = Modifier.widthIn(min = columnWidth.toDp()),
-                    shape = RectangleShape,
+                    text = "Rename folder",
                     onClick = {
                         onRenameClick()
                         popupVisible = false
                     }
-                ) {
-                    Text("Rename folder")
-                }
+                )
 
-                TextButton(
+                PopupItem(
                     modifier = Modifier.widthIn(min = columnWidth.toDp()),
-                    shape = RectangleShape,
+                    text = "Delete folder",
                     onClick = {
                         onDeleteClick()
                         popupVisible = false
                     }
-                ) {
-                    Text("Delete folder")
-                }
+                )
                 if (canMoveLeft) {
-                    TextButton(
+                    PopupItem(
                         modifier = Modifier.widthIn(min = columnWidth.toDp()),
-                        shape = RectangleShape,
+                        text = if (isHorizontalOrientation) "Move up" else "Move left",
                         onClick = onMoveLeftClick
-                    ) {
-                        if (isHorizontalOrientation) {
-                            Text("Move up")
-                        } else {
-                            Text("Move left")
-                        }
-                    }
+                    )
                 }
                 if (canMoveRight) {
-                    TextButton(
+                    PopupItem(
                         modifier = Modifier.widthIn(min = columnWidth.toDp()),
-                        shape = RectangleShape,
+                        text = if (isHorizontalOrientation) "Move down" else "Move right",
                         onClick = onMoveRightClick
-                    ) {
-                        if (isHorizontalOrientation) {
-                            Text("Move down")
-                        } else {
-                            Text("Move right")
-                        }
-                    }
+                    )
                 }
             }
         }

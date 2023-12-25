@@ -216,6 +216,8 @@ class TodoListViewModel(
                         )
                     )
                 }
+
+                TodoItemAction.Copy -> hideContextPopup()
             }
         }
     }
