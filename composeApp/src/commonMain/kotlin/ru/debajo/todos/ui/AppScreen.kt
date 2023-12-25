@@ -7,6 +7,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import ru.debajo.todos.di.getFromDi
 import ru.debajo.todos.ui.fileconfig.FileConfigScreen
 import ru.debajo.todos.ui.fileconfig.FileConfigViewModel
+import ru.debajo.todos.ui.todolist.HorizontalTodoListScreen
 import ru.debajo.todos.ui.todolist.TodoListScreen
 import ru.debajo.todos.ui.todolist.TodoListViewModel
 
@@ -25,7 +26,11 @@ sealed interface AppScreen : Screen {
         override fun Content() {
             val viewModel = rememberScreenModel { getFromDi<TodoListViewModel>() }
             LaunchedEffect(viewModel) { viewModel.init() }
-            TodoListScreen(viewModel)
+            if (isHorizontalOrientation) {
+                HorizontalTodoListScreen(viewModel)
+            } else {
+                TodoListScreen(viewModel)
+            }
         }
     }
 }

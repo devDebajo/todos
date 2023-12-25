@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -53,7 +54,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -71,9 +71,9 @@ import kotlinx.datetime.toLocalDateTime
 import ru.debajo.todos.common.contextClickable
 import ru.debajo.todos.common.roundToPx
 import ru.debajo.todos.common.toDp
-import ru.debajo.todos.common.toIntOffset
 import ru.debajo.todos.domain.GroupId
 import ru.debajo.todos.domain.TodoItem
+import ru.debajo.todos.ui.isHorizontalOrientation
 import ru.debajo.todos.ui.todolist.model.TodoItemAction
 import ru.debajo.todos.ui.todolist.model.TodoListNews
 import ru.debajo.todos.ui.todolist.model.TodoListState
@@ -92,35 +92,7 @@ fun TodoListScreen(viewModel: TodoListViewModel) {
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Box {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    modifier = Modifier.padding(vertical = 16.dp),
-                    text = "// TODO",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Medium,
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                if (state.currentGroup.editable) {
-                    GroupMenu(
-                        canMoveLeft = remember(state) { state.canMoveCurrentGroupLeft() },
-                        canMoveRight = remember(state) { state.canMoveCurrentGroupRight() },
-                        onRenameClick = { viewModel.onRenameCurrentGroupClick() },
-                        onDeleteClick = { viewModel.onDeleteCurrentGroupClick() },
-                        onMoveLeftClick = { viewModel.moveCurrentGroupLeft() },
-                        onMoveRightClick = { viewModel.moveCurrentGroupRight() }
-                    )
-                }
-            }
-            if (state.savingToFile) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-            }
-        }
+        TodoListScreenToolbar(viewModel)
         val haptic = LocalHapticFeedback.current
         GroupsSpace(
             state = state,
@@ -134,26 +106,73 @@ fun TodoListScreen(viewModel: TodoListViewModel) {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             },
         )
-        TodosListWithPlaceholder(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            state = state,
-            onContextClick = { item, coordinates ->
-                viewModel.onItemContextClick(item, coordinates.positionInRoot().toIntOffset())
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            },
-        )
-        EditSpace(
-            state = state,
-            onTextChanged = { viewModel.updateCurrentTodo(it) },
-            onSaveClick = {
-                viewModel.saveCurrentTodo()
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            },
-        )
+        TodoListScreenListWithTypePanel(viewModel)
     }
 
+    TodoListScreenDialogs(viewModel)
+}
+
+@Composable
+internal fun ColumnScope.TodoListScreenListWithTypePanel(viewModel: TodoListViewModel) {
+    val state by viewModel.state.collectAsState()
+    val haptic = LocalHapticFeedback.current
+    TodosListWithPlaceholder(
+        modifier = Modifier
+            .fillMaxWidth()
+            .weight(1f),
+        state = state,
+        onContextClick = { item, coordinates ->
+            viewModel.onItemContextClick(item, coordinates.calculatePopupPosition())
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        },
+    )
+    EditSpace(
+        state = state,
+        onTextChanged = { viewModel.updateCurrentTodo(it) },
+        onSaveClick = {
+            viewModel.saveCurrentTodo()
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        },
+    )
+}
+
+@Composable
+internal fun TodoListScreenToolbar(viewModel: TodoListViewModel) {
+    val state by viewModel.state.collectAsState()
+    Box {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                modifier = Modifier.padding(vertical = 16.dp),
+                text = "// TODO",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Medium,
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            if (state.currentGroup.editable) {
+                GroupMenu(
+                    canMoveLeft = remember(state) { state.canMoveCurrentGroupLeft() },
+                    canMoveRight = remember(state) { state.canMoveCurrentGroupRight() },
+                    onRenameClick = { viewModel.onRenameCurrentGroupClick() },
+                    onDeleteClick = { viewModel.onDeleteCurrentGroupClick() },
+                    onMoveLeftClick = { viewModel.moveCurrentGroupLeft() },
+                    onMoveRightClick = { viewModel.moveCurrentGroupRight() }
+                )
+            }
+        }
+        if (state.savingToFile) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        }
+    }
+}
+
+@Composable
+internal fun TodoListScreenDialogs(viewModel: TodoListViewModel) {
+    val state by viewModel.state.collectAsState()
     NewGroupDialog(
         state = state,
         onNameChanged = { viewModel.updateCurrentGroup(it) },
@@ -198,7 +217,7 @@ private fun ContextItemPopup(
     val todoItemContextMenuState = state.todoItemContextMenuState
     if (todoItemContextMenuState?.visible == true) {
         Popup(
-            offset = remember(todoItemContextMenuState.item) { todoItemContextMenuState.position + IntOffset(50, 50) },
+            offset = todoItemContextMenuState.position,
             onDismissRequest = onHide
         ) {
             Column(
@@ -521,7 +540,11 @@ private fun GroupMenu(
                         shape = RectangleShape,
                         onClick = onMoveLeftClick
                     ) {
-                        Text("Move left")
+                        if (isHorizontalOrientation) {
+                            Text("Move up")
+                        } else {
+                            Text("Move left")
+                        }
                     }
                 }
                 if (canMoveRight) {
@@ -530,10 +553,16 @@ private fun GroupMenu(
                         shape = RectangleShape,
                         onClick = onMoveRightClick
                     ) {
-                        Text("Move right")
+                        if (isHorizontalOrientation) {
+                            Text("Move down")
+                        } else {
+                            Text("Move right")
+                        }
                     }
                 }
             }
         }
     }
 }
+
+expect fun LayoutCoordinates.calculatePopupPosition(): IntOffset
