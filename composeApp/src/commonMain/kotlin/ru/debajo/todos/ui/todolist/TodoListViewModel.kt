@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.domain.GroupId
 import ru.debajo.todos.domain.TodoGroup
 import ru.debajo.todos.domain.TodoItem
@@ -23,7 +22,6 @@ import ru.debajo.todos.ui.todolist.model.TodoListState
 @Stable
 class TodoListViewModel(
     private val todoItemUseCase: TodoItemUseCase,
-    private val databaseSnapshotSaver: DatabaseSnapshotSaver,
     private val settings: Settings,
 ) : StateScreenModel<TodoListState>(TodoListState()) {
 
@@ -46,14 +44,6 @@ class TodoListViewModel(
                     } else {
                         copy(groups = groups)
                     }
-                }
-            }
-        }
-
-        screenModelScope.launch {
-            databaseSnapshotSaver.saving.collect { savingToFile ->
-                updateState {
-                    copy(savingToFile = savingToFile)
                 }
             }
         }

@@ -16,7 +16,6 @@ data class TodoListState(
     val newGroupName: TextFieldValue = TextFieldValue(""),
     val newGroupDialogVisible: Boolean = false,
     val currentDeletingGroup: TodoGroup? = null,
-    val savingToFile: Boolean = false,
     val todoItemContextMenuState: TodoItemContextMenuState? = null,
     val currentRenamingGroup: TodoGroup? = null,
     val currentRenamingGroupName: TextFieldValue = TextFieldValue(""),

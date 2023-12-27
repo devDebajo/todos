@@ -1,5 +1,6 @@
 package ru.debajo.todos.data.storage
 
+import kotlinx.datetime.Instant
 import ru.debajo.todos.data.db.dao.DbTodoGroupDao
 import ru.debajo.todos.data.db.dao.DbTodoGroupToItemLinkDao
 import ru.debajo.todos.data.db.dao.DbTodoItemDao
@@ -18,8 +19,9 @@ class DatabaseSnapshotHelper(
     private val dbTodoItemDao: DbTodoItemDao,
     private val replaceDao: ReplaceDao,
 ) {
-    suspend fun getSnapshot(): StorageSnapshot {
+    suspend fun getSnapshot(timestamp: Instant): StorageSnapshot {
         return StorageSnapshot(
+            timestamp = timestamp.toEpochMilliseconds(),
             groups = dbTodoGroupDao.getAll().map { it.convert() },
             links = dbTodoGroupToItemLinkDao.getAll().map { it.convert() },
             todos = dbTodoItemDao.getAll().map { it.convert() }

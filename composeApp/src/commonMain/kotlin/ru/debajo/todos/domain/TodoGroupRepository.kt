@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import ru.debajo.todos.data.db.dao.DbTodoGroupDao
 import ru.debajo.todos.data.db.dao.DbTodoGroupToItemLinkDao
-import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
+import ru.debajo.todos.data.storage.DatabaseChangeListener
 import ru.debajo.todos.db.DbTodoGroup
 import ru.debajo.todos.db.DbTodoGroupToItemLink
 
@@ -13,7 +13,7 @@ class TodoGroupRepository(
     private val dbTodoGroupDao: DbTodoGroupDao,
     private val dbTodoGroupToItemLinkDao: DbTodoGroupToItemLinkDao,
     private val todoItemRepository: TodoItemRepository,
-    private val databaseSnapshotWorker: DatabaseSnapshotWorker,
+    private val databaseChangeListener: DatabaseChangeListener,
 ) {
     fun observe(): Flow<List<TodoGroup>> {
         return combine(
@@ -28,7 +28,7 @@ class TodoGroupRepository(
     suspend fun createGroup(name: String): TodoGroup {
         val id = UUID.randomUUID().toString()
         dbTodoGroupDao.save(id, name)
-        databaseSnapshotWorker.onUpdate()
+        databaseChangeListener.onUpdate()
         return TodoGroup(
             id = GroupId(id),
             name = name,
@@ -45,27 +45,27 @@ class TodoGroupRepository(
             todoItemRepository.delete(links)
         }
         dbTodoGroupToItemLinkDao.deleteByGroup(id.id)
-        databaseSnapshotWorker.onUpdate()
+        databaseChangeListener.onUpdate()
     }
 
     suspend fun renameGroup(groupId: GroupId, name: String) {
         dbTodoGroupDao.rename(groupId.id, name)
-        databaseSnapshotWorker.onUpdate()
+        databaseChangeListener.onUpdate()
     }
 
     suspend fun link(groupId: GroupId, todoId: TodoId) {
         dbTodoGroupToItemLinkDao.save(DbTodoGroupToItemLink(groupId.id, todoId.id))
-        databaseSnapshotWorker.onUpdate()
+        databaseChangeListener.onUpdate()
     }
 
     suspend fun moveLeft(groupId: GroupId) {
         dbTodoGroupDao.updateOrder(groupId.id, moveRight = false)
-        databaseSnapshotWorker.onUpdate()
+        databaseChangeListener.onUpdate()
     }
 
     suspend fun moveRight(groupId: GroupId) {
         dbTodoGroupDao.updateOrder(groupId.id, moveRight = true)
-        databaseSnapshotWorker.onUpdate()
+        databaseChangeListener.onUpdate()
     }
 
     private fun prepare(

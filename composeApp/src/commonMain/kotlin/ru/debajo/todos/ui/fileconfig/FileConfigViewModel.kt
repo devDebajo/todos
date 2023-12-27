@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import ru.debajo.todos.common.runCatchingAsync
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.data.storage.ExternalFileHelper
+import ru.debajo.todos.data.storage.awaitUri
 import ru.debajo.todos.ui.AppScreen
 import ru.debajo.todos.ui.NavigatorMediator
 import ru.debajo.todos.ui.fileconfig.model.FileConfigState
@@ -25,6 +26,13 @@ class FileConfigViewModel(
                     copy(currentFileUri = it)
                 }
             }
+        }
+
+        screenModelScope.launch {
+            updateState { copy(initialLoading = true) }
+            externalFileHelper.awaitUri()
+            databaseSnapshotSaver.save()
+            updateState { copy(initialLoading = false) }
         }
     }
 

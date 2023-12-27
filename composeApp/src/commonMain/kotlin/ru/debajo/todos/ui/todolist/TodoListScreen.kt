@@ -31,7 +31,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -139,33 +138,28 @@ internal fun ColumnScope.TodoListScreenListWithTypePanel(viewModel: TodoListView
 @Composable
 internal fun TodoListScreenToolbar(viewModel: TodoListViewModel) {
     val state by viewModel.state.collectAsState()
-    Box {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                modifier = Modifier.padding(vertical = 16.dp),
-                text = "// TODO",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Medium,
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            modifier = Modifier.padding(vertical = 16.dp),
+            text = "// TODO",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Medium,
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        if (state.currentGroup.editable) {
+            GroupMenu(
+                canMoveLeft = remember(state) { state.canMoveCurrentGroupLeft() },
+                canMoveRight = remember(state) { state.canMoveCurrentGroupRight() },
+                onRenameClick = { viewModel.onRenameCurrentGroupClick() },
+                onDeleteClick = { viewModel.onDeleteCurrentGroupClick() },
+                onMoveLeftClick = { viewModel.moveCurrentGroupLeft() },
+                onMoveRightClick = { viewModel.moveCurrentGroupRight() }
             )
-            Spacer(modifier = Modifier.weight(1f))
-            if (state.currentGroup.editable) {
-                GroupMenu(
-                    canMoveLeft = remember(state) { state.canMoveCurrentGroupLeft() },
-                    canMoveRight = remember(state) { state.canMoveCurrentGroupRight() },
-                    onRenameClick = { viewModel.onRenameCurrentGroupClick() },
-                    onDeleteClick = { viewModel.onDeleteCurrentGroupClick() },
-                    onMoveLeftClick = { viewModel.moveCurrentGroupLeft() },
-                    onMoveRightClick = { viewModel.moveCurrentGroupRight() }
-                )
-            }
-        }
-        if (state.savingToFile) {
-            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         }
     }
 }

@@ -1,25 +1,19 @@
 package ru.debajo.todos.data.storage
 
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.delay
 import ru.debajo.todos.common.runCatchingAsync
 
 class DatabaseSnapshotWorker(
     private val databaseSnapshotSaver: DatabaseSnapshotSaver,
 ) {
-    private val updates: MutableSharedFlow<Long> = MutableSharedFlow()
-
-    @OptIn(FlowPreview::class)
     suspend fun doWork() {
-        updates.debounce(2000).collect {
-            runCatchingAsync {
-                databaseSnapshotSaver.save()
-            }
+        while (true) {
+            delay(SAVE_DELAY_MS)
+            runCatchingAsync { databaseSnapshotSaver.save() }
         }
     }
 
-    suspend fun onUpdate() {
-        updates.emit(System.currentTimeMillis())
+    private companion object {
+        const val SAVE_DELAY_MS: Long = 15_000L
     }
 }

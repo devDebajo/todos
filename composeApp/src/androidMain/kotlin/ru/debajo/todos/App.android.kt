@@ -18,13 +18,17 @@ import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import ru.debajo.todos.common.isDebug
+import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
 import ru.debajo.todos.data.storage.ExternalFileHelper
 import ru.debajo.todos.di.ActivityResultLaunchersHolder
 import ru.debajo.todos.di.AndroidModule
 import ru.debajo.todos.di.CommonModule
 import ru.debajo.todos.di.getFromDi
+import ru.debajo.todos.di.inject
 import ru.debajo.todos.ui.App
+import ru.debajo.todos.ui.AppLifecycle
+import ru.debajo.todos.ui.AppLifecycleMutable
 import ru.debajo.todos.ui.AppScreen
 import ru.debajo.todos.ui.LocalNavigatorMediator
 import ru.debajo.todos.ui.NavigatorMediator
@@ -72,8 +76,10 @@ class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob
 class AppActivity : ComponentActivity() {
 
     private val activityResultLaunchers: ActivityResultLaunchers = ActivityResultLaunchers(this)
-    private val externalFileHelper: ExternalFileHelper by lazy { getFromDi() }
-    private val navigatorMediator: NavigatorMediator by lazy { getFromDi() }
+    private val externalFileHelper: ExternalFileHelper by inject()
+    private val navigatorMediator: NavigatorMediator by inject()
+    private val databaseSnapshotSaver: DatabaseSnapshotSaver by inject()
+    private val appLifecycleMutable: AppLifecycleMutable by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,6 +97,19 @@ class AppActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         tryToExtractUri(intent)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        lifecycleScope.launch {
+            databaseSnapshotSaver.save()
+            appLifecycleMutable.updateState(AppLifecycle.State.Paused)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        appLifecycleMutable.updateState(AppLifecycle.State.Resumed)
     }
 
     private fun tryToExtractUri(intent: Intent) {
