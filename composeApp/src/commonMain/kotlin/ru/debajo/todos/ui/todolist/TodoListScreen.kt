@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -45,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -54,7 +56,11 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.UrlAnnotation
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
@@ -455,6 +461,7 @@ private fun EditSpace(
 }
 
 
+@OptIn(ExperimentalTextApi::class)
 @Composable
 private fun TodoCard(
     item: TodoItem,
@@ -468,7 +475,27 @@ private fun TodoCard(
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(vertical = 10.dp, horizontal = 6.dp)
     ) {
-        Text(item.text)
+        val colors = MaterialTheme.colorScheme
+        val text = rememberTextWithUrls(item.text, colors.tertiary)
+        val style = remember {
+            TextStyle(
+                fontSize = 16.sp,
+                color = colors.onSurfaceVariant
+            )
+        }
+        if (text.hasUrls) {
+            ClickableText(
+                text = text.text,
+                style = style,
+                onClick = { index ->
+                    text.text.getUrlAnnotations(index, index)
+                        .firstOrNull()
+                        ?.let { openUrl(it.item.url) }
+                }
+            )
+        } else {
+            Text(text = text.text, style = style)
+        }
         Spacer(Modifier.size(3.dp))
         Text(
             text = formatDate(item),
@@ -560,4 +587,40 @@ private fun GroupMenu(
     }
 }
 
+@Composable
+private fun rememberTextWithUrls(text: String, urlColor: Color): TextWithUrls {
+    return remember(text, urlColor) {
+        formatText(text, urlColor)
+    }
+}
+
+private data class TextWithUrls(
+    val text: AnnotatedString,
+    val hasUrls: Boolean,
+)
+
+@OptIn(ExperimentalTextApi::class)
+private fun formatText(text: String, urlColor: Color): TextWithUrls {
+    if (text.isEmpty()) {
+        return TextWithUrls(AnnotatedString(""), false)
+    }
+
+    val matches = URL_REGEX.findAll(text).toList()
+    if (matches.isEmpty()) {
+        return TextWithUrls(AnnotatedString(text), false)
+    }
+    val annotatedString = buildAnnotatedString {
+        append(text)
+        for (match in matches) {
+            addStyle(SpanStyle(urlColor), match.range.first, match.range.last + 1)
+            addUrlAnnotation(UrlAnnotation(match.value), match.range.first, match.range.last + 1)
+        }
+    }
+    return TextWithUrls(annotatedString, true)
+}
+
+private val URL_REGEX: Regex = "((https?|ftp|gopher|telnet|file):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)".toRegex(RegexOption.IGNORE_CASE)
+
 expect fun LayoutCoordinates.calculatePopupPosition(): IntOffset
+
+expect fun openUrl(url: String)
