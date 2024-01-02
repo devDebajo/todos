@@ -3,8 +3,6 @@ package ru.debajo.todos.data.storage
 import android.content.ContentResolver
 import android.content.Intent
 import android.net.Uri
-import androidx.annotation.WorkerThread
-import com.russhwolf.settings.Settings
 import java.io.InputStream
 import java.io.OutputStream
 import kotlinx.coroutines.CoroutineScope
@@ -18,10 +16,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.debajo.todos.ActivityResultLaunchers
 import ru.debajo.todos.common.canRead
+import ru.debajo.todos.common.runCatchingAsync
+import ru.debajo.todos.data.preferences.Preferences
 
 internal class ExternalFileHelperImpl(
     private val activityResultLaunchersProvider: () -> ActivityResultLaunchers,
-    private val settings: Settings,
+    private val preferences: Preferences,
     private val contentResolver: ContentResolver,
     private val appScope: CoroutineScope,
 ) : ExternalFileHelper {
@@ -72,7 +72,7 @@ internal class ExternalFileHelperImpl(
         return withContext(Dispatchers.IO) {
             if (contentResolver.canRead(Uri.parse(uri))) {
                 _fileUri.value = uri
-                settings.putString(FILE_URI_KEY, uri)
+                preferences.putString(FILE_URI_KEY, uri)
                 true
             } else {
                 false
@@ -82,14 +82,13 @@ internal class ExternalFileHelperImpl(
 
     private suspend fun loadUri(): Uri? {
         return withContext(Dispatchers.IO) {
-            runCatching { loadUriBlocking() }.getOrNull()
+            runCatchingAsync { loadUriUnsafe() }.getOrNull()
         }
     }
 
-    @WorkerThread
-    private fun loadUriBlocking(): Uri? {
-        val uri = settings.getString(FILE_URI_KEY, "")
-        if (uri.isEmpty()) {
+    private suspend fun loadUriUnsafe(): Uri? {
+        val uri = preferences.getString(FILE_URI_KEY)
+        if (uri.isNullOrEmpty()) {
             return null
         }
 

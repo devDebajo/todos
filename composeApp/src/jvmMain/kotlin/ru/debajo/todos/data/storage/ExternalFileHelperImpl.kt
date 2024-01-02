@@ -1,6 +1,5 @@
 package ru.debajo.todos.data.storage
 
-import com.russhwolf.settings.Settings
 import java.awt.FileDialog
 import java.awt.Frame
 import java.io.File
@@ -15,9 +14,11 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import ru.debajo.todos.common.runCatchingAsync
+import ru.debajo.todos.data.preferences.Preferences
 
 class ExternalFileHelperImpl(
-    private val settings: Settings,
+    private val preferences: Preferences,
     private val appScope: CoroutineScope,
 ) : ExternalFileHelper {
 
@@ -73,7 +74,7 @@ class ExternalFileHelperImpl(
         return withContext(Dispatchers.IO) {
             if (File(uri).exists()) {
                 _fileUri.value = uri
-                settings.putString(FILE_URI_KEY, uri)
+                preferences.putString(FILE_URI_KEY, uri)
                 true
             } else {
                 false
@@ -83,13 +84,13 @@ class ExternalFileHelperImpl(
 
     private suspend fun loadUri(): String? {
         return withContext(Dispatchers.IO) {
-            runCatching { loadUriBlocking() }.getOrNull()
+            runCatchingAsync { loadUriUnsafe() }.getOrNull()
         }
     }
 
-    private fun loadUriBlocking(): String? {
-        val uri = settings.getString(FILE_URI_KEY, "")
-        if (uri.isEmpty()) {
+    private suspend fun loadUriUnsafe(): String? {
+        val uri = preferences.getString(FILE_URI_KEY)
+        if (uri.isNullOrEmpty()) {
             return null
         }
 

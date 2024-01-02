@@ -5,11 +5,11 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import com.russhwolf.settings.Settings
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.domain.GroupId
 import ru.debajo.todos.domain.TodoGroup
 import ru.debajo.todos.domain.TodoItem
@@ -22,7 +22,7 @@ import ru.debajo.todos.ui.todolist.model.TodoListState
 @Stable
 class TodoListViewModel(
     private val todoItemUseCase: TodoItemUseCase,
-    private val settings: Settings,
+    private val preferences: Preferences,
 ) : StateScreenModel<TodoListState>(TodoListState()) {
 
     private val _news: MutableSharedFlow<TodoListNews> = MutableSharedFlow()
@@ -107,7 +107,9 @@ class TodoListViewModel(
         updateState {
             copy(selectedGroupId = id)
         }
-        settings.putString(LastGroupIdKey, id.id)
+        screenModelScope.launch {
+            preferences.putString(LastGroupIdKey, id.id)
+        }
     }
 
     fun onDeleteCurrentGroupClick() {
@@ -273,8 +275,8 @@ class TodoListViewModel(
         }
     }
 
-    private fun findInitialGroupId(groups: List<TodoGroup>): Pair<GroupId, Int> {
-        val lastId = settings.getString(LastGroupIdKey, "")
+    private suspend fun findInitialGroupId(groups: List<TodoGroup>): Pair<GroupId, Int> {
+        val lastId = preferences.getString(LastGroupIdKey)
         for (index in groups.indices) {
             val group = groups[index]
             if (group.id.id == lastId) {

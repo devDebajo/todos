@@ -21,7 +21,7 @@ internal val AndroidModule: Module = module {
         val activityResultLaunchersHolder = get<ActivityResultLaunchersHolder>()
         ExternalFileHelperImpl(
             activityResultLaunchersProvider = { activityResultLaunchersHolder.activityResultLaunchers },
-            settings = get(),
+            preferences = get(),
             contentResolver = get(),
             appScope = get(),
         )

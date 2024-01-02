@@ -1,6 +1,5 @@
 package ru.debajo.todos.data.storage
 
-import com.russhwolf.settings.Settings
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -13,6 +12,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import ru.debajo.todos.common.runCatchingAsync
+import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.data.storage.model.StorageSnapshot
 import ru.debajo.todos.data.storage.model.StorageTimestampSnapshot
 import ru.debajo.todos.ui.AppLifecycle
@@ -23,7 +23,7 @@ class DatabaseSnapshotSaver(
     private val json: Json,
     private val databaseSnapshotHelper: DatabaseSnapshotHelper,
     private val externalFileHelper: ExternalFileHelper,
-    private val settings: Settings,
+    private val preferences: Preferences,
     private val appLifecycle: AppLifecycle,
 ) : DatabaseChangeListener {
 
@@ -79,18 +79,13 @@ class DatabaseSnapshotSaver(
     override suspend fun onUpdate() {
         onUpdateMutex.locked {
             val now = Clock.System.now().toEpochMilliseconds()
-            settings.putLong(getKey(), now)
+            preferences.putLong(getKey(), now)
         }
     }
 
     private suspend fun needToSave(): NeedToSave {
         val key = getKey()
-        val timestampFromSettings = onUpdateMutex.locked {
-            settings.getLong(key, -1)
-        }
-        if (timestampFromSettings == -1L) {
-            return NeedToSave.No
-        }
+        val timestampFromSettings = onUpdateMutex.locked { preferences.getLong(key) } ?: return NeedToSave.No
         val timestampFromFile = loadTimestampFromFile() ?: return NeedToSave.Yes(Clock.System.now())
         return if (timestampFromSettings > timestampFromFile.toEpochMilliseconds()) {
             NeedToSave.Yes(Instant.fromEpochMilliseconds(timestampFromSettings))

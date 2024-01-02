@@ -13,6 +13,8 @@ import ru.debajo.todos.data.db.dao.DbTodoGroupDao
 import ru.debajo.todos.data.db.dao.DbTodoGroupToItemLinkDao
 import ru.debajo.todos.data.db.dao.DbTodoItemDao
 import ru.debajo.todos.data.db.dao.ReplaceDao
+import ru.debajo.todos.data.preferences.Preferences
+import ru.debajo.todos.data.preferences.PreferencesImpl
 import ru.debajo.todos.data.storage.DatabaseChangeListener
 import ru.debajo.todos.data.storage.DatabaseSnapshotHelper
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
@@ -49,6 +51,7 @@ val CommonModule: Module = module {
         createSchema(driver)
         database
     }
+    factory<Preferences> { PreferencesImpl(get(), get()) }
     single { get<TodosDatabase>().dbTodoGroupQueries }
     single { get<TodosDatabase>().dbTodoGroupToItemLinkQueries }
     single { get<TodosDatabase>().dbTodoItemQueries }
