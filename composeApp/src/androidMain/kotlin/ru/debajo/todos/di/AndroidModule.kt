@@ -14,7 +14,12 @@ import ru.debajo.todos.data.storage.ExternalFileHelperImpl
 import ru.debajo.todos.db.TodosDatabase
 
 internal val AndroidModule: Module = module {
-    single<Settings> { SharedPreferencesSettings(get<Context>().getSharedPreferences("todo_prefs", Context.MODE_PRIVATE)) }
+    single<Settings> {
+        SharedPreferencesSettings(
+            delegate = get<Context>().getSharedPreferences("todo_prefs", Context.MODE_PRIVATE),
+            commit = true,
+        )
+    }
     single<ContentResolver> { get<Context>().contentResolver }
     singleOf(::ActivityResultLaunchersHolder)
     single<ExternalFileHelper> {

@@ -17,6 +17,9 @@ interface Preferences {
 
     suspend fun putLong(key: String, value: Long)
     suspend fun getLong(key: String): Long?
+
+    suspend fun putBoolean(key: String, value: Boolean)
+    suspend fun getBoolean(key: String): Boolean?
 }
 
 internal class PreferencesImpl(
@@ -65,6 +68,18 @@ internal class PreferencesImpl(
     override suspend fun getLong(key: String): Long? {
         return withContext(IO) {
             settings.getLongOrNull(key)
+        }
+    }
+
+    override suspend fun putBoolean(key: String, value: Boolean) {
+        withContext(IO) {
+            settings.putBoolean(key, value)
+        }
+    }
+
+    override suspend fun getBoolean(key: String): Boolean? {
+        return withContext(IO) {
+            settings.getBooleanOrNull(key)
         }
     }
 }
