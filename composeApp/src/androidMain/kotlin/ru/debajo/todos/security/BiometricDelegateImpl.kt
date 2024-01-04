@@ -33,7 +33,7 @@ internal class BiometricDelegateImpl(
     override val available: Boolean
         get() = biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) == BiometricManager.BIOMETRIC_SUCCESS
 
-    override suspend fun encodeData(rawData: String): String? {
+    override suspend fun encryptData(rawData: String): String? {
         return runCatchingAsync { encodeDataUnsafe(rawData) }
             .onFailure { Napier.e("encodeData error", it) }
             .getOrNull()
@@ -57,13 +57,13 @@ internal class BiometricDelegateImpl(
         return null
     }
 
-    override suspend fun decodeData(encodedData: String): String? {
-        return runCatchingAsync { decodeDataUnsafe(encodedData) }
+    override suspend fun decryptData(encryptedData: String): String? {
+        return runCatchingAsync { decodeDataUnsafe(encryptedData) }
             .onFailure { Napier.e("decodeData error", it) }
             .getOrNull()
     }
 
-    private suspend fun decodeDataUnsafe(encodedData: String): String? {
+    private suspend fun decodeDataUnsafe(encryptedData: String): String? {
         if (!available) {
             return null
         }
@@ -75,7 +75,7 @@ internal class BiometricDelegateImpl(
         val biometricResult = awaitBiometricPrompt(applicationContext, cipher)
 
         if (biometricResult is BiometricResult.Succeeded) {
-            val decodedData = cipher.doFinal(Base64.decode(encodedData, Base64.NO_WRAP))
+            val decodedData = cipher.doFinal(Base64.decode(encryptedData, Base64.NO_WRAP))
             return String(decodedData, Charset.defaultCharset())
         }
 
