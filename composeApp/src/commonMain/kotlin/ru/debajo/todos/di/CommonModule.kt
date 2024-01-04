@@ -32,6 +32,7 @@ import ru.debajo.todos.ui.AppLifecycleMutable
 import ru.debajo.todos.ui.NavigatorMediator
 import ru.debajo.todos.ui.fileconfig.FileConfigViewModel
 import ru.debajo.todos.ui.onboarding.OnboardingViewModel
+import ru.debajo.todos.ui.pin.PinViewModel
 import ru.debajo.todos.ui.splash.SplashViewModel
 import ru.debajo.todos.ui.todolist.TodoListViewModel
 
@@ -52,6 +53,7 @@ val CommonModule: Module = module {
     factoryOf(::TodoListViewModel)
     factoryOf(::OnboardingViewModel)
     factoryOf(::SplashViewModel)
+    factoryOf(::PinViewModel)
 
     single {
         val driver = get<DriverFactory>().createDriver()
@@ -61,7 +63,14 @@ val CommonModule: Module = module {
     }
     factoryOf(::PreferencesSerializationHelper)
     factory<Preferences> { PreferencesImpl(get(), get()) }
-    factory<SecuredPreferences> { SecuredPreferencesImpl({ "secret" }, get(), get()) }
+    factory<SecuredPreferences> {
+        val securityManager = get<AppSecurityManager>()
+        SecuredPreferencesImpl(
+            secretProvider = { securityManager.getCurrentPinHash().pinHash },
+            settings = get(),
+            serializationHelper = get()
+        )
+    }
     single { get<TodosDatabase>().dbTodoGroupQueries }
     single { get<TodosDatabase>().dbTodoGroupToItemLinkQueries }
     single { get<TodosDatabase>().dbTodoItemQueries }

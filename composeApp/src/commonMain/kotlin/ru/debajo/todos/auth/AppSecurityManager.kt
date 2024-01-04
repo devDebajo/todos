@@ -64,20 +64,29 @@ class AppSecurityManager(
 
     suspend fun configureWeakAuthType() {
         saveAuthType(AuthType.Weak)
+        currentHash.value = WEAK_PIN_HASH
         clearPinHashHack()
         clearEncryptedPinHash()
     }
 
     suspend fun configurePinAuthType(pinHash: PinHash) {
         saveAuthType(AuthType.Pin)
+        currentHash.value = pinHash
         savePinHashHack(pinHash)
         clearEncryptedPinHash()
     }
 
     suspend fun configureBiometricAuthType(pinHash: PinHash, encryptedPinHash: EncryptedPinHash) {
         saveAuthType(AuthType.Biometric)
+        currentHash.value = pinHash
         savePinHashHack(pinHash)
         saveEncryptedPinHash(encryptedPinHash)
+    }
+
+    suspend fun useBiometric(decryptor: suspend (EncryptedPinHash) -> PinHash?): Boolean {
+        val encryptedPinHash = loadEncryptedPinHash() ?: return false
+        val hash = decryptor(encryptedPinHash) ?: return false
+        return offer(hash)
     }
 
     private suspend fun loadEncryptedPinHash(): EncryptedPinHash? {
@@ -90,6 +99,7 @@ class AppSecurityManager(
     }
 
     private suspend fun saveAuthType(authType: AuthType) {
+        this@AppSecurityManager.authType.value = authType
         preferences.putInt(AUTH_TYPE_KEY, authType.code)
     }
 
