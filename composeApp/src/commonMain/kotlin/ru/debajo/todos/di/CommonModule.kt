@@ -15,6 +15,7 @@ import ru.debajo.todos.data.db.dao.DbTodoItemDao
 import ru.debajo.todos.data.db.dao.ReplaceDao
 import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.data.preferences.PreferencesImpl
+import ru.debajo.todos.data.preferences.PreferencesSerializationHelper
 import ru.debajo.todos.data.storage.DatabaseChangeListener
 import ru.debajo.todos.data.storage.DatabaseSnapshotHelper
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
@@ -23,6 +24,8 @@ import ru.debajo.todos.db.TodosDatabase
 import ru.debajo.todos.domain.TodoGroupRepository
 import ru.debajo.todos.domain.TodoItemRepository
 import ru.debajo.todos.domain.TodoItemUseCase
+import ru.debajo.todos.security.SecuredPreferences
+import ru.debajo.todos.security.SecuredPreferencesImpl
 import ru.debajo.todos.ui.AppLifecycle
 import ru.debajo.todos.ui.AppLifecycleMutable
 import ru.debajo.todos.ui.NavigatorMediator
@@ -51,7 +54,9 @@ val CommonModule: Module = module {
         createSchema(driver)
         database
     }
+    factoryOf(::PreferencesSerializationHelper)
     factory<Preferences> { PreferencesImpl(get(), get()) }
+    factory<SecuredPreferences> { SecuredPreferencesImpl({ "secret" }, get(), get()) }
     single { get<TodosDatabase>().dbTodoGroupQueries }
     single { get<TodosDatabase>().dbTodoGroupToItemLinkQueries }
     single { get<TodosDatabase>().dbTodoItemQueries }

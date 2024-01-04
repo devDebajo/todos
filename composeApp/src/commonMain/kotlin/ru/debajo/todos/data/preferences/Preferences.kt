@@ -22,9 +22,25 @@ interface Preferences {
     suspend fun getBoolean(key: String): Boolean?
 }
 
+internal class PreferencesSerializationHelper(private val json: Json) {
+    suspend fun encodeStringList(value: List<String>): String {
+        return withContext(Default) {
+            json.encodeToString(ListSerializer(String.serializer()), value)
+        }
+    }
+
+    suspend fun decodeStringList(json: String): List<String>? {
+        return withContext(Default) {
+            runCatching {
+                this@PreferencesSerializationHelper.json.decodeFromString(ListSerializer(String.serializer()), json)
+            }.getOrNull()
+        }
+    }
+}
+
 internal class PreferencesImpl(
     private val settings: Settings,
-    private val json: Json,
+    private val serializationHelper: PreferencesSerializationHelper,
 ) : Preferences {
 
     override suspend fun putString(key: String, value: String) {
@@ -40,11 +56,7 @@ internal class PreferencesImpl(
     }
 
     override suspend fun putStringList(key: String, value: List<String>) {
-        val rawJson = withContext(Default) {
-            json.encodeToString(ListSerializer(String.serializer()), value)
-        }
-
-        putString(key, rawJson)
+        putString(key, serializationHelper.encodeStringList(value))
     }
 
     override suspend fun getStringList(key: String): List<String>? {
@@ -52,11 +64,7 @@ internal class PreferencesImpl(
         if (rawJson.isNullOrEmpty()) {
             return null
         }
-        return withContext(Default) {
-            runCatching {
-                json.decodeFromString(ListSerializer(String.serializer()), rawJson)
-            }.getOrNull()
-        }
+        return serializationHelper.decodeStringList(rawJson)
     }
 
     override suspend fun putLong(key: String, value: Long) {

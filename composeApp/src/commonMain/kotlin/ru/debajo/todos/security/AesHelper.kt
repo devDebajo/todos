@@ -9,28 +9,32 @@ import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalEncodingApi::class)
 object AesHelper {
-
-    fun encrypt(secret: String, rawData: String): String {
-        val secretKey = createKey(secret)
-        val cipher = createCipher()
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, IV)
-        val encryptedBytes = cipher.doFinal(rawData.toByteArray(Charset.defaultCharset()))
-        return Base64.UrlSafe.encode(encryptedBytes)
+    suspend fun encrypt(secret: String, rawData: String): String {
+        return withContext(Default) {
+            val secretKey = createKey(secret)
+            val cipher = createCipher()
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, IV)
+            val encryptedBytes = cipher.doFinal(rawData.toByteArray(Charset.defaultCharset()))
+            Base64.UrlSafe.encode(encryptedBytes)
+        }
     }
 
-    fun decrypt(secret: String, encryptedData: String): String {
-        val secretKey = createKey(secret)
-        val cipher = createCipher()
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, IV)
-        val encryptedBytes = Base64.UrlSafe.decode(encryptedData)
-        return String(cipher.doFinal(encryptedBytes), Charset.defaultCharset())
+    suspend fun decrypt(secret: String, encryptedData: String): String {
+        return withContext(Default) {
+            val secretKey = createKey(secret)
+            val cipher = createCipher()
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, IV)
+            val encryptedBytes = Base64.UrlSafe.decode(encryptedData)
+            String(cipher.doFinal(encryptedBytes), Charset.defaultCharset())
+        }
     }
 
     private fun createKey(secret: String): SecretKey {
-
         val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
         val spec = PBEKeySpec(secret.toCharArray(), SALT.toByteArray(Charset.defaultCharset()), 65536, 256)
         return SecretKeySpec(factory.generateSecret(spec).encoded, "AES")
