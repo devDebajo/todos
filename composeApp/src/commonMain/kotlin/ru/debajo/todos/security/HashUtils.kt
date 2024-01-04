@@ -2,6 +2,8 @@ package ru.debajo.todos.security
 
 import java.nio.charset.Charset
 import java.security.MessageDigest
+import ru.debajo.todos.auth.Pin
+import ru.debajo.todos.auth.PinHash
 
 // https://www.baeldung.com/sha-256-hashing-java
 object HashUtils {
@@ -11,6 +13,8 @@ object HashUtils {
         val digest = messageDigest.digest(input.toByteArray(Charset.defaultCharset()))
         return bytesToHex(digest)
     }
+
+    fun hashPin(pin: Pin): PinHash = PinHash(getHash(pin.pin))
 
     private fun bytesToHex(hash: ByteArray): String {
         val hexString = StringBuilder(2 * hash.size)

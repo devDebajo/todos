@@ -11,11 +11,15 @@ import ru.debajo.todos.ui.theme.AppTheme
 internal fun App() {
     AppTheme(systemIsDark = true) {
         val mediator = LocalNavigatorMediator.current
-        Navigator(AppScreen.SelectFile) {
+        Navigator(AppScreen.Splash) {
             val navigator = LocalNavigator.current
             LaunchedEffect(mediator, navigator) {
-                mediator.observeNavigate { screen ->
-                    navigator?.push(screen)
+                mediator.observeNavigate { navigate ->
+                    if (navigate.replaceAll) {
+                        navigator?.replaceAll(navigate.screen)
+                    } else {
+                        navigator?.push(navigate.screen)
+                    }
                 }
             }
 

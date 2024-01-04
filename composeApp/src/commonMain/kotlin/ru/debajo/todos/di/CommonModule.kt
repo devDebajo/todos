@@ -6,6 +6,7 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import ru.debajo.todos.auth.AppSecurityManager
 import ru.debajo.todos.common.isDebug
 import ru.debajo.todos.data.db.DriverFactory
 import ru.debajo.todos.data.db.createSchema
@@ -31,6 +32,7 @@ import ru.debajo.todos.ui.AppLifecycleMutable
 import ru.debajo.todos.ui.NavigatorMediator
 import ru.debajo.todos.ui.fileconfig.FileConfigViewModel
 import ru.debajo.todos.ui.onboarding.OnboardingViewModel
+import ru.debajo.todos.ui.splash.SplashViewModel
 import ru.debajo.todos.ui.todolist.TodoListViewModel
 
 val CommonModule: Module = module {
@@ -49,6 +51,7 @@ val CommonModule: Module = module {
     factoryOf(::FileConfigViewModel)
     factoryOf(::TodoListViewModel)
     factoryOf(::OnboardingViewModel)
+    factoryOf(::SplashViewModel)
 
     single {
         val driver = get<DriverFactory>().createDriver()
@@ -66,6 +69,7 @@ val CommonModule: Module = module {
     singleOf(::DbTodoGroupToItemLinkDao)
     singleOf(::DbTodoItemDao)
     singleOf(::ReplaceDao)
+    singleOf(::AppSecurityManager)
 
     factoryOf(::TodoGroupRepository)
     factoryOf(::TodoItemRepository)
