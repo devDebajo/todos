@@ -1,16 +1,16 @@
 package ru.debajo.todos
 
 import android.net.Uri
-import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
-internal class ActivityResultLaunchers(private val activity: ComponentActivity) {
+internal class ActivityResultLaunchers(val activity: FragmentActivity) {
 
     private val eventBus: MutableSharedFlow<Event> = MutableSharedFlow()
     private val createDocumentLauncher: ActivityResultLauncher<String> =

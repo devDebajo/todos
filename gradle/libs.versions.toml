@@ -4,6 +4,7 @@ kotlin = "1.9.21"
 agp = "8.2.0"
 compose = "1.5.11"
 androidx-appcompat = "1.6.1"
+androidx-biometric = "1.1.0"
 androidx-activityCompose = "1.8.1"
 compose-uitooling = "1.5.4"
 voyager = "1.0.0"
@@ -20,6 +21,7 @@ sqlDelight = "2.0.1"
 [libraries]
 
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
+androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "androidx-biometric" }
 androidx-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 compose-uitooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-uitooling" }
 voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }

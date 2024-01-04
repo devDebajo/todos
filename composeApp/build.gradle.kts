@@ -54,6 +54,7 @@ kotlin {
             implementation(libs.compose.uitooling)
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.sqlDelight.driver.android)
+            implementation(libs.androidx.biometric)
         }
 
         jvmMain.dependencies {

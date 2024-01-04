@@ -12,6 +12,8 @@ import ru.debajo.todos.data.db.DriverFactory
 import ru.debajo.todos.data.storage.ExternalFileHelper
 import ru.debajo.todos.data.storage.ExternalFileHelperImpl
 import ru.debajo.todos.db.TodosDatabase
+import ru.debajo.todos.security.BiometricDelegate
+import ru.debajo.todos.security.BiometricDelegateImpl
 
 internal val AndroidModule: Module = module {
     single<Settings> {
@@ -32,4 +34,12 @@ internal val AndroidModule: Module = module {
         )
     }
     single { DriverFactory { AndroidSqliteDriver(TodosDatabase.Schema, get(), "todos.db") } }
+    factory<BiometricDelegate> {
+        val activityResultLaunchersHolder = get<ActivityResultLaunchersHolder>()
+        BiometricDelegateImpl(
+            applicationContext = get(),
+            activityResultLaunchersProvider = { activityResultLaunchersHolder.activityResultLaunchers },
+            preferences = get(),
+        )
+    }
 }

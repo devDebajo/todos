@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import ru.debajo.todos.common.runCatchingAsync
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.data.storage.ExternalFileHelper
@@ -30,8 +31,10 @@ class FileConfigViewModel(
 
         screenModelScope.launch {
             updateState { copy(initialLoading = true) }
-            externalFileHelper.awaitUri()
-            databaseSnapshotSaver.save()
+            val uri = withTimeoutOrNull(1000) { externalFileHelper.awaitUri() }
+            if (uri != null) {
+                runCatchingAsync { databaseSnapshotSaver.save() }
+            }
             updateState { copy(initialLoading = false) }
         }
     }

@@ -4,10 +4,10 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
@@ -73,7 +73,7 @@ class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob
     }
 }
 
-class AppActivity : ComponentActivity() {
+class AppActivity : FragmentActivity() {
 
     private val activityResultLaunchers: ActivityResultLaunchers = ActivityResultLaunchers(this)
     private val externalFileHelper: ExternalFileHelper by inject()

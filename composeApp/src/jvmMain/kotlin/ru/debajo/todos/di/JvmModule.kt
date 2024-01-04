@@ -9,9 +9,12 @@ import org.koin.dsl.module
 import ru.debajo.todos.data.db.DriverFactory
 import ru.debajo.todos.data.storage.ExternalFileHelper
 import ru.debajo.todos.data.storage.ExternalFileHelperImpl
+import ru.debajo.todos.security.BiometricDelegate
+import ru.debajo.todos.security.BiometricDelegateImpl
 
 internal val JvmModule: Module = module {
     single<ExternalFileHelper> { ExternalFileHelperImpl(get(), get()) }
     single<Settings> { PreferencesSettings(Preferences.userRoot().node("todo_prefs")) }
     single { DriverFactory { JdbcSqliteDriver("jdbc:sqlite:todos.db") } }
+    factory<BiometricDelegate> { BiometricDelegateImpl }
 }
