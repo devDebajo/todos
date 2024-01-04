@@ -23,9 +23,7 @@ internal class SecuredPreferencesImpl(
     override suspend fun getString(key: String): String? {
         val secret = secretProvider()
         val encryptedKey = AesHelper.encrypt(secret, key)
-        val encryptedValue = withContext(IO) {
-            settings.getStringOrNull(encryptedKey)
-        } ?: return null
+        val encryptedValue = withContext(IO) { settings.getStringOrNull(encryptedKey) } ?: return null
         return AesHelper.decrypt(secret, encryptedValue)
     }
 
@@ -39,6 +37,10 @@ internal class SecuredPreferencesImpl(
     override suspend fun putLong(key: String, value: Long): Unit = putString(key, value.toString())
 
     override suspend fun getLong(key: String): Long? = getString(key)?.toLongOrNull()
+
+    override suspend fun putInt(key: String, value: Int): Unit = putString(key, value.toString())
+
+    override suspend fun getInt(key: String): Int? = getString(key)?.toIntOrNull()
 
     override suspend fun putBoolean(key: String, value: Boolean): Unit = putString(key, value.toString())
 

@@ -30,6 +30,7 @@ import ru.debajo.todos.ui.AppLifecycle
 import ru.debajo.todos.ui.AppLifecycleMutable
 import ru.debajo.todos.ui.NavigatorMediator
 import ru.debajo.todos.ui.fileconfig.FileConfigViewModel
+import ru.debajo.todos.ui.onboarding.OnboardingViewModel
 import ru.debajo.todos.ui.todolist.TodoListViewModel
 
 val CommonModule: Module = module {
@@ -47,6 +48,7 @@ val CommonModule: Module = module {
     singleOf(::NavigatorMediator)
     factoryOf(::FileConfigViewModel)
     factoryOf(::TodoListViewModel)
+    factoryOf(::OnboardingViewModel)
 
     single {
         val driver = get<DriverFactory>().createDriver()
