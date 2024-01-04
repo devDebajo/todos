@@ -23,6 +23,8 @@ interface Preferences {
 
     suspend fun putBoolean(key: String, value: Boolean)
     suspend fun getBoolean(key: String): Boolean?
+
+    suspend fun remove(key: String)
 }
 
 internal class PreferencesSerializationHelper(private val json: Json) {
@@ -103,6 +105,12 @@ internal class PreferencesImpl(
     override suspend fun getBoolean(key: String): Boolean? {
         return withContext(IO) {
             settings.getBooleanOrNull(key)
+        }
+    }
+
+    override suspend fun remove(key: String) {
+        withContext(IO) {
+            settings.remove(key)
         }
     }
 }

@@ -1,6 +1,5 @@
 package ru.debajo.todos.security
 
-import ru.debajo.todos.auth.EncryptedPinHash
 import ru.debajo.todos.auth.PinHash
 
 interface BiometricDelegate {

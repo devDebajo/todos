@@ -45,4 +45,12 @@ internal class SecuredPreferencesImpl(
     override suspend fun putBoolean(key: String, value: Boolean): Unit = putString(key, value.toString())
 
     override suspend fun getBoolean(key: String): Boolean? = getString(key)?.toBooleanStrictOrNull()
+
+    override suspend fun remove(key: String) {
+        val secret = secretProvider()
+        val encryptedKey = AesHelper.encrypt(secret, key)
+        withContext(IO) {
+            settings.remove(encryptedKey)
+        }
+    }
 }
