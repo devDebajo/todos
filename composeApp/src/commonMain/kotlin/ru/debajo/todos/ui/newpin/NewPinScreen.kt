@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -35,7 +37,7 @@ fun NewPinScreen(viewModel: NewPinViewModel) {
                 Text("Confirm PIN")
             }
 
-            Spacer(Modifier.size(10.dp))
+            Spacer(Modifier.size(14.dp))
             PinDots(
                 count = PinSize,
                 selectedCount = state.currentPin.length,
@@ -53,6 +55,37 @@ fun NewPinScreen(viewModel: NewPinViewModel) {
             },
             onNumberClick = { viewModel.onButtonClick(it) },
             actionType = state.actionType,
+        )
+    }
+
+    UseBiometricDialog(
+        state = state,
+        onConfirm = { viewModel.onConfirmBiometric() },
+        onCancel = { viewModel.onCancelBiometric() },
+    )
+}
+
+@Composable
+private fun UseBiometricDialog(
+    state: NewPinState,
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    if (state.biometricDialogVisible) {
+        AlertDialog(
+            title = { Text("Use biometric?") },
+            text = { Text("Enable biometric to authentication the app?") },
+            dismissButton = {
+                TextButton(onClick = onCancel) {
+                    Text("Disable")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = onConfirm) {
+                    Text("Enable")
+                }
+            },
+            onDismissRequest = {}
         )
     }
 }
