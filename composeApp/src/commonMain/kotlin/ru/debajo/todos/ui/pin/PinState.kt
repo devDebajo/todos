@@ -6,6 +6,7 @@ import androidx.compose.runtime.Immutable
 data class PinState(
     val pin: String = "",
     val biometricAvailable: Boolean = false,
+    val isError: Boolean = false,
 ) {
     val actionType: ActionType = when {
         pin.isNotEmpty() -> ActionType.Backspace

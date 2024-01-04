@@ -17,6 +17,8 @@ class SplashViewModel(
 
     fun init() {
         screenModelScope.launch {
+            //navigatorMediator.replaceAll(AppScreen.Onboarding)
+
             when (securityManager.getAuthType()) {
                 AuthType.NotConfigured -> navigatorMediator.replaceAll(AppScreen.Onboarding)
                 AuthType.Weak -> navigatorMediator.replaceAll(AppScreen.SelectFile)

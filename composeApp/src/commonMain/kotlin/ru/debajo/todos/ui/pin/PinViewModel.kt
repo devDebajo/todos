@@ -53,7 +53,7 @@ class PinViewModel(
         }
 
         val newPin = state.value.pin + symbol.toString()
-        updateState { copy(pin = newPin) }
+        updateState { copy(pin = newPin, isError = false) }
         if (newPin.length == PinSize) {
             screenModelScope.launch(Default) {
                 val pin = Pin(state.value.pin)
@@ -61,14 +61,14 @@ class PinViewModel(
                 if (securityManager.offer(pinHash)) {
                     navigatorMediator.replaceAll(AppScreen.SelectFile)
                 } else {
-                    updateState { copy(pin = "") }
+                    updateState { copy(pin = "", isError = true) }
                 }
             }
         }
     }
 
     fun backspace() {
-        updateState { copy(pin = pin.dropLast(1)) }
+        updateState { copy(pin = pin.dropLast(1), isError = false) }
     }
 
     private inline fun updateState(block: PinState.() -> PinState) {

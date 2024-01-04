@@ -7,6 +7,8 @@ import cafe.adriel.voyager.core.screen.Screen
 import ru.debajo.todos.di.getFromDi
 import ru.debajo.todos.ui.fileconfig.FileConfigScreen
 import ru.debajo.todos.ui.fileconfig.FileConfigViewModel
+import ru.debajo.todos.ui.newpin.NewPinScreen
+import ru.debajo.todos.ui.newpin.NewPinViewModel
 import ru.debajo.todos.ui.onboarding.OnboardingScreen
 import ru.debajo.todos.ui.onboarding.OnboardingViewModel
 import ru.debajo.todos.ui.pin.PinScreen
@@ -42,6 +44,14 @@ sealed interface AppScreen : Screen {
             val viewModel = rememberScreenModel { getFromDi<PinViewModel>() }
             LaunchedEffect(viewModel) { viewModel.init() }
             PinScreen(viewModel)
+        }
+    }
+
+    data object NewPin : AppScreen {
+        @Composable
+        override fun Content() {
+            val viewModel = rememberScreenModel { getFromDi<NewPinViewModel>() }
+            NewPinScreen(viewModel)
         }
     }
 

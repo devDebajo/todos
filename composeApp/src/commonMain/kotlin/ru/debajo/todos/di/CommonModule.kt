@@ -31,6 +31,7 @@ import ru.debajo.todos.ui.AppLifecycle
 import ru.debajo.todos.ui.AppLifecycleMutable
 import ru.debajo.todos.ui.NavigatorMediator
 import ru.debajo.todos.ui.fileconfig.FileConfigViewModel
+import ru.debajo.todos.ui.newpin.NewPinViewModel
 import ru.debajo.todos.ui.onboarding.OnboardingViewModel
 import ru.debajo.todos.ui.pin.PinViewModel
 import ru.debajo.todos.ui.splash.SplashViewModel
@@ -54,6 +55,7 @@ val CommonModule: Module = module {
     factoryOf(::OnboardingViewModel)
     factoryOf(::SplashViewModel)
     factoryOf(::PinViewModel)
+    factoryOf(::NewPinViewModel)
 
     single {
         val driver = get<DriverFactory>().createDriver()

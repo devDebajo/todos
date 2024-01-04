@@ -21,6 +21,7 @@ fun PinScreen(viewModel: PinViewModel) {
             modifier = Modifier.align(Alignment.TopCenter).padding(top = 180.dp),
             count = PinSize,
             selectedCount = state.pin.length,
+            isError = state.isError
         )
 
         PinPad(
