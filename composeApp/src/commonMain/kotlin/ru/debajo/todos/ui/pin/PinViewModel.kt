@@ -3,11 +3,14 @@ package ru.debajo.todos.ui.pin
 import androidx.compose.runtime.Stable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.launch
 import ru.debajo.todos.auth.AppSecurityManager
 import ru.debajo.todos.auth.AuthType
+import ru.debajo.todos.auth.Pin
 import ru.debajo.todos.auth.PinHash
 import ru.debajo.todos.security.BiometricDelegate
+import ru.debajo.todos.security.HashUtils
 import ru.debajo.todos.ui.AppScreen
 import ru.debajo.todos.ui.NavigatorMediator
 
@@ -22,14 +25,16 @@ class PinViewModel(
         screenModelScope.launch {
             val authType = securityManager.getAuthType()
             updateState {
-                copy(showBiometricButton = authType == AuthType.Biometric && biometricDelegate.available)
+                copy(
+                    biometricAvailable = authType == AuthType.Biometric && biometricDelegate.available
+                )
             }
             showBiometric()
         }
     }
 
     fun showBiometric() {
-        if (state.value.showBiometricButton) {
+        if (state.value.biometricAvailable) {
             screenModelScope.launch {
                 val used = securityManager.useBiometric { encrypted ->
                     biometricDelegate.decryptData(encrypted.encryptedPinHash)?.let { PinHash(it) }
@@ -43,6 +48,27 @@ class PinViewModel(
     }
 
     fun onButtonClick(symbol: Int) {
+        if (state.value.pin.length == PinSize) {
+            return
+        }
+
+        val newPin = state.value.pin + symbol.toString()
+        updateState { copy(pin = newPin) }
+        if (newPin.length == PinSize) {
+            screenModelScope.launch(Default) {
+                val pin = Pin(state.value.pin)
+                val pinHash = HashUtils.hashPin(pin)
+                if (securityManager.offer(pinHash)) {
+                    navigatorMediator.replaceAll(AppScreen.SelectFile)
+                } else {
+                    updateState { copy(pin = "") }
+                }
+            }
+        }
+    }
+
+    fun backspace() {
+        updateState { copy(pin = pin.dropLast(1)) }
     }
 
     private inline fun updateState(block: PinState.() -> PinState) {

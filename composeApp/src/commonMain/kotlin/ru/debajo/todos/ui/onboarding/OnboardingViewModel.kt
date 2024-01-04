@@ -11,6 +11,7 @@ import ru.debajo.todos.security.HashUtils
 import ru.debajo.todos.security.encryptPinHash
 import ru.debajo.todos.ui.AppScreen
 import ru.debajo.todos.ui.NavigatorMediator
+import ru.debajo.todos.ui.pin.PinSize
 
 @Stable
 class OnboardingViewModel(
@@ -47,7 +48,7 @@ class OnboardingViewModel(
     fun onPinChanged(pin: TextFieldValue) {
         updateState {
             copy(
-                pin = pin.copy(text = pin.text.take(4)),
+                pin = pin.copy(text = pin.text.take(PinSize)),
                 enterPinDialogError = false,
             )
         }
@@ -56,7 +57,7 @@ class OnboardingViewModel(
     fun onPinConfirmationChanged(pin: TextFieldValue) {
         updateState {
             copy(
-                pinConfirmation = pin.copy(text = pin.text.take(4)),
+                pinConfirmation = pin.copy(text = pin.text.take(PinSize)),
                 enterPinDialogError = false
             )
         }

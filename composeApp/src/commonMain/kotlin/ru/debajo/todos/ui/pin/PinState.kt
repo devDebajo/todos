@@ -1,10 +1,15 @@
 package ru.debajo.todos.ui.pin
 
 import androidx.compose.runtime.Immutable
-import androidx.compose.ui.text.input.TextFieldValue
 
 @Immutable
 data class PinState(
-    val pin: TextFieldValue = TextFieldValue(""),
-    val showBiometricButton: Boolean = false,
-)
+    val pin: String = "",
+    val biometricAvailable: Boolean = false,
+) {
+    val actionType: ActionType = when {
+        pin.isNotEmpty() -> ActionType.Backspace
+        biometricAvailable -> ActionType.Biometric
+        else -> ActionType.None
+    }
+}
