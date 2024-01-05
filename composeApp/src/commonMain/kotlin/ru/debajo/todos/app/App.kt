@@ -1,10 +1,11 @@
-package ru.debajo.todos.ui
+package ru.debajo.todos.app
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
+import ru.debajo.todos.ui.LocalNavigatorMediator
 import ru.debajo.todos.ui.theme.AppTheme
 
 @Composable

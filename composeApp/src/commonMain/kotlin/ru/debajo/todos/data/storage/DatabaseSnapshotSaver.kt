@@ -11,12 +11,12 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+import ru.debajo.todos.app.AppLifecycle
+import ru.debajo.todos.app.awaitState
 import ru.debajo.todos.common.runCatchingAsync
 import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.data.storage.model.StorageSnapshot
 import ru.debajo.todos.data.storage.model.StorageTimestampSnapshot
-import ru.debajo.todos.ui.AppLifecycle
-import ru.debajo.todos.ui.awaitState
 
 @OptIn(ExperimentalSerializationApi::class)
 class DatabaseSnapshotSaver(

@@ -17,15 +17,15 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import ru.debajo.todos.app.App
+import ru.debajo.todos.app.AppLifecycle
+import ru.debajo.todos.app.AppLifecycleMutable
 import ru.debajo.todos.common.isDebug
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
 import ru.debajo.todos.di.CommonModule
 import ru.debajo.todos.di.JvmModule
 import ru.debajo.todos.di.getFromDi
-import ru.debajo.todos.ui.App
-import ru.debajo.todos.ui.AppLifecycle
-import ru.debajo.todos.ui.AppLifecycleMutable
 import ru.debajo.todos.ui.LocalNavigatorMediator
 import ru.debajo.todos.ui.NavigatorMediator
 

@@ -1,4 +1,4 @@
-package ru.debajo.todos.ui
+package ru.debajo.todos.app
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.MutableStateFlow

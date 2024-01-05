@@ -6,6 +6,8 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import ru.debajo.todos.app.AppLifecycle
+import ru.debajo.todos.app.AppLifecycleMutable
 import ru.debajo.todos.auth.AppSecurityManager
 import ru.debajo.todos.common.isDebug
 import ru.debajo.todos.data.db.DriverFactory
@@ -27,10 +29,9 @@ import ru.debajo.todos.domain.TodoItemRepository
 import ru.debajo.todos.domain.TodoItemUseCase
 import ru.debajo.todos.security.SecuredPreferences
 import ru.debajo.todos.security.SecuredPreferencesImpl
-import ru.debajo.todos.ui.AppLifecycle
-import ru.debajo.todos.ui.AppLifecycleMutable
 import ru.debajo.todos.ui.NavigatorMediator
 import ru.debajo.todos.ui.fileconfig.FileConfigViewModel
+import ru.debajo.todos.ui.fileconfig.FileConfigViewModel2
 import ru.debajo.todos.ui.newpin.NewPinViewModel
 import ru.debajo.todos.ui.onboarding.OnboardingViewModel
 import ru.debajo.todos.ui.pin.PinViewModel
@@ -51,6 +52,7 @@ val CommonModule: Module = module {
 
     singleOf(::NavigatorMediator)
     factoryOf(::FileConfigViewModel)
+    factoryOf(::FileConfigViewModel2)
     factoryOf(::TodoListViewModel)
     factoryOf(::OnboardingViewModel)
     factoryOf(::SplashViewModel)
