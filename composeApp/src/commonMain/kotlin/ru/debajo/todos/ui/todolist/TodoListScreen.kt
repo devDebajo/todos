@@ -73,12 +73,12 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toLocalDateTime
+import ru.debajo.todos.app.isHorizontalOrientation
 import ru.debajo.todos.common.contextClickable
 import ru.debajo.todos.common.roundToPx
 import ru.debajo.todos.common.toDp
 import ru.debajo.todos.domain.GroupId
 import ru.debajo.todos.domain.TodoItem
-import ru.debajo.todos.ui.isHorizontalOrientation
 import ru.debajo.todos.ui.todolist.model.TodoItemAction
 import ru.debajo.todos.ui.todolist.model.TodoListNews
 import ru.debajo.todos.ui.todolist.model.TodoListState

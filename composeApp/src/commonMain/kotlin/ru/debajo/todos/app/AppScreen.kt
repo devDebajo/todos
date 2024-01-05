@@ -8,7 +8,6 @@ import ru.debajo.todos.common.viewModelFromDi
 import ru.debajo.todos.di.getFromDi
 import ru.debajo.todos.ui.fileconfig.FileConfigScreen2
 import ru.debajo.todos.ui.fileconfig.FileConfigViewModel2
-import ru.debajo.todos.ui.isHorizontalOrientation
 import ru.debajo.todos.ui.newpin.NewPinScreen
 import ru.debajo.todos.ui.newpin.NewPinViewModel
 import ru.debajo.todos.ui.onboarding.OnboardingScreen

@@ -1,4 +1,4 @@
-package ru.debajo.todos.ui
+package ru.debajo.todos.app
 
 import android.content.res.Configuration
 import androidx.compose.runtime.Composable
