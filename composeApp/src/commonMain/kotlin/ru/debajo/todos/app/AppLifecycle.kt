@@ -11,6 +11,12 @@ import kotlinx.coroutines.flow.first
 interface AppLifecycle {
     val state: StateFlow<State>
 
+    val isPaused: Boolean
+        get() = state.value == State.Paused
+
+    val isResumed: Boolean
+        get() = state.value == State.Resumed
+
     enum class State { Paused, Resumed }
 }
 
@@ -22,7 +28,6 @@ class AppLifecycleMutable : AppLifecycle {
     fun updateState(state: AppLifecycle.State) {
         _state.value = state
     }
-
 }
 
 suspend fun AppLifecycle.awaitState(state: AppLifecycle.State) {

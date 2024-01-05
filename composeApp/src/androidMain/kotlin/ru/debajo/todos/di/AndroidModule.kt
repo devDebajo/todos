@@ -9,8 +9,6 @@ import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import ru.debajo.todos.data.db.DriverFactory
-import ru.debajo.todos.data.storage.ExternalFileHelper
-import ru.debajo.todos.data.storage.ExternalFileHelperImpl
 import ru.debajo.todos.data.storage.FileHelper
 import ru.debajo.todos.data.storage.FileHelperImpl
 import ru.debajo.todos.data.storage.FileSelector
@@ -28,20 +26,12 @@ internal val AndroidModule: Module = module {
     }
     single<ContentResolver> { get<Context>().contentResolver }
     singleOf(::ActivityResultLaunchersHolder)
-    single<ExternalFileHelper> {
-        val activityResultLaunchersHolder = get<ActivityResultLaunchersHolder>()
-        ExternalFileHelperImpl(
-            activityResultLaunchersProvider = { activityResultLaunchersHolder.activityResultLaunchers },
-            preferences = get(),
-            contentResolver = get(),
-            appScope = get(),
-        )
-    }
     factory<FileSelector> {
         val activityResultLaunchersHolder = get<ActivityResultLaunchersHolder>()
         FileSelectorImpl(
             activityResultLaunchersProvider = { activityResultLaunchersHolder.activityResultLaunchers },
             contentResolver = get(),
+            fileHelper = get(),
         )
     }
     factory<FileHelper> { FileHelperImpl(get()) }

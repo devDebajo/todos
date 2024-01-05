@@ -7,8 +7,6 @@ import java.util.prefs.Preferences
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import ru.debajo.todos.data.db.DriverFactory
-import ru.debajo.todos.data.storage.ExternalFileHelper
-import ru.debajo.todos.data.storage.ExternalFileHelperImpl
 import ru.debajo.todos.data.storage.FileHelper
 import ru.debajo.todos.data.storage.FileHelperImpl
 import ru.debajo.todos.data.storage.FileSelector
@@ -19,7 +17,6 @@ import ru.debajo.todos.security.BiometricDelegateImpl
 internal val JvmModule: Module = module {
     factory<FileSelector> { FileSelectorImpl() }
     factory<FileHelper> { FileHelperImpl() }
-    single<ExternalFileHelper> { ExternalFileHelperImpl(get(), get()) }
     single<Settings> { PreferencesSettings(Preferences.userRoot().node("todo_prefs")) }
     single { DriverFactory { JdbcSqliteDriver("jdbc:sqlite:todos.db") } }
     factory<BiometricDelegate> { BiometricDelegateImpl }

@@ -44,7 +44,7 @@ fun main() {
             onCloseRequest = {
                 savingJob.cancel()
                 scope.launch {
-                    databaseSnapshotSaver.save()
+                    databaseSnapshotSaver.save(ignorePaused = true)
                     exitApplication()
                 }
             }
@@ -87,15 +87,13 @@ private fun startProcess(): Job {
 @Composable
 private fun LifecycleListener() {
     val appLifecycleMutable = remember { getFromDi<AppLifecycleMutable>() }
-    val databaseSnapshotSaver = remember { getFromDi<DatabaseSnapshotSaver>() }
     val windowInfo = LocalWindowInfo.current
 
-    LaunchedEffect(appLifecycleMutable, windowInfo, databaseSnapshotSaver) {
+    LaunchedEffect(appLifecycleMutable, windowInfo) {
         snapshotFlow { windowInfo.isWindowFocused }.collect { isWindowFocused ->
             if (isWindowFocused) {
                 appLifecycleMutable.updateState(AppLifecycle.State.Resumed)
             } else {
-                databaseSnapshotSaver.save()
                 appLifecycleMutable.updateState(AppLifecycle.State.Paused)
             }
         }

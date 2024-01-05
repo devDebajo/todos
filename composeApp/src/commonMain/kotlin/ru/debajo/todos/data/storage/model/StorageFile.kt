@@ -4,4 +4,6 @@ data class StorageFile(
     val absolutePath: String,
     val name: String,
     val extension: String,
-)
+) {
+    val nameWithExtension: String = "$name.$extension"
+}

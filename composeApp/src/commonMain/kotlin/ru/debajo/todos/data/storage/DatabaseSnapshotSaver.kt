@@ -12,7 +12,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import ru.debajo.todos.app.AppLifecycle
-import ru.debajo.todos.app.awaitState
 import ru.debajo.todos.common.runCatchingAsync
 import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.data.storage.model.StorageSnapshot
@@ -30,13 +29,12 @@ class DatabaseSnapshotSaver(
     private val mutex: Mutex = Mutex()
     private val onUpdateMutex: Mutex = Mutex()
 
-    suspend fun save() {
-        if (mutex.isLocked) {
+    suspend fun save(ignorePaused: Boolean = false) {
+        if (appLifecycle.isPaused && !ignorePaused) {
             return
         }
 
         mutex.locked {
-            appLifecycle.awaitState(AppLifecycle.State.Resumed)
             val needToSave = needToSave()
             if (needToSave is NeedToSave.Yes) {
                 val stream = externalFileHelper.openOutputStream()

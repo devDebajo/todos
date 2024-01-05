@@ -24,7 +24,7 @@ class FileConfigViewModel(
         screenModelScope.launch {
             externalFileHelper.fileUri.collect {
                 updateState {
-                    copy(currentFileUri = it)
+                    copy(currentFile = it)
                 }
             }
         }

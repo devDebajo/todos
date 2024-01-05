@@ -35,7 +35,11 @@ fun FileConfigScreen(viewModel: FileConfigViewModel) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = state.currentFileUri ?: "No file selected",
+                text = state.currentFile?.absolutePath ?: "No file selected",
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = state.currentFile?.nameWithExtension ?: "No file name",
                 textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.size(12.dp))

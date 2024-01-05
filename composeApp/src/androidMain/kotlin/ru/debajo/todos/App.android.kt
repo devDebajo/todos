@@ -22,7 +22,6 @@ import ru.debajo.todos.app.AppLifecycle
 import ru.debajo.todos.app.AppLifecycleMutable
 import ru.debajo.todos.app.AppScreen
 import ru.debajo.todos.common.isDebug
-import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
 import ru.debajo.todos.data.storage.ExternalFileHelper
 import ru.debajo.todos.di.ActivityResultLaunchersHolder
@@ -78,7 +77,6 @@ class AppActivity : FragmentActivity() {
     private val activityResultLaunchers: ActivityResultLaunchers = ActivityResultLaunchers(this)
     private val externalFileHelper: ExternalFileHelper by inject()
     private val navigatorMediator: NavigatorMediator by inject()
-    private val databaseSnapshotSaver: DatabaseSnapshotSaver by inject()
     private val appLifecycleMutable: AppLifecycleMutable by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,10 +99,7 @@ class AppActivity : FragmentActivity() {
 
     override fun onPause() {
         super.onPause()
-        lifecycleScope.launch {
-            databaseSnapshotSaver.save()
-            appLifecycleMutable.updateState(AppLifecycle.State.Paused)
-        }
+        appLifecycleMutable.updateState(AppLifecycle.State.Paused)
     }
 
     override fun onResume() {

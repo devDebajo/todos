@@ -23,6 +23,7 @@ import ru.debajo.todos.data.storage.DatabaseChangeListener
 import ru.debajo.todos.data.storage.DatabaseSnapshotHelper
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
+import ru.debajo.todos.data.storage.ExternalFileHelper
 import ru.debajo.todos.db.TodosDatabase
 import ru.debajo.todos.domain.TodoGroupRepository
 import ru.debajo.todos.domain.TodoItemRepository
@@ -49,6 +50,7 @@ val CommonModule: Module = module {
     factoryOf(::DatabaseSnapshotHelper)
     singleOf(::DatabaseSnapshotSaver).bind<DatabaseChangeListener>()
     singleOf(::DatabaseSnapshotWorker)
+    singleOf(::ExternalFileHelper)
 
     singleOf(::NavigatorMediator)
     factoryOf(::FileConfigViewModel)
