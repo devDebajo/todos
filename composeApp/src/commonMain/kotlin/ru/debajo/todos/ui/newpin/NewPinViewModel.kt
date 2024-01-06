@@ -1,12 +1,12 @@
 package ru.debajo.todos.ui.newpin
 
 import androidx.compose.runtime.Stable
-import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import kotlinx.coroutines.launch
 import ru.debajo.todos.app.AppScreen
 import ru.debajo.todos.auth.AppSecurityManager
 import ru.debajo.todos.auth.Pin
+import ru.debajo.todos.common.BaseNewsLessViewModel
 import ru.debajo.todos.security.BiometricDelegate
 import ru.debajo.todos.security.HashUtils
 import ru.debajo.todos.security.encryptPinHash
@@ -18,7 +18,7 @@ class NewPinViewModel(
     private val biometricDelegate: BiometricDelegate,
     private val securityManager: AppSecurityManager,
     private val navigatorMediator: NavigatorMediator,
-) : StateScreenModel<NewPinState>(NewPinState()) {
+) : BaseNewsLessViewModel<NewPinState>(NewPinState()) {
 
     fun onButtonClick(symbol: Int) {
         val state = state.value
@@ -95,9 +95,5 @@ class NewPinViewModel(
             securityManager.configurePinAuthType(HashUtils.hashPin(pin))
             navigatorMediator.replaceAll(AppScreen.SelectFile)
         }
-    }
-
-    private inline fun updateState(block: NewPinState.() -> NewPinState) {
-        mutableState.value = mutableState.value.block()
     }
 }

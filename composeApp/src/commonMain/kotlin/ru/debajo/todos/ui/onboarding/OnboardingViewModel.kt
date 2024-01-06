@@ -1,18 +1,18 @@
 package ru.debajo.todos.ui.onboarding
 
 import androidx.compose.runtime.Stable
-import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import kotlinx.coroutines.launch
 import ru.debajo.todos.app.AppScreen
 import ru.debajo.todos.auth.AppSecurityManager
+import ru.debajo.todos.common.BaseNewsLessViewModel
 import ru.debajo.todos.ui.NavigatorMediator
 
 @Stable
 class OnboardingViewModel(
     private val securityManager: AppSecurityManager,
     private val navigatorMediator: NavigatorMediator,
-) : StateScreenModel<OnboardingState>(OnboardingState()) {
+) : BaseNewsLessViewModel<OnboardingState>(OnboardingState()) {
 
     fun onPinClick() {
         updateState { copy(weakAuthTypeWarningDialogVisible = false) }
@@ -35,9 +35,5 @@ class OnboardingViewModel(
                 copy(weakAuthTypeWarningDialogVisible = true)
             }
         }
-    }
-
-    private inline fun updateState(block: OnboardingState.() -> OnboardingState) {
-        mutableState.value = mutableState.value.block()
     }
 }

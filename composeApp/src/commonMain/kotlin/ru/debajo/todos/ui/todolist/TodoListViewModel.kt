@@ -3,12 +3,9 @@ package ru.debajo.todos.ui.todolist
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
-import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import ru.debajo.todos.common.BaseViewModel
 import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.domain.GroupId
 import ru.debajo.todos.domain.TodoGroup
@@ -23,12 +20,9 @@ import ru.debajo.todos.ui.todolist.model.TodoListState
 class TodoListViewModel(
     private val todoItemUseCase: TodoItemUseCase,
     private val preferences: Preferences,
-) : StateScreenModel<TodoListState>(TodoListState()) {
+) : BaseViewModel<TodoListState, TodoListNews>(TodoListState()) {
 
-    private val _news: MutableSharedFlow<TodoListNews> = MutableSharedFlow()
-    val news: SharedFlow<TodoListNews> = _news.asSharedFlow()
-
-    fun init() {
+    override fun onLaunch() {
         screenModelScope.launch {
             var first = true
             todoItemUseCase.observeGroups().collect { groups ->
@@ -36,7 +30,7 @@ class TodoListViewModel(
                     if (first) {
                         first = false
                         val (groupId, groupIndex) = findInitialGroupId(groups)
-                        _news.emit(TodoListNews.ScrollToGroup(groupIndex))
+                        sendNews(TodoListNews.ScrollToGroup(groupIndex))
                         copy(
                             groups = groups,
                             selectedGroupId = groupId,
@@ -284,10 +278,6 @@ class TodoListViewModel(
             }
         }
         return groups.first().id to 0
-    }
-
-    private inline fun updateState(block: TodoListState.() -> TodoListState) {
-        mutableState.value = mutableState.value.block()
     }
 
     private companion object {

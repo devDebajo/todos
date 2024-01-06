@@ -19,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -89,12 +91,16 @@ private fun PinButton(
     modifier: Modifier = Modifier,
     onClick: (Int) -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .size(buttonSize)
             .clip(CircleShape)
-            .clickable { onClick(number) }
+            .clickable {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onClick(number)
+            }
             .background(buttonColor)
     ) {
         Text(

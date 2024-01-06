@@ -1,7 +1,6 @@
 package ru.debajo.todos.ui.pin
 
 import androidx.compose.runtime.Stable
-import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.launch
@@ -10,6 +9,7 @@ import ru.debajo.todos.auth.AppSecurityManager
 import ru.debajo.todos.auth.AuthType
 import ru.debajo.todos.auth.Pin
 import ru.debajo.todos.auth.PinHash
+import ru.debajo.todos.common.BaseNewsLessViewModel
 import ru.debajo.todos.security.BiometricDelegate
 import ru.debajo.todos.security.HashUtils
 import ru.debajo.todos.ui.NavigatorMediator
@@ -19,9 +19,9 @@ class PinViewModel(
     private val biometricDelegate: BiometricDelegate,
     private val securityManager: AppSecurityManager,
     private val navigatorMediator: NavigatorMediator,
-) : StateScreenModel<PinState>(PinState()) {
+) : BaseNewsLessViewModel<PinState>(PinState()) {
 
-    fun init() {
+    override fun onLaunch() {
         screenModelScope.launch {
             val authType = securityManager.getAuthType()
             updateState {
@@ -69,9 +69,5 @@ class PinViewModel(
 
     fun backspace() {
         updateState { copy(pin = pin.dropLast(1), isError = false) }
-    }
-
-    private inline fun updateState(block: PinState.() -> PinState) {
-        mutableState.value = mutableState.value.block()
     }
 }
