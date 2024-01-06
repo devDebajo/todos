@@ -5,7 +5,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import ru.debajo.todos.data.storage.model.StorageFile
 
 @Immutable
-data class FileConfigState2(
+data class FileConfigState(
     val isFilesListLoading: Boolean = true,
     val files: List<StorageFile> = emptyList(),
     val showCreateFileDialog: Boolean = false,

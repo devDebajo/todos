@@ -6,8 +6,8 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import ru.debajo.todos.common.viewModelFromDi
 import ru.debajo.todos.di.getFromDi
-import ru.debajo.todos.ui.fileconfig.FileConfigScreen2
-import ru.debajo.todos.ui.fileconfig.FileConfigViewModel2
+import ru.debajo.todos.ui.fileconfig.FileConfigScreen
+import ru.debajo.todos.ui.fileconfig.FileConfigViewModel
 import ru.debajo.todos.ui.newpin.NewPinScreen
 import ru.debajo.todos.ui.newpin.NewPinViewModel
 import ru.debajo.todos.ui.onboarding.OnboardingScreen
@@ -59,7 +59,7 @@ sealed interface AppScreen : Screen {
     data object SelectFile : AppScreen {
         @Composable
         override fun Content() {
-            FileConfigScreen2(viewModelFromDi<FileConfigViewModel2>())
+            FileConfigScreen(viewModelFromDi<FileConfigViewModel>())
         }
     }
 

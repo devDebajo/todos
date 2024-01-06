@@ -21,13 +21,13 @@ import ru.debajo.todos.ui.NavigatorMediator
 const val FilePinSize: Int = 6
 
 @Stable
-class FileConfigViewModel2(
+class FileConfigViewModel(
     private val storageFileManager: StorageFileManager,
     private val fileSelector: FileSelector,
     private val navigatorMediator: NavigatorMediator,
     private val databaseSnapshotSaver: DatabaseSnapshotSaver,
     private val encryptFileHelper: EncryptFileHelper,
-) : BaseViewModel<FileConfigState2, FileConfigNews>(FileConfigState2()) {
+) : BaseViewModel<FileConfigState, FileConfigNews>(FileConfigState()) {
 
     override fun onLaunch() {
         screenModelScope.launch {

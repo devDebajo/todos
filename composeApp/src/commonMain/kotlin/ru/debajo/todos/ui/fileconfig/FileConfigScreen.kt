@@ -37,7 +37,7 @@ import ru.debajo.todos.data.storage.model.StorageFile
 import ru.debajo.todos.ui.pin.EnterPinDialog
 
 @Composable
-fun FileConfigScreen2(viewModel: FileConfigViewModel2) {
+fun FileConfigScreen(viewModel: FileConfigViewModel) {
     val state by viewModel.state.collectAsState()
     val haptic = LocalHapticFeedback.current
 
@@ -183,7 +183,7 @@ private fun FileRender(
 
 @Composable
 private fun CreateFileDialog(
-    state: FileConfigState2,
+    state: FileConfigState,
     onCancel: () -> Unit,
     onConfirm: (encrypted: Boolean) -> Unit,
 ) {
