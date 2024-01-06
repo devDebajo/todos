@@ -110,7 +110,7 @@ class AppActivity : FragmentActivity() {
     private fun tryToExtractUri(intent: Intent) {
         val data = intent.data ?: return
         lifecycleScope.launch {
-            if (storageFileManager.trySelectFile(data.toString())) {
+            if (storageFileManager.tryAddFile(data.toString())) {
                 navigatorMediator.navigate(AppScreen.SelectFile)
             }
         }

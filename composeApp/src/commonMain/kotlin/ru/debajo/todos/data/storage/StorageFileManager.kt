@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import ru.debajo.todos.auth.PinHash
 import ru.debajo.todos.common.runCatchingAsync
 import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.data.storage.model.StorageFile
@@ -35,7 +36,7 @@ class StorageFileManager(
             if (isSelectLastFile()) {
                 val lastFile = loadLastFile()
                 if (lastFile != null) {
-                    selectFile(lastFile)
+                    selectFileFromList(lastFile)
                 }
             }
         }
@@ -60,7 +61,7 @@ class StorageFileManager(
         return filePinStorage.get(file) != null
     }
 
-    suspend fun selectFile(file: StorageFile): Boolean {
+    suspend fun selectFileFromList(file: StorageFile): Boolean {
         if (!file.isValidExtension) {
             return false
         }
@@ -86,25 +87,43 @@ class StorageFileManager(
         preferences.putBoolean(SelectLastFileKey, value)
     }
 
-    suspend fun trySelectFile(path: String): Boolean {
-        if (_currentFile.value?.absolutePath == path) {
+    suspend fun tryAddFile(path: String): Boolean {
+        val file = fileHelper.createStorageFile(path) ?: return false
+        return tryAddFile(file, null)
+    }
+
+    suspend fun tryAddFile(file: StorageFile, pinHash: PinHash?): Boolean {
+        if (_currentFile.value?.absolutePath == file.absolutePath) {
             return false
         }
 
         return withContext(Dispatchers.IO) {
-            val file = fileHelper.createStorageFile(path)
-            if (file != null) {
-                selectFile(file)
+            if (file.isValidExtension && fileHelper.canRead(file)) {
+                addFileToList(file)
+                if (file.encrypted && pinHash != null) {
+                    filePinStorage.save(file, pinHash)
+                }
+                true
             } else {
                 false
             }
         }
     }
 
+    private suspend fun addFileToList(file: StorageFile) {
+        val newList = (_files.value + listOf(file)).distinctBy { it.absolutePath }
+        _files.value = newList
+        saveFilesListUnsafe(newList)
+    }
+
     private suspend fun loadFilesList(): List<StorageFile> {
         return runCatchingAsync { loadFilesListUnsafe() }
             .onFailure { Napier.e("loadFilesList error", it) }
             .getOrElse { emptyList() }
+    }
+
+    private suspend fun saveFilesListUnsafe(files: List<StorageFile>) {
+        securedPreferences.putStringList(FilesListKey, files.map { it.absolutePath })
     }
 
     private suspend fun loadFilesListUnsafe(): List<StorageFile> {

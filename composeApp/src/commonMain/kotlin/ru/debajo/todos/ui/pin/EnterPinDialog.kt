@@ -25,7 +25,7 @@ fun EnterPinDialog(
     pin1: TextFieldValue,
     pin2: TextFieldValue,
     isError: Boolean = false,
-    visible: Boolean = false,
+    visible: Boolean = true,
     onPin1Changed: (TextFieldValue) -> Unit,
     onPin2Changed: (TextFieldValue) -> Unit,
     onCancel: () -> Unit,
