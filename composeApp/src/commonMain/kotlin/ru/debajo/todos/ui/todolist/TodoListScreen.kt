@@ -471,7 +471,7 @@ private fun TodoCard(
     Column(
         modifier = modifier
             .clip(itemShape)
-            .contextClickable(onClick = onContextClick)
+            .contextClickable(onSecondaryClick = onContextClick)
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(vertical = 10.dp, horizontal = 6.dp)
     ) {

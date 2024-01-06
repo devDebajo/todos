@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,14 +28,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ru.debajo.todos.common.contextClickable
 import ru.debajo.todos.data.storage.model.StorageFile
 import ru.debajo.todos.ui.pin.EnterPinDialog
 
 @Composable
 fun FileConfigScreen2(viewModel: FileConfigViewModel2) {
     val state by viewModel.state.collectAsState()
+    val haptic = LocalHapticFeedback.current
 
     Column(
         modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
@@ -43,6 +48,12 @@ fun FileConfigScreen2(viewModel: FileConfigViewModel2) {
         FilesListWithPlaceholder(
             files = state.files,
             modifier = Modifier.weight(1f),
+            loading = state.isFilesListLoading,
+            onPrimaryClick = { viewModel.onFilePrimaryClick(it) },
+            onSecondaryClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                viewModel.onFileSecondaryClick(it)
+            },
         )
         Spacer(Modifier.size(8.dp))
         Row {
@@ -80,40 +91,59 @@ fun FileConfigScreen2(viewModel: FileConfigViewModel2) {
 @Composable
 private fun FilesListWithPlaceholder(
     files: List<StorageFile>,
+    loading: Boolean,
+    onPrimaryClick: (StorageFile) -> Unit,
+    onSecondaryClick: (StorageFile) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        if (files.isEmpty()) {
-            Text("No files")
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(top = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                items(
-                    count = files.size,
-                    key = { files[it].absolutePath },
-                    contentType = { "same" },
-                    itemContent = {
-                        val file = files[it]
-                        FileRender(file, Modifier.fillMaxWidth())
-                    }
-                )
+        when {
+            loading -> CircularProgressIndicator()
+            files.isEmpty() -> Text("No files")
+            else -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(top = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    items(
+                        count = files.size,
+                        key = { files[it].absolutePath },
+                        contentType = { "same" },
+                        itemContent = {
+                            val file = files[it]
+                            FileRender(
+                                file = file,
+                                onPrimaryClick = onPrimaryClick,
+                                onSecondaryClick = onSecondaryClick,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun FileRender(file: StorageFile, modifier: Modifier = Modifier) {
+private fun FileRender(
+    file: StorageFile,
+    onPrimaryClick: (StorageFile) -> Unit,
+    onSecondaryClick: (StorageFile) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
+            .contextClickable(
+                onPrimaryClick = { onPrimaryClick(file) },
+                onSecondaryClick = { onSecondaryClick(file) },
+            )
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(vertical = 10.dp, horizontal = 8.dp)
     ) {

@@ -23,8 +23,8 @@ class StorageFileManager(
     private val fileHelper: FileHelper,
     private val filePinStorage: FilePinStorage,
 ) {
-    private val _files: MutableStateFlow<List<StorageFile>> = MutableStateFlow(emptyList())
-    val files: StateFlow<List<StorageFile>> = _files.asStateFlow()
+    private val _files: MutableStateFlow<List<StorageFile>?> = MutableStateFlow(null)
+    val files: StateFlow<List<StorageFile>?> = _files.asStateFlow()
     private val _currentFile: MutableStateFlow<StorageFile?> = MutableStateFlow(null)
 
     val currentFile: StorageFile?
@@ -66,7 +66,7 @@ class StorageFileManager(
             return false
         }
 
-        if (file !in _files.value) {
+        if (file !in _files.value.orEmpty()) {
             return false
         }
 
@@ -111,7 +111,7 @@ class StorageFileManager(
     }
 
     private suspend fun addFileToList(file: StorageFile) {
-        val newList = (_files.value + listOf(file)).distinctBy { it.absolutePath }
+        val newList = (_files.value.orEmpty() + listOf(file)).distinctBy { it.absolutePath }
         _files.value = newList
         saveFilesListUnsafe(newList)
     }

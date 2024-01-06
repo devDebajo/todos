@@ -5,10 +5,14 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.ui.Modifier
 
 @OptIn(ExperimentalFoundationApi::class)
-actual fun Modifier.contextClickable(enabled: Boolean, onClick: () -> Unit): Modifier {
+actual fun Modifier.contextClickable(
+    enabled: Boolean,
+    onPrimaryClick: () -> Unit,
+    onSecondaryClick: () -> Unit,
+): Modifier {
     return combinedClickable(
         enabled = enabled,
-        onLongClick = onClick,
-        onClick = {},
+        onLongClick = onSecondaryClick,
+        onClick = onPrimaryClick,
     )
 }

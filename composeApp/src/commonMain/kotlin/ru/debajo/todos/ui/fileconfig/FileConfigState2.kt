@@ -6,6 +6,7 @@ import ru.debajo.todos.data.storage.model.StorageFile
 
 @Immutable
 data class FileConfigState2(
+    val isFilesListLoading: Boolean = true,
     val files: List<StorageFile> = emptyList(),
     val showCreateFileDialog: Boolean = false,
     val createEncryptedFileDialogState: CreateEncryptedFileDialogState? = null,

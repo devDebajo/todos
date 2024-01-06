@@ -24,38 +24,40 @@ import ru.debajo.todos.ui.pin.PinSize
 fun NewPinScreen(viewModel: NewPinViewModel) {
     val state by viewModel.state.collectAsState()
 
-    Box(Modifier.fillMaxSize().padding(bottom = 50.dp)) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 180.dp),
+    Column(
+        modifier = Modifier.fillMaxSize().padding(bottom = 50.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            modifier = Modifier.weight(1f),
+            contentAlignment = Alignment.Center,
         ) {
-            if (state.usePin1) {
-                Text("Input PIN")
-            } else {
-                Text("Confirm PIN")
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                if (state.usePin1) {
+                    Text("Input PIN")
+                } else {
+                    Text("Confirm PIN")
+                }
+                Spacer(Modifier.size(14.dp))
+                PinDots(
+                    count = PinSize,
+                    selectedCount = state.currentPin.length,
+                    isError = state.isError,
+                )
             }
 
-            Spacer(Modifier.size(14.dp))
-            PinDots(
-                count = PinSize,
-                selectedCount = state.currentPin.length,
-                isError = state.isError,
+            PinPad(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                onActionClick = { action ->
+                    when (action) {
+                        ActionType.Backspace -> viewModel.backspace()
+                        ActionType.Biometric, ActionType.None -> Unit
+                    }
+                },
+                onNumberClick = { viewModel.onButtonClick(it) },
+                actionType = state.actionType,
             )
         }
-
-        PinPad(
-            modifier = Modifier.align(Alignment.BottomCenter),
-            onActionClick = { action ->
-                when (action) {
-                    ActionType.Backspace -> viewModel.backspace()
-                    ActionType.Biometric, ActionType.None -> Unit
-                }
-            },
-            onNumberClick = { viewModel.onButtonClick(it) },
-            actionType = state.actionType,
-        )
     }
 
     UseBiometricDialog(

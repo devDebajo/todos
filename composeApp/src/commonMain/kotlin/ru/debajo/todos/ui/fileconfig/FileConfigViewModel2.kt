@@ -3,6 +3,7 @@ package ru.debajo.todos.ui.fileconfig
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.input.TextFieldValue
 import cafe.adriel.voyager.core.model.screenModelScope
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import ru.debajo.todos.auth.Pin
 import ru.debajo.todos.common.BaseNewsLessViewModel
@@ -22,9 +23,9 @@ class FileConfigViewModel2(
 
     override fun onLaunch() {
         screenModelScope.launch {
-            storageFileManager.files.collect { list ->
+            storageFileManager.files.filterNotNull().collect { list ->
                 updateState {
-                    copy(files = list)
+                    copy(files = list, isFilesListLoading = false)
                 }
             }
         }
@@ -130,5 +131,11 @@ class FileConfigViewModel2(
             }
             hideCreateFileDialogs()
         }
+    }
+
+    fun onFilePrimaryClick(file: StorageFile) {
+    }
+
+    fun onFileSecondaryClick(file: StorageFile) {
     }
 }
