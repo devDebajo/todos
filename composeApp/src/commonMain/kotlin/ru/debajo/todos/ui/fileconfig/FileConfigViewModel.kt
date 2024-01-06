@@ -33,7 +33,7 @@ class FileConfigViewModel(
         screenModelScope.launch {
             storageFileManager.files.filterNotNull().collect { list ->
                 updateState {
-                    copy(files = list, isFilesListLoading = false)
+                    copy(files = list)
                 }
             }
         }
@@ -57,7 +57,9 @@ class FileConfigViewModel(
         screenModelScope.launch {
             val file = fileSelector.select()
             if (file != null) {
-                storageFileManager.tryAddFile(file, null)
+                withLoading {
+                    storageFileManager.tryAddFile(file, null)
+                }
             }
             hideCreateFileDialogs()
         }
@@ -81,7 +83,9 @@ class FileConfigViewModel(
             screenModelScope.launch {
                 val file = fileSelector.create("todos", StorageFile.NotEncryptedExtension)
                 if (file != null) {
-                    storageFileManager.tryAddFile(file, null)
+                    withLoading {
+                        storageFileManager.tryAddFile(file, null)
+                    }
                 }
                 hideCreateFileDialogs()
             }
@@ -140,8 +144,10 @@ class FileConfigViewModel(
         screenModelScope.launch {
             val file = fileSelector.create("todos", StorageFile.EncryptedExtension)
             if (file != null) {
-                val pinHash = HashUtils.hashPin(pin)
-                storageFileManager.tryAddFile(file, pinHash)
+                withLoading {
+                    val pinHash = HashUtils.hashPin(pin)
+                    storageFileManager.tryAddFile(file, pinHash)
+                }
             }
             hideCreateFileDialogs()
         }
@@ -149,23 +155,25 @@ class FileConfigViewModel(
 
     fun onFilePrimaryClick(file: StorageFile) {
         screenModelScope.launch {
-            when (encryptFileHelper.isFileReadyToRead(file)) {
-                EncryptFileHelper.FileReadReadiness.NoPermission -> sendNews(FileConfigNews.Toast("No read permission"))
-                EncryptFileHelper.FileReadReadiness.Ready -> {
-                    if (storageFileManager.selectFileFromList(file)) {
-                        if (databaseSnapshotSaver.load()) {
-                            navigatorMediator.replaceAll(AppScreen.List)
+            withLoading {
+                when (encryptFileHelper.isFileReadyToRead(file)) {
+                    EncryptFileHelper.FileReadReadiness.NoPermission -> sendNews(FileConfigNews.Toast("No read permission"))
+                    EncryptFileHelper.FileReadReadiness.Ready -> {
+                        if (storageFileManager.selectFileFromList(file)) {
+                            if (databaseSnapshotSaver.load()) {
+                                navigatorMediator.replaceAll(AppScreen.List)
+                            } else {
+                                sendNews(FileConfigNews.Toast("Some error with file"))
+                            }
                         } else {
                             sendNews(FileConfigNews.Toast("Some error with file"))
                         }
-                    } else {
-                        sendNews(FileConfigNews.Toast("Some error with file"))
                     }
-                }
 
-                EncryptFileHelper.FileReadReadiness.NoPin -> {
-                    updateState {
-                        copy(enterFilePinDialogState = EnterFilePinDialogState(file = file))
+                    EncryptFileHelper.FileReadReadiness.NoPin -> {
+                        updateState {
+                            copy(enterFilePinDialogState = EnterFilePinDialogState(file = file))
+                        }
                     }
                 }
             }
@@ -186,14 +194,16 @@ class FileConfigViewModel(
 
         val pin = Pin(enterFilePinDialogState.pin.text)
         screenModelScope.launch(Default) {
-            val pinHash = HashUtils.hashPin(pin)
-            if (encryptFileHelper.canDecryptFile(enterFilePinDialogState.file, pinHash)) {
-                updateState { copy(enterFilePinDialogState = null) }
-                storageFileManager.savePinHash(enterFilePinDialogState.file, pinHash)
-                navigatorMediator.replaceAll(AppScreen.List)
-            } else {
-                updateState {
-                    copy(enterFilePinDialogState = enterFilePinDialogState.copy(isError = true))
+            withLoading {
+                val pinHash = HashUtils.hashPin(pin)
+                if (encryptFileHelper.canDecryptFile(enterFilePinDialogState.file, pinHash)) {
+                    updateState { copy(enterFilePinDialogState = null) }
+                    storageFileManager.savePinHash(enterFilePinDialogState.file, pinHash)
+                    navigatorMediator.replaceAll(AppScreen.List)
+                } else {
+                    updateState {
+                        copy(enterFilePinDialogState = enterFilePinDialogState.copy(isError = true))
+                    }
                 }
             }
         }
@@ -206,5 +216,14 @@ class FileConfigViewModel(
     }
 
     fun onFileSecondaryClick(file: StorageFile) {
+    }
+
+    private suspend fun withLoading(block: suspend () -> Unit) {
+        updateState { copy(isLoading = true) }
+        try {
+            block()
+        } finally {
+            updateState { copy(isLoading = false) }
+        }
     }
 }

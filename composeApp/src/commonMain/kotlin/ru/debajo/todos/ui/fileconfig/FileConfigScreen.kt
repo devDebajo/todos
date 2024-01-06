@@ -18,13 +18,18 @@ import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,7 +53,6 @@ fun FileConfigScreen(viewModel: FileConfigViewModel) {
         FilesListWithPlaceholder(
             files = state.files,
             modifier = Modifier.weight(1f),
-            loading = state.isFilesListLoading,
             onPrimaryClick = { viewModel.onFilePrimaryClick(it) },
             onSecondaryClick = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -98,12 +102,13 @@ fun FileConfigScreen(viewModel: FileConfigViewModel) {
             onConfirm = { viewModel.onConfirmEnterFilePinDialog() },
         )
     }
+    SnackbarHost(viewModel)
+    BlockingLoaderDialog(state.showBlockingLoading)
 }
 
 @Composable
 private fun FilesListWithPlaceholder(
-    files: List<StorageFile>,
-    loading: Boolean,
+    files: List<StorageFile>?,
     onPrimaryClick: (StorageFile) -> Unit,
     onSecondaryClick: (StorageFile) -> Unit,
     modifier: Modifier = Modifier,
@@ -113,7 +118,7 @@ private fun FilesListWithPlaceholder(
         contentAlignment = Alignment.Center
     ) {
         when {
-            loading -> CircularProgressIndicator()
+            files == null -> Unit
             files.isEmpty() -> Text("No files")
             else -> {
                 LazyColumn(
@@ -206,21 +211,43 @@ private fun CreateFileDialog(
     }
 }
 
-//if (state.initialLoading) {
-//    AlertDialog(onDismissRequest = { /** could not close dialog **/ }) {
-//        Box(Modifier.fillMaxSize()) {
-//            Box(
-//                contentAlignment = Alignment.Center,
-//                modifier = Modifier
-//                    .size(100.dp)
-//                    .clip(RoundedCornerShape(12.dp))
-//                    .background(MaterialTheme.colorScheme.surface)
-//                    .align(Alignment.Center)
-//            ) {
-//                CircularProgressIndicator(
-//                    modifier = Modifier.size(40.dp)
-//                )
-//            }
-//        }
-//    }
-//}
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun BlockingLoaderDialog(show: Boolean) {
+    if (show) {
+        AlertDialog(onDismissRequest = { /** could not close dialog **/ }) {
+            Box(Modifier.fillMaxSize()) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .align(Alignment.Center)
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SnackbarHost(viewModel: FileConfigViewModel) {
+    val hostState = remember { SnackbarHostState() }
+    LaunchedEffect(viewModel) {
+        viewModel.news.collect { news ->
+            if (news is FileConfigNews.Toast) {
+                hostState.showSnackbar(message = news.text)
+            }
+        }
+    }
+    Box(Modifier.fillMaxSize()) {
+        SnackbarHost(
+            hostState = hostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
+    }
+}

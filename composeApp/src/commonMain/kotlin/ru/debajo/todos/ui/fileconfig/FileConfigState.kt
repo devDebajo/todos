@@ -6,13 +6,15 @@ import ru.debajo.todos.data.storage.model.StorageFile
 
 @Immutable
 data class FileConfigState(
-    val isFilesListLoading: Boolean = true,
-    val files: List<StorageFile> = emptyList(),
+    val isLoading: Boolean = false,
+    val files: List<StorageFile>? = null,
     val showCreateFileDialog: Boolean = false,
     val createEncryptedFileDialogState: CreateEncryptedFileDialogState? = null,
     val creatingFile: Boolean = false,
     val enterFilePinDialogState: EnterFilePinDialogState? = null,
-)
+) {
+    val showBlockingLoading: Boolean = files == null || isLoading
+}
 
 @Immutable
 data class EnterFilePinDialogState(
