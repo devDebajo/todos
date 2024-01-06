@@ -237,7 +237,7 @@ private fun BlockingLoaderDialog(show: Boolean) {
 @Composable
 private fun SnackbarHost(viewModel: FileConfigViewModel) {
     val hostState = remember { SnackbarHostState() }
-    LaunchedEffect(viewModel) {
+    LaunchedEffect(viewModel, hostState) {
         viewModel.news.collect { news ->
             if (news is FileConfigNews.Toast) {
                 hostState.showSnackbar(message = news.text)

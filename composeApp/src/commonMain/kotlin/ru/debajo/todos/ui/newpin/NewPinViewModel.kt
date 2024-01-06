@@ -2,6 +2,7 @@ package ru.debajo.todos.ui.newpin
 
 import androidx.compose.runtime.Stable
 import cafe.adriel.voyager.core.model.screenModelScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.debajo.todos.app.AppScreen
 import ru.debajo.todos.auth.AppSecurityManager
@@ -25,7 +26,9 @@ class NewPinViewModel(
         if (state.usePin1) {
             updatePin1(symbol)
         } else {
-            updatePin2(symbol)
+            screenModelScope.launch {
+                updatePin2(symbol)
+            }
         }
     }
 
@@ -35,7 +38,7 @@ class NewPinViewModel(
         }
     }
 
-    private fun updatePin2(symbol: Int) {
+    private suspend fun updatePin2(symbol: Int) {
         val state = state.value
         if (state.pin2.length == PinSize) {
             return
@@ -47,8 +50,11 @@ class NewPinViewModel(
             return
         }
 
+        delay(300)
         if (state.pin1 != newPin2) {
-            updateState { copy(pin2 = "", isError = true) }
+            updateState { copy(pin1 = "", pin2 = "", isError = true) }
+            delay(600)
+            updateState { copy(isError = false) }
             return
         }
 
@@ -57,12 +63,10 @@ class NewPinViewModel(
             return
         }
 
-        screenModelScope.launch {
-            val pin = Pin(state.pin1)
-            val pinHash = HashUtils.hashPin(pin)
-            securityManager.configurePinAuthType(pinHash)
-            navigatorMediator.replaceAll(AppScreen.SelectFile)
-        }
+        val pin = Pin(state.pin1)
+        val pinHash = HashUtils.hashPin(pin)
+        securityManager.configurePinAuthType(pinHash)
+        navigatorMediator.replaceAll(AppScreen.SelectFile)
     }
 
     fun backspace() {
