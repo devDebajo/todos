@@ -31,34 +31,12 @@ internal class ActivityResultLaunchers(val activity: FragmentActivity) {
             }
         }
 
-    @Deprecated("")
-    fun createDocument(fileName: String, callback: (Uri) -> Unit) {
-        createDocumentLauncher.launch(fileName)
-        activity.lifecycleScope.launch {
-            val event = eventBus.filterIsInstance<Event.FileCreated>().firstOrNull()
-            if (event != null) {
-                callback(event.uri)
-            }
-        }
-    }
-
     suspend fun createDocument(fileName: String): Uri? {
         createDocumentLauncher.launch(fileName)
         return when (val event = eventBus.filterIsInstance<Event.Create>().firstOrNull()) {
             is Event.FileCreated -> event.uri
             Event.FileCreateCancelled -> null
             null -> null
-        }
-    }
-
-    @Deprecated("")
-    fun selectDocument(callback: (Uri) -> Unit) {
-        openDocumentLauncher.launch(arrayOf("*/*"))
-        activity.lifecycleScope.launch {
-            val event = eventBus.filterIsInstance<Event.FileSelected>().firstOrNull()
-            if (event != null) {
-                callback(event.uri)
-            }
         }
     }
 
