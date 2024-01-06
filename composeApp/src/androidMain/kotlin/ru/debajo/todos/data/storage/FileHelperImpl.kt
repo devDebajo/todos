@@ -26,11 +26,11 @@ internal class FileHelperImpl(
         }
     }
 
-    override suspend fun openOutputStream(file: StorageFile): OutputStream {
+    override fun openOutputStream(file: StorageFile): OutputStream {
         return contentResolver.openOutputStream(Uri.parse(file.absolutePath), "wt")!!
     }
 
-    override suspend fun openInputStream(file: StorageFile): InputStream {
+    override fun openInputStream(file: StorageFile): InputStream {
         return contentResolver.openInputStream(Uri.parse(file.absolutePath))!!
     }
 

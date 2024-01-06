@@ -11,6 +11,15 @@ data class FileConfigState2(
     val showCreateFileDialog: Boolean = false,
     val createEncryptedFileDialogState: CreateEncryptedFileDialogState? = null,
     val creatingFile: Boolean = false,
+    val enterFilePinDialogState: EnterFilePinDialogState? = null,
+)
+
+@Immutable
+data class EnterFilePinDialogState(
+    val file: StorageFile,
+    val visible: Boolean = true,
+    val pin: TextFieldValue = TextFieldValue(""),
+    val isError: Boolean = false,
 )
 
 @Immutable

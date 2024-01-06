@@ -3,15 +3,20 @@ package ru.debajo.todos.ui.fileconfig
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.input.TextFieldValue
 import cafe.adriel.voyager.core.model.screenModelScope
+import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
+import ru.debajo.todos.app.AppScreen
 import ru.debajo.todos.auth.Pin
-import ru.debajo.todos.common.BaseNewsLessViewModel
+import ru.debajo.todos.common.BaseViewModel
 import ru.debajo.todos.common.limit
+import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
+import ru.debajo.todos.data.storage.EncryptFileHelper
 import ru.debajo.todos.data.storage.FileSelector
 import ru.debajo.todos.data.storage.StorageFileManager
 import ru.debajo.todos.data.storage.model.StorageFile
 import ru.debajo.todos.security.HashUtils
+import ru.debajo.todos.ui.NavigatorMediator
 
 const val FilePinSize: Int = 6
 
@@ -19,7 +24,10 @@ const val FilePinSize: Int = 6
 class FileConfigViewModel2(
     private val storageFileManager: StorageFileManager,
     private val fileSelector: FileSelector,
-) : BaseNewsLessViewModel<FileConfigState2>(FileConfigState2()) {
+    private val navigatorMediator: NavigatorMediator,
+    private val databaseSnapshotSaver: DatabaseSnapshotSaver,
+    private val encryptFileHelper: EncryptFileHelper,
+) : BaseViewModel<FileConfigState2, FileConfigNews>(FileConfigState2()) {
 
     override fun onLaunch() {
         screenModelScope.launch {
@@ -134,6 +142,61 @@ class FileConfigViewModel2(
     }
 
     fun onFilePrimaryClick(file: StorageFile) {
+        screenModelScope.launch {
+            when (encryptFileHelper.isFileReadyToRead(file)) {
+                EncryptFileHelper.FileReadReadiness.NoPermission -> sendNews(FileConfigNews.Toast("No read permission"))
+                EncryptFileHelper.FileReadReadiness.Ready -> {
+                    if (storageFileManager.selectFileFromList(file)) {
+                        if (databaseSnapshotSaver.load()) {
+                            navigatorMediator.replaceAll(AppScreen.List)
+                        } else {
+                            sendNews(FileConfigNews.Toast("Some error with file"))
+                        }
+                    } else {
+                        sendNews(FileConfigNews.Toast("Some error with file"))
+                    }
+                }
+
+                EncryptFileHelper.FileReadReadiness.NoPin -> {
+                    updateState {
+                        copy(enterFilePinDialogState = EnterFilePinDialogState(file = file))
+                    }
+                }
+            }
+        }
+    }
+
+    fun hideEnterFilePinDialog() {
+        updateState {
+            copy(enterFilePinDialogState = null)
+        }
+    }
+
+    fun onConfirmEnterFilePinDialog() {
+        val enterFilePinDialogState = state.value.enterFilePinDialogState ?: return
+        if (enterFilePinDialogState.pin.text.length != FilePinSize) {
+            return
+        }
+
+        val pin = Pin(enterFilePinDialogState.pin.text)
+        screenModelScope.launch(Default) {
+            val pinHash = HashUtils.hashPin(pin)
+            if (encryptFileHelper.canDecryptFile(enterFilePinDialogState.file, pinHash)) {
+                updateState { copy(enterFilePinDialogState = null) }
+                storageFileManager.savePinHash(enterFilePinDialogState.file, pinHash)
+                navigatorMediator.replaceAll(AppScreen.List)
+            } else {
+                updateState {
+                    copy(enterFilePinDialogState = enterFilePinDialogState.copy(isError = true))
+                }
+            }
+        }
+    }
+
+    fun onEnterFilePinDialogPinChanged(pin: TextFieldValue) {
+        updateState {
+            copy(enterFilePinDialogState = enterFilePinDialogState?.copy(pin = pin.limit(FilePinSize), isError = false))
+        }
     }
 
     fun onFileSecondaryClick(file: StorageFile) {

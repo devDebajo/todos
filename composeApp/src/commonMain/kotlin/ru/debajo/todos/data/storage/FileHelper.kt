@@ -9,7 +9,7 @@ interface FileHelper {
 
     fun canRead(file: StorageFile): Boolean
 
-    suspend fun openOutputStream(file: StorageFile): OutputStream
+    fun openOutputStream(file: StorageFile): OutputStream
 
-    suspend fun openInputStream(file: StorageFile): InputStream
+    fun openInputStream(file: StorageFile): InputStream
 }

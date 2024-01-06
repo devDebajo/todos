@@ -24,6 +24,7 @@ import ru.debajo.todos.data.storage.DatabaseChangeListener
 import ru.debajo.todos.data.storage.DatabaseSnapshotHelper
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
+import ru.debajo.todos.data.storage.EncryptFileHelper
 import ru.debajo.todos.data.storage.ExternalFileHelper
 import ru.debajo.todos.data.storage.FilePinStorage
 import ru.debajo.todos.data.storage.StorageFileManager
@@ -56,6 +57,7 @@ val CommonModule: Module = module {
     singleOf(::ExternalFileHelper)
     singleOf(::StorageFileManager)
     factoryOf(::FilePinStorage)
+    factoryOf(::EncryptFileHelper)
 
     singleOf(::NavigatorMediator)
     factoryOf(::FileConfigViewModel)

@@ -14,7 +14,6 @@ import ru.debajo.todos.common.runCatchingAsync
 import ru.debajo.todos.data.storage.model.StorageFile
 import ru.debajo.todos.data.storage.model.StorageSnapshot
 import ru.debajo.todos.data.storage.model.StorageTimestampSnapshot
-import ru.debajo.todos.security.AesHelper
 import ru.debajo.todos.security.HashUtils
 import ru.debajo.todos.security.SecuredPreferences
 
@@ -24,6 +23,7 @@ class DatabaseSnapshotSaver(
     private val storageFileManager: StorageFileManager,
     private val fileHelper: FileHelper,
     private val filePinStorage: FilePinStorage,
+    private val encryptFileHelper: EncryptFileHelper,
     private val securedPreferences: SecuredPreferences,
     private val appLifecycle: AppLifecycle,
 ) : DatabaseChangeListener {
@@ -62,9 +62,7 @@ class DatabaseSnapshotSaver(
 
         val stream = fileHelper.openOutputStream(file)
         var fileContent = json.encodeToString(StorageSnapshot.serializer(), snapshot)
-        if (file.encrypted) {
-            fileContent = AesHelper.encrypt(pinHash!!.pinHash, fileContent)
-        }
+        fileContent = encryptFileHelper.encryptFile(file, fileContent, pinHash)
         stream.bufferedWriter().use { it.write(fileContent) }
     }
 
@@ -93,6 +91,9 @@ class DatabaseSnapshotSaver(
     private suspend fun loadUnsafe(): StorageSnapshot {
         val file = storageFileManager.awaitCurrentFile()
         val fileContent = loadFileContentUnsafe(file)
+        if (fileContent.isEmpty()) {
+            return StorageSnapshot(absolutePath = file.absolutePath)
+        }
         return json.decodeFromString(StorageSnapshot.serializer(), fileContent).copy(
             absolutePath = file.absolutePath
         )
@@ -115,11 +116,7 @@ class DatabaseSnapshotSaver(
 
     private suspend fun loadFileContentUnsafe(file: StorageFile): String {
         val pinHash = filePinStorage.get(file)
-        var fileContent = fileHelper.openInputStream(file).bufferedReader().readText()
-        if (file.encrypted) {
-            fileContent = AesHelper.decrypt(pinHash!!.pinHash, fileContent)
-        }
-        return fileContent
+        return encryptFileHelper.decryptFile(file, pinHash)
     }
 
     private suspend fun needToSave(file: StorageFile): NeedToSave {

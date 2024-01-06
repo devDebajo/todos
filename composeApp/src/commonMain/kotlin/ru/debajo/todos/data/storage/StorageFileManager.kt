@@ -50,17 +50,6 @@ class StorageFileManager(
         return _currentFile.filterNotNull().first()
     }
 
-    suspend fun isFileReadyToRead(): Boolean {
-        val file = _currentFile.value ?: return false
-        if (!fileHelper.canRead(file)) {
-            return false
-        }
-        if (!file.encrypted) {
-            return true
-        }
-        return filePinStorage.get(file) != null
-    }
-
     suspend fun selectFileFromList(file: StorageFile): Boolean {
         if (!file.isValidExtension) {
             return false
@@ -108,6 +97,10 @@ class StorageFileManager(
                 false
             }
         }
+    }
+
+    suspend fun savePinHash(file: StorageFile, pinHash: PinHash) {
+        filePinStorage.save(file, pinHash)
     }
 
     private suspend fun addFileToList(file: StorageFile) {

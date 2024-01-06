@@ -19,11 +19,11 @@ internal class FileHelperImpl : FileHelper {
         return File(file.absolutePath).exists()
     }
 
-    override suspend fun openOutputStream(file: StorageFile): OutputStream {
+    override fun openOutputStream(file: StorageFile): OutputStream {
         return File(file.absolutePath).outputStream()
     }
 
-    override suspend fun openInputStream(file: StorageFile): InputStream {
+    override fun openInputStream(file: StorageFile): InputStream {
         return File(file.absolutePath).inputStream()
     }
 }

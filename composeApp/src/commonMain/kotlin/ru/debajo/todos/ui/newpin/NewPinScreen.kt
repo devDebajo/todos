@@ -45,19 +45,18 @@ fun NewPinScreen(viewModel: NewPinViewModel) {
                     isError = state.isError,
                 )
             }
-
-            PinPad(
-                modifier = Modifier.align(Alignment.BottomCenter),
-                onActionClick = { action ->
-                    when (action) {
-                        ActionType.Backspace -> viewModel.backspace()
-                        ActionType.Biometric, ActionType.None -> Unit
-                    }
-                },
-                onNumberClick = { viewModel.onButtonClick(it) },
-                actionType = state.actionType,
-            )
         }
+
+        PinPad(
+            onActionClick = { action ->
+                when (action) {
+                    ActionType.Backspace -> viewModel.backspace()
+                    ActionType.Biometric, ActionType.None -> Unit
+                }
+            },
+            onNumberClick = { viewModel.onButtonClick(it) },
+            actionType = state.actionType,
+        )
     }
 
     UseBiometricDialog(

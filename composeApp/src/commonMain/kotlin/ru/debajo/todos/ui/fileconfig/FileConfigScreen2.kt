@@ -86,6 +86,18 @@ fun FileConfigScreen2(viewModel: FileConfigViewModel2) {
             onConfirm = { viewModel.onCreateFileWithEncryption() },
         )
     }
+
+    val enterFilePinDialogState = state.enterFilePinDialogState
+    if (enterFilePinDialogState != null && enterFilePinDialogState.visible) {
+        EnterPinDialog(
+            text = "PIN-code for ${enterFilePinDialogState.file.nameWithExtension}",
+            pin = enterFilePinDialogState.pin,
+            isError = enterFilePinDialogState.isError,
+            onPinChanged = { viewModel.onEnterFilePinDialogPinChanged(it) },
+            onCancel = { viewModel.hideEnterFilePinDialog() },
+            onConfirm = { viewModel.onConfirmEnterFilePinDialog() },
+        )
+    }
 }
 
 @Composable

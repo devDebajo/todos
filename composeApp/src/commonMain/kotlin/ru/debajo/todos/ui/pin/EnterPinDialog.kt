@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 fun EnterPinDialog(
     pin1: TextFieldValue,
     pin2: TextFieldValue,
+    text: String = "New PIN-code",
     isError: Boolean = false,
     visible: Boolean = true,
     onPin1Changed: (TextFieldValue) -> Unit,
@@ -35,7 +37,7 @@ fun EnterPinDialog(
         val savePinButtonEnabled = pin1.text.isNotEmpty() && pin2.text.isNotEmpty()
         val second = remember { FocusRequester() }
         AlertDialog(
-            title = { Text("New PIN-code") },
+            title = { Text(text) },
             text = {
                 Column {
                     TextField(
@@ -51,7 +53,7 @@ fun EnterPinDialog(
                                 imeAction = ImeAction.Next,
                             )
                         },
-                        keyboardActions = remember(onConfirm) {
+                        keyboardActions = remember(second) {
                             KeyboardActions(
                                 onNext = {
                                     second.requestFocus()
@@ -87,6 +89,67 @@ fun EnterPinDialog(
                         }
                     )
                 }
+            },
+            dismissButton = {
+                TextButton(onClick = onCancel) {
+                    Text("Cancel")
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = onConfirm,
+                    enabled = savePinButtonEnabled,
+                ) {
+                    Text("Save")
+                }
+            },
+            onDismissRequest = onCancel,
+        )
+    }
+}
+
+
+@Composable
+fun EnterPinDialog(
+    pin: TextFieldValue,
+    text: String = "PIN-code",
+    isError: Boolean = false,
+    visible: Boolean = true,
+    onPinChanged: (TextFieldValue) -> Unit,
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    if (visible) {
+        val savePinButtonEnabled = pin.text.isNotEmpty()
+        val requester = remember { FocusRequester() }
+        LaunchedEffect(requester) { requester.requestFocus() }
+        AlertDialog(
+            title = { Text(text) },
+            text = {
+                TextField(
+                    modifier = Modifier.focusRequester(requester),
+                    placeholder = { Text("PIN") },
+                    value = pin,
+                    onValueChange = onPinChanged,
+                    isError = isError,
+                    visualTransformation = remember { PasswordVisualTransformation() },
+                    keyboardOptions = remember {
+                        KeyboardOptions(
+                            keyboardType = KeyboardType.NumberPassword,
+                            autoCorrect = false,
+                            imeAction = ImeAction.Done,
+                        )
+                    },
+                    keyboardActions = remember(onConfirm) {
+                        KeyboardActions(
+                            onDone = {
+                                if (savePinButtonEnabled) {
+                                    onConfirm()
+                                }
+                            }
+                        )
+                    }
+                )
             },
             dismissButton = {
                 TextButton(onClick = onCancel) {
