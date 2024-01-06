@@ -35,7 +35,6 @@ import ru.debajo.todos.domain.TodoItemUseCase
 import ru.debajo.todos.security.SecuredPreferences
 import ru.debajo.todos.security.SecuredPreferencesImpl
 import ru.debajo.todos.ui.NavigatorMediator
-import ru.debajo.todos.ui.fileconfig.FileConfigViewModel
 import ru.debajo.todos.ui.fileconfig.FileConfigViewModel2
 import ru.debajo.todos.ui.newpin.NewPinViewModel
 import ru.debajo.todos.ui.onboarding.OnboardingViewModel
@@ -60,7 +59,6 @@ val CommonModule: Module = module {
     factoryOf(::EncryptFileHelper)
 
     singleOf(::NavigatorMediator)
-    factoryOf(::FileConfigViewModel)
     factoryOf(::FileConfigViewModel2)
     factoryOf(::TodoListViewModel)
     factoryOf(::OnboardingViewModel)

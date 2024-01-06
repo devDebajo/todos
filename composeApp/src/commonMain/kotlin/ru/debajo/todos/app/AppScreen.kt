@@ -59,10 +59,6 @@ sealed interface AppScreen : Screen {
     data object SelectFile : AppScreen {
         @Composable
         override fun Content() {
-//            val viewModel = rememberScreenModel { getFromDi<FileConfigViewModel>() }
-//            LaunchedEffect(viewModel) { viewModel.init() }
-//            FileConfigScreen(viewModel)
-
             FileConfigScreen2(viewModelFromDi<FileConfigViewModel2>())
         }
     }

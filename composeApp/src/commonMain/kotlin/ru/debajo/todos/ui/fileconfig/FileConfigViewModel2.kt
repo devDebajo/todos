@@ -54,7 +54,13 @@ class FileConfigViewModel2(
     }
 
     fun selectFile() {
-
+        screenModelScope.launch {
+            val file = fileSelector.select()
+            if (file != null) {
+                storageFileManager.tryAddFile(file, null)
+            }
+            hideCreateFileDialogs()
+        }
     }
 
     fun createFile(encrypted: Boolean) {

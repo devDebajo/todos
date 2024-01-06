@@ -205,3 +205,22 @@ private fun CreateFileDialog(
         )
     }
 }
+
+//if (state.initialLoading) {
+//    AlertDialog(onDismissRequest = { /** could not close dialog **/ }) {
+//        Box(Modifier.fillMaxSize()) {
+//            Box(
+//                contentAlignment = Alignment.Center,
+//                modifier = Modifier
+//                    .size(100.dp)
+//                    .clip(RoundedCornerShape(12.dp))
+//                    .background(MaterialTheme.colorScheme.surface)
+//                    .align(Alignment.Center)
+//            ) {
+//                CircularProgressIndicator(
+//                    modifier = Modifier.size(40.dp)
+//                )
+//            }
+//        }
+//    }
+//}
