@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS DbFilePath (
+  `path` TEXT NOT NULL,
+  PRIMARY KEY(`path`)
+);
+
+save:
+INSERT INTO DbFilePath(path)
+VALUES (?);
+
+clear:
+DELETE FROM DbFilePath;
+
+get:
+SELECT * FROM DbFilePath LIMIT 1;

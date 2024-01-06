@@ -14,6 +14,7 @@ import ru.debajo.todos.ui.NavigatorMediator
 import ru.debajo.todos.ui.fileconfig.model.FileConfigState
 
 @Stable
+@Deprecated("")
 class FileConfigViewModel(
     private val databaseSnapshotSaver: DatabaseSnapshotSaver,
     private val externalFileHelper: ExternalFileHelper,

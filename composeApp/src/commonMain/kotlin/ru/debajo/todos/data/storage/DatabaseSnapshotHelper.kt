@@ -1,6 +1,7 @@
 package ru.debajo.todos.data.storage
 
 import kotlinx.datetime.Instant
+import ru.debajo.todos.data.db.dao.DbFilePathDao
 import ru.debajo.todos.data.db.dao.DbTodoGroupDao
 import ru.debajo.todos.data.db.dao.DbTodoGroupToItemLinkDao
 import ru.debajo.todos.data.db.dao.DbTodoItemDao
@@ -17,6 +18,7 @@ class DatabaseSnapshotHelper(
     private val dbTodoGroupDao: DbTodoGroupDao,
     private val dbTodoGroupToItemLinkDao: DbTodoGroupToItemLinkDao,
     private val dbTodoItemDao: DbTodoItemDao,
+    private val dbFilePathDao: DbFilePathDao,
     private val replaceDao: ReplaceDao,
 ) {
     suspend fun getSnapshot(timestamp: Instant): StorageSnapshot {
@@ -24,12 +26,18 @@ class DatabaseSnapshotHelper(
             timestamp = timestamp.toEpochMilliseconds(),
             groups = dbTodoGroupDao.getAll().map { it.convert() },
             links = dbTodoGroupToItemLinkDao.getAll().map { it.convert() },
-            todos = dbTodoItemDao.getAll().map { it.convert() }
+            todos = dbTodoItemDao.getAll().map { it.convert() },
+            absolutePath = dbFilePathDao.get(),
         )
     }
 
     suspend fun replace(snapshot: StorageSnapshot) {
+        val path = snapshot.absolutePath
+        if (path.isNullOrEmpty()) {
+            error("Path should not be empty")
+        }
         replaceDao.replace(
+            path = path,
             groups = snapshot.groups.map { it.convert() },
             links = snapshot.links.map { it.convert() },
             items = snapshot.todos.map { it.convert() },

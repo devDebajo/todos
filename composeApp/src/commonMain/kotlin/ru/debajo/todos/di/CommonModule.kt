@@ -12,6 +12,7 @@ import ru.debajo.todos.auth.AppSecurityManager
 import ru.debajo.todos.common.isDebug
 import ru.debajo.todos.data.db.DriverFactory
 import ru.debajo.todos.data.db.createSchema
+import ru.debajo.todos.data.db.dao.DbFilePathDao
 import ru.debajo.todos.data.db.dao.DbTodoGroupDao
 import ru.debajo.todos.data.db.dao.DbTodoGroupToItemLinkDao
 import ru.debajo.todos.data.db.dao.DbTodoItemDao
@@ -24,6 +25,8 @@ import ru.debajo.todos.data.storage.DatabaseSnapshotHelper
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
 import ru.debajo.todos.data.storage.ExternalFileHelper
+import ru.debajo.todos.data.storage.FilePinStorage
+import ru.debajo.todos.data.storage.StorageFileManager
 import ru.debajo.todos.db.TodosDatabase
 import ru.debajo.todos.domain.TodoGroupRepository
 import ru.debajo.todos.domain.TodoItemRepository
@@ -51,6 +54,8 @@ val CommonModule: Module = module {
     singleOf(::DatabaseSnapshotSaver).bind<DatabaseChangeListener>()
     singleOf(::DatabaseSnapshotWorker)
     singleOf(::ExternalFileHelper)
+    singleOf(::StorageFileManager)
+    factoryOf(::FilePinStorage)
 
     singleOf(::NavigatorMediator)
     factoryOf(::FileConfigViewModel)
@@ -80,10 +85,12 @@ val CommonModule: Module = module {
     single { get<TodosDatabase>().dbTodoGroupQueries }
     single { get<TodosDatabase>().dbTodoGroupToItemLinkQueries }
     single { get<TodosDatabase>().dbTodoItemQueries }
+    single { get<TodosDatabase>().dbFilePathQueries }
     singleOf(::DbTodoGroupDao)
     singleOf(::DbTodoGroupToItemLinkDao)
     singleOf(::DbTodoItemDao)
     singleOf(::ReplaceDao)
+    singleOf(::DbFilePathDao)
     singleOf(::AppSecurityManager)
 
     factoryOf(::TodoGroupRepository)

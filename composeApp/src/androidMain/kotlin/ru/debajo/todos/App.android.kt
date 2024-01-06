@@ -23,7 +23,7 @@ import ru.debajo.todos.app.AppLifecycleMutable
 import ru.debajo.todos.app.AppScreen
 import ru.debajo.todos.common.isDebug
 import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
-import ru.debajo.todos.data.storage.ExternalFileHelper
+import ru.debajo.todos.data.storage.StorageFileManager
 import ru.debajo.todos.di.ActivityResultLaunchersHolder
 import ru.debajo.todos.di.AndroidModule
 import ru.debajo.todos.di.CommonModule
@@ -75,7 +75,7 @@ class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob
 class AppActivity : FragmentActivity() {
 
     private val activityResultLaunchers: ActivityResultLaunchers = ActivityResultLaunchers(this)
-    private val externalFileHelper: ExternalFileHelper by inject()
+    private val storageFileManager: StorageFileManager by inject()
     private val navigatorMediator: NavigatorMediator by inject()
     private val appLifecycleMutable: AppLifecycleMutable by inject()
 
@@ -110,7 +110,7 @@ class AppActivity : FragmentActivity() {
     private fun tryToExtractUri(intent: Intent) {
         val data = intent.data ?: return
         lifecycleScope.launch {
-            if (externalFileHelper.offer(data.toString())) {
+            if (storageFileManager.trySelectFile(data.toString())) {
                 navigatorMediator.navigate(AppScreen.SelectFile)
             }
         }

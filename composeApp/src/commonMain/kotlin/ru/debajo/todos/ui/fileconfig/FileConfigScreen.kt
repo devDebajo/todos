@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Deprecated("")
 fun FileConfigScreen(viewModel: FileConfigViewModel) {
     val state by viewModel.state.collectAsState()
 

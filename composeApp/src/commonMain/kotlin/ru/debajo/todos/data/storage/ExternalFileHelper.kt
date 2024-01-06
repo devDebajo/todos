@@ -1,7 +1,5 @@
 package ru.debajo.todos.data.storage
 
-import java.io.InputStream
-import java.io.OutputStream
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +13,7 @@ import ru.debajo.todos.common.runCatchingAsync
 import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.data.storage.model.StorageFile
 
+@Deprecated("Use StorageFileManager")
 class ExternalFileHelper(
     private val preferences: Preferences,
     private val appScope: CoroutineScope,
@@ -29,16 +28,6 @@ class ExternalFileHelper(
         appScope.launch {
             _fileUri.value = loadUri()
         }
-    }
-
-    suspend fun openOutputStream(): OutputStream {
-        val file = fileUri.filterNotNull().first()
-        return fileHelper.openOutputStream(file)
-    }
-
-    suspend fun openInputStream(): InputStream {
-        val file = fileUri.filterNotNull().first()
-        return fileHelper.openInputStream(file)
     }
 
     fun create() {
@@ -59,7 +48,7 @@ class ExternalFileHelper(
         }
     }
 
-    suspend fun offer(uri: String): Boolean {
+    private suspend fun offer(uri: String): Boolean {
         return withContext(Dispatchers.IO) {
             val file = fileHelper.createStorageFile(uri)
             if (file != null && fileHelper.canRead(file)) {

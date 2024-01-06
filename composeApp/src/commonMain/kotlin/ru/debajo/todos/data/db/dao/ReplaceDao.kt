@@ -2,6 +2,7 @@ package ru.debajo.todos.data.db.dao
 
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
+import ru.debajo.todos.db.DbFilePathQueries
 import ru.debajo.todos.db.DbTodoGroup
 import ru.debajo.todos.db.DbTodoGroupQueries
 import ru.debajo.todos.db.DbTodoGroupToItemLink
@@ -15,8 +16,10 @@ class ReplaceDao(
     private val dbTodoGroupQueries: DbTodoGroupQueries,
     private val dbTodoItemQueries: DbTodoItemQueries,
     private val dbTodoGroupToItemLinkQueries: DbTodoGroupToItemLinkQueries,
+    private val dbFilePathQueries: DbFilePathQueries,
 ) {
     suspend fun replace(
+        path: String,
         groups: List<DbTodoGroup>,
         links: List<DbTodoGroupToItemLink>,
         items: List<DbTodoItem>,
@@ -26,6 +29,8 @@ class ReplaceDao(
                 dbTodoGroupQueries.deleteAll()
                 dbTodoItemQueries.deleteAll()
                 dbTodoGroupToItemLinkQueries.deleteAll()
+                dbFilePathQueries.clear()
+                dbFilePathQueries.save(path)
 
                 for (group in groups) {
                     dbTodoGroupQueries.save(
