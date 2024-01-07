@@ -33,12 +33,6 @@ class StorageFileManager(
     init {
         appScope.launch {
             _files.value = loadFilesList()
-            if (isSelectLastFile()) {
-                val lastFile = loadLastFile()
-                if (lastFile != null) {
-                    selectFileFromList(lastFile)
-                }
-            }
         }
     }
 
@@ -107,6 +101,11 @@ class StorageFileManager(
         filePinStorage.save(file, pinHash)
     }
 
+    suspend fun loadLastFile(): StorageFile? {
+        val path = securedPreferences.getString(LastSelectedFileKey) ?: return null
+        return fileHelper.createStorageFile(path)
+    }
+
     private suspend fun addFileToList(file: StorageFile) {
         val newList = (_files.value.orEmpty() + listOf(file)).distinctBy { it.absolutePath }
         _files.value = newList
@@ -130,11 +129,6 @@ class StorageFileManager(
 
     private suspend fun saveLastFile(file: StorageFile) {
         securedPreferences.putString(LastSelectedFileKey, file.absolutePath)
-    }
-
-    private suspend fun loadLastFile(): StorageFile? {
-        val path = securedPreferences.getString(LastSelectedFileKey) ?: return null
-        return fileHelper.createStorageFile(path)
     }
 
     private companion object {

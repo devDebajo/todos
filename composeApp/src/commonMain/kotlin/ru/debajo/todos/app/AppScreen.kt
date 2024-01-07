@@ -1,9 +1,11 @@
 package ru.debajo.todos.app
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import cafe.adriel.voyager.core.screen.Screen
 import ru.debajo.todos.common.viewModelFromDi
 import ru.debajo.todos.ui.fileconfig.FileConfigScreen
+import ru.debajo.todos.ui.fileconfig.FileConfigViewModel
 import ru.debajo.todos.ui.newpin.NewPinScreen
 import ru.debajo.todos.ui.onboarding.OnboardingScreen
 import ru.debajo.todos.ui.pin.PinScreen
@@ -42,9 +44,15 @@ sealed interface AppScreen : Screen {
         }
     }
 
-    data object SelectFile : AppScreen {
+    class SelectFile(private val autoOpen: Boolean = false) : AppScreen {
         @Composable
         override fun Content() {
+            val viewModel = viewModelFromDi<FileConfigViewModel>()
+            LaunchedEffect(viewModel) {
+                if (autoOpen) {
+                    viewModel.tryToAutoOpen()
+                }
+            }
             FileConfigScreen(viewModelFromDi())
         }
     }

@@ -19,10 +19,10 @@ class SplashViewModel(
         screenModelScope.launch {
             when (securityManager.getAuthType()) {
                 AuthType.NotConfigured -> navigatorMediator.replaceAll(AppScreen.Onboarding)
-                AuthType.Weak -> navigatorMediator.replaceAll(AppScreen.SelectFile)
+                AuthType.Weak -> navigatorMediator.replaceAll(AppScreen.SelectFile(true))
                 AuthType.Pin, AuthType.Biometric -> {
                     if (securityManager.isAuthorized()) {
-                        navigatorMediator.replaceAll(AppScreen.SelectFile)
+                        navigatorMediator.replaceAll(AppScreen.SelectFile(true))
                     } else {
                         navigatorMediator.replaceAll(AppScreen.Pin)
                     }

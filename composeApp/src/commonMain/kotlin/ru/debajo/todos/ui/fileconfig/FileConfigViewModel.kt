@@ -234,6 +234,17 @@ class FileConfigViewModel(
         }
     }
 
+    fun tryToAutoOpen() {
+        screenModelScope.launch {
+            if (storageFileManager.isSelectLastFile()) {
+                val lastFile = storageFileManager.loadLastFile()
+                if (lastFile != null && storageFileManager.selectFileFromList(lastFile)) {
+                    navigatorMediator.replaceAll(AppScreen.List)
+                }
+            }
+        }
+    }
+
     private suspend fun withLoading(block: suspend () -> Unit) {
         updateState { copy(isLoading = true) }
         try {

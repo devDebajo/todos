@@ -286,7 +286,7 @@ class TodoListViewModel(
         screenModelScope.launch {
             databaseSnapshotSaver.save(ignorePaused = true)
             storageFileManager.closeFile()
-            navigatorMediator.replaceAll(AppScreen.SelectFile)
+            navigatorMediator.replaceAll(AppScreen.SelectFile())
         }
     }
 

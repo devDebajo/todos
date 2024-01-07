@@ -66,7 +66,7 @@ class NewPinViewModel(
         val pin = Pin(state.pin1)
         val pinHash = HashUtils.hashPin(pin)
         securityManager.configurePinAuthType(pinHash)
-        navigatorMediator.replaceAll(AppScreen.SelectFile)
+        navigatorMediator.replaceAll(AppScreen.SelectFile())
     }
 
     fun backspace() {
@@ -88,7 +88,7 @@ class NewPinViewModel(
             } else {
                 securityManager.configureBiometricAuthType(pinHash, encryptedPinHash)
             }
-            navigatorMediator.replaceAll(AppScreen.SelectFile)
+            navigatorMediator.replaceAll(AppScreen.SelectFile())
         }
     }
 
@@ -97,7 +97,7 @@ class NewPinViewModel(
         screenModelScope.launch {
             val pin = Pin(state.value.pin1)
             securityManager.configurePinAuthType(HashUtils.hashPin(pin))
-            navigatorMediator.replaceAll(AppScreen.SelectFile)
+            navigatorMediator.replaceAll(AppScreen.SelectFile())
         }
     }
 }

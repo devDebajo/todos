@@ -111,7 +111,7 @@ class AppActivity : FragmentActivity() {
         val data = intent.data ?: return
         lifecycleScope.launch {
             if (storageFileManager.tryAddFile(data.toString())) {
-                navigatorMediator.navigate(AppScreen.SelectFile)
+                navigatorMediator.navigate(AppScreen.SelectFile())
             }
         }
     }

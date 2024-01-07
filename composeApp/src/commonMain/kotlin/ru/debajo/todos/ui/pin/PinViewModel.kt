@@ -41,7 +41,7 @@ class PinViewModel(
                 }
 
                 if (used) {
-                    navigatorMediator.replaceAll(AppScreen.SelectFile)
+                    navigatorMediator.replaceAll(AppScreen.SelectFile(true))
                 }
             }
         }
@@ -59,7 +59,7 @@ class PinViewModel(
                 val pin = Pin(state.value.pin)
                 val pinHash = HashUtils.hashPin(pin)
                 if (securityManager.offer(pinHash)) {
-                    navigatorMediator.replaceAll(AppScreen.SelectFile)
+                    navigatorMediator.replaceAll(AppScreen.SelectFile(true))
                 } else {
                     updateState { copy(pin = "", isError = true) }
                 }

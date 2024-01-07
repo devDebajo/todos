@@ -28,7 +28,7 @@ class OnboardingViewModel(
             }
             screenModelScope.launch {
                 securityManager.configureWeakAuthType()
-                navigatorMediator.replaceAll(AppScreen.SelectFile)
+                navigatorMediator.replaceAll(AppScreen.SelectFile())
             }
         } else {
             updateState {
