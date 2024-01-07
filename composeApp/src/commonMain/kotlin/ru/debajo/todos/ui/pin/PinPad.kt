@@ -45,8 +45,12 @@ fun PinPad(
             }
 
             keyEvent.isBackspace && keyEvent.type == KeyEventType.KeyUp -> {
-                onActionClick(ActionType.Backspace)
-                true
+                if (actionType == ActionType.Backspace) {
+                    onActionClick(ActionType.Backspace)
+                    true
+                } else {
+                    false
+                }
             }
 
             else -> false
