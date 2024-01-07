@@ -26,6 +26,7 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -74,6 +75,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toLocalDateTime
 import ru.debajo.todos.app.isHorizontalOrientation
+import ru.debajo.todos.common.BlockingLoaderDialog
 import ru.debajo.todos.common.contextClickable
 import ru.debajo.todos.common.roundToPx
 import ru.debajo.todos.common.toDp
@@ -145,14 +147,20 @@ internal fun ColumnScope.TodoListScreenListWithTypePanel(viewModel: TodoListView
 internal fun TodoListScreenToolbar(viewModel: TodoListViewModel) {
     val state by viewModel.state.collectAsState()
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        Spacer(Modifier.size(4.dp))
+        IconButton({ viewModel.closeFile() }) {
+            Icon(
+                contentDescription = null,
+                imageVector = Icons.Default.Close,
+            )
+        }
+        Spacer(Modifier.size(8.dp))
         Text(
             modifier = Modifier.padding(vertical = 16.dp),
-            text = "// TODO",
+            text = state.currentFileName,
             fontSize = 22.sp,
             fontWeight = FontWeight.Medium,
         )
@@ -206,6 +214,7 @@ internal fun TodoListScreenDialogs(viewModel: TodoListViewModel) {
         onHide = { viewModel.hideUpdateItemTextDialog() },
         onConfirm = { viewModel.updateItemText() }
     )
+    BlockingLoaderDialog(state.isBlockingLoading)
 }
 
 @Composable

@@ -5,12 +5,16 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import cafe.adriel.voyager.core.model.screenModelScope
 import kotlinx.coroutines.launch
+import ru.debajo.todos.app.AppScreen
 import ru.debajo.todos.common.BaseViewModel
 import ru.debajo.todos.data.preferences.Preferences
+import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
+import ru.debajo.todos.data.storage.StorageFileManager
 import ru.debajo.todos.domain.GroupId
 import ru.debajo.todos.domain.TodoGroup
 import ru.debajo.todos.domain.TodoItem
 import ru.debajo.todos.domain.TodoItemUseCase
+import ru.debajo.todos.ui.NavigatorMediator
 import ru.debajo.todos.ui.todolist.model.TodoItemAction
 import ru.debajo.todos.ui.todolist.model.TodoItemContextMenuState
 import ru.debajo.todos.ui.todolist.model.TodoListNews
@@ -18,8 +22,11 @@ import ru.debajo.todos.ui.todolist.model.TodoListState
 
 @Stable
 class TodoListViewModel(
+    private val databaseSnapshotSaver: DatabaseSnapshotSaver,
+    private val storageFileManager: StorageFileManager,
     private val todoItemUseCase: TodoItemUseCase,
     private val preferences: Preferences,
+    private val navigatorMediator: NavigatorMediator,
 ) : BaseViewModel<TodoListState, TodoListNews>(TodoListState()) {
 
     override fun onLaunch() {
@@ -39,6 +46,11 @@ class TodoListViewModel(
                         copy(groups = groups)
                     }
                 }
+            }
+        }
+        screenModelScope.launch {
+            updateState {
+                copy(currentFileName = storageFileManager.awaitCurrentFile().nameWithExtension)
             }
         }
     }
@@ -266,6 +278,15 @@ class TodoListViewModel(
     fun moveCurrentGroupRight() {
         screenModelScope.launch {
             todoItemUseCase.moveRight(state.value.currentGroup.id)
+        }
+    }
+
+    fun closeFile() {
+        updateState { copy(isBlockingLoading = true) }
+        screenModelScope.launch {
+            databaseSnapshotSaver.save(ignorePaused = true)
+            storageFileManager.closeFile()
+            navigatorMediator.replaceAll(AppScreen.SelectFile)
         }
     }
 

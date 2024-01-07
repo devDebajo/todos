@@ -18,8 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
@@ -39,6 +37,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ru.debajo.todos.common.BlockingLoaderDialog
 import ru.debajo.todos.common.contextClickable
 import ru.debajo.todos.data.storage.model.StorageFile
 import ru.debajo.todos.ui.pin.EnterPinDialog
@@ -228,29 +227,6 @@ private fun CreateFileDialog(
             },
             onDismissRequest = onCancel
         )
-    }
-}
-
-@Composable
-@OptIn(ExperimentalMaterial3Api::class)
-private fun BlockingLoaderDialog(show: Boolean) {
-    if (show) {
-        AlertDialog(onDismissRequest = { /** could not close dialog **/ }) {
-            Box(Modifier.fillMaxSize()) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surface)
-                        .align(Alignment.Center)
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(40.dp)
-                    )
-                }
-            }
-        }
     }
 }
 

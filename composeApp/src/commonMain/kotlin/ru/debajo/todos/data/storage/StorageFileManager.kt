@@ -68,6 +68,10 @@ class StorageFileManager(
         return true
     }
 
+    fun closeFile() {
+        _currentFile.value = null
+    }
+
     suspend fun isSelectLastFile(): Boolean {
         return preferences.getBoolean(SelectLastFileKey) == true
     }

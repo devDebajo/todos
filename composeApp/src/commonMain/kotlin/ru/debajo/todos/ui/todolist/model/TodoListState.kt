@@ -10,6 +10,8 @@ import ru.debajo.todos.domain.TodoItem
 
 @Immutable
 data class TodoListState(
+    val currentFileName: String = "",
+    val isBlockingLoading: Boolean = false,
     val groups: List<TodoGroup> = listOf(AllTodosGroup),
     val selectedGroupId: GroupId = AllTodosGroup.id,
     val textFieldState: TextFieldValue = TextFieldValue(""),
