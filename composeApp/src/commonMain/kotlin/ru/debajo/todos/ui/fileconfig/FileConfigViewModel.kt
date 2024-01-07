@@ -37,6 +37,12 @@ class FileConfigViewModel(
                 }
             }
         }
+        screenModelScope.launch {
+            val isSelectLastFile = storageFileManager.isSelectLastFile()
+            updateState {
+                copy(isAutoOpenLastFile = isSelectLastFile)
+            }
+        }
     }
 
     fun createNewFile() {
@@ -216,6 +222,16 @@ class FileConfigViewModel(
     }
 
     fun onFileSecondaryClick(file: StorageFile) {
+    }
+
+    fun onAutoOpenSwitchChanged(value: Boolean) {
+        updateState {
+            copy(isAutoOpenLastFile = value)
+        }
+
+        screenModelScope.launch {
+            storageFileManager.setSelectLastFile(value)
+        }
     }
 
     private suspend fun withLoading(block: suspend () -> Unit) {

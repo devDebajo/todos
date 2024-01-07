@@ -12,6 +12,7 @@ data class FileConfigState(
     val createEncryptedFileDialogState: CreateEncryptedFileDialogState? = null,
     val creatingFile: Boolean = false,
     val enterFilePinDialogState: EnterFilePinDialogState? = null,
+    val isAutoOpenLastFile: Boolean = false,
 ) {
     val showBlockingLoading: Boolean = files == null || isLoading
 }

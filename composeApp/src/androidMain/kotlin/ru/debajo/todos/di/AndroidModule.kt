@@ -3,12 +3,12 @@ package ru.debajo.todos.di
 import android.content.ContentResolver
 import android.content.Context
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
-import com.russhwolf.settings.Settings
-import com.russhwolf.settings.SharedPreferencesSettings
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import ru.debajo.todos.data.db.DriverFactory
+import ru.debajo.todos.data.preferences.Preferences
+import ru.debajo.todos.data.preferences.SharedPreferencesImpl
 import ru.debajo.todos.data.storage.FileHelper
 import ru.debajo.todos.data.storage.FileHelperImpl
 import ru.debajo.todos.data.storage.FileSelector
@@ -18,10 +18,9 @@ import ru.debajo.todos.security.BiometricDelegate
 import ru.debajo.todos.security.BiometricDelegateImpl
 
 internal val AndroidModule: Module = module {
-    single<Settings> {
-        SharedPreferencesSettings(
-            delegate = get<Context>().getSharedPreferences("todo_prefs", Context.MODE_PRIVATE),
-            commit = true,
+    single<Preferences> {
+        SharedPreferencesImpl(
+            get<Context>().getSharedPreferences("todo_prefs", Context.MODE_PRIVATE)
         )
     }
     single<ContentResolver> { get<Context>().contentResolver }

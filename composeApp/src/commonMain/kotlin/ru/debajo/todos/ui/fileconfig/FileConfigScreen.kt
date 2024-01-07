@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -59,6 +61,8 @@ fun FileConfigScreen(viewModel: FileConfigViewModel) {
                 viewModel.onFileSecondaryClick(it)
             },
         )
+        Spacer(Modifier.size(8.dp))
+        IsAutoOpenSwitch(checked = state.isAutoOpenLastFile) { viewModel.onAutoOpenSwitchChanged(it) }
         Spacer(Modifier.size(8.dp))
         Row {
             Button(onClick = { viewModel.createNewFile() }) {
@@ -104,6 +108,22 @@ fun FileConfigScreen(viewModel: FileConfigViewModel) {
     }
     SnackbarHost(viewModel)
     BlockingLoaderDialog(state.showBlockingLoading)
+}
+
+@Composable
+private fun IsAutoOpenSwitch(
+    modifier: Modifier = Modifier,
+    checked: Boolean,
+    onChanged: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = modifier.height(48.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text("Auto open last file")
+        Spacer(Modifier.weight(1f))
+        Switch(checked = checked, onCheckedChange = { onChanged(it) })
+    }
 }
 
 @Composable

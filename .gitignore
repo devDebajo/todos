@@ -14,3 +14,4 @@ Pods/
 *.jks
 *yarn.lock
 /composeApp/todos.db
+/composeApp/todo_prefs

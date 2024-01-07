@@ -38,7 +38,6 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
-            implementation(libs.multiplatformSettings)
             implementation(libs.koin.core)
             implementation(libs.kstore)
             implementation(libs.sqlDelight.coroutines)

@@ -1,37 +1,37 @@
 package ru.debajo.todos.security
 
-import com.russhwolf.settings.Settings
-import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.withContext
-import ru.debajo.todos.data.preferences.PreferencesSerializationHelper
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.Json
+import ru.debajo.todos.data.preferences.Preferences
 
 internal class SecuredPreferencesImpl(
     private val secretProvider: suspend () -> String,
-    private val settings: Settings,
-    private val serializationHelper: PreferencesSerializationHelper,
+    private val preferences: Preferences,
+    private val json: Json,
 ) : SecuredPreferences {
 
     override suspend fun putString(key: String, value: String) {
         val secret = secretProvider()
         val encryptedKey = AesHelper.encrypt(secret, key)
         val encryptedValue = AesHelper.encrypt(secret, value)
-        withContext(IO) {
-            settings.putString(encryptedKey, encryptedValue)
-        }
+        preferences.putString(encryptedKey, encryptedValue)
     }
 
     override suspend fun getString(key: String): String? {
         val secret = secretProvider()
         val encryptedKey = AesHelper.encrypt(secret, key)
-        val encryptedValue = withContext(IO) { settings.getStringOrNull(encryptedKey) } ?: return null
+        val encryptedValue = preferences.getString(encryptedKey) ?: return null
         return AesHelper.decrypt(secret, encryptedValue)
     }
 
-    override suspend fun putStringList(key: String, value: List<String>): Unit = putString(key, serializationHelper.encodeStringList(value))
+    override suspend fun putStringList(key: String, value: List<String>): Unit = putString(key, encodeStringList(value))
 
     override suspend fun getStringList(key: String): List<String>? {
         val listJson = getString(key) ?: return null
-        return serializationHelper.decodeStringList(listJson)
+        return decodeStringList(listJson)
     }
 
     override suspend fun putLong(key: String, value: Long): Unit = putString(key, value.toString())
@@ -49,8 +49,20 @@ internal class SecuredPreferencesImpl(
     override suspend fun remove(key: String) {
         val secret = secretProvider()
         val encryptedKey = AesHelper.encrypt(secret, key)
-        withContext(IO) {
-            settings.remove(encryptedKey)
+        preferences.remove(encryptedKey)
+    }
+
+    private suspend fun encodeStringList(value: List<String>): String {
+        return withContext(Default) {
+            json.encodeToString(ListSerializer(String.serializer()), value)
+        }
+    }
+
+    private suspend fun decodeStringList(json: String): List<String>? {
+        return withContext(Default) {
+            runCatching {
+                this@SecuredPreferencesImpl.json.decodeFromString(ListSerializer(String.serializer()), json)
+            }.getOrNull()
         }
     }
 }

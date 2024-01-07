@@ -1,6 +1,6 @@
 package ru.debajo.todos.common
 
-import com.russhwolf.settings.BuildConfig
+import org.jetbrains.compose.components.resources.BuildConfig
 
 actual val isDebug: Boolean
     get() = BuildConfig.DEBUG
