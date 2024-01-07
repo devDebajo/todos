@@ -20,6 +20,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -34,6 +36,23 @@ fun PinPad(
     modifier: Modifier = Modifier,
     actionType: ActionType = ActionType.None,
 ) {
+    KeyListener { keyEvent ->
+        val number = keyEvent.number
+        when {
+            number != null && keyEvent.type == KeyEventType.KeyUp -> {
+                onNumberClick(number)
+                true
+            }
+
+            keyEvent.isBackspace && keyEvent.type == KeyEventType.KeyUp -> {
+                onActionClick(ActionType.Backspace)
+                true
+            }
+
+            else -> false
+        }
+    }
+
     Column(modifier = modifier) {
         Row {
             PinButton(1, onClick = onNumberClick)

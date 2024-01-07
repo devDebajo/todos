@@ -1,8 +1,10 @@
 package ru.debajo.todos.di
 
+import KeyEventHandler
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import java.io.File
 import org.koin.core.module.Module
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import ru.debajo.todos.data.db.DriverFactory
 import ru.debajo.todos.data.preferences.FilePreferencesImpl
@@ -19,5 +21,6 @@ internal val JvmModule: Module = module {
     factory<FileHelper> { FileHelperImpl() }
     single<Preferences> { FilePreferencesImpl(get(), File("todo_prefs")) }
     single { DriverFactory { JdbcSqliteDriver("jdbc:sqlite:todos.db") } }
+    singleOf(::KeyEventHandler)
     factory<BiometricDelegate> { BiometricDelegateImpl }
 }

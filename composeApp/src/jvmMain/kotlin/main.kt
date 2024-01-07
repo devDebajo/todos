@@ -37,6 +37,7 @@ fun main() {
     val navigatorMediator = getFromDi<NavigatorMediator>()
     val databaseSnapshotSaver = getFromDi<DatabaseSnapshotSaver>()
     val scope = getFromDi<CoroutineScope>()
+    val keyEventHandler = getFromDi<KeyEventHandler>()
     application {
         Window(
             title = "// TODO",
@@ -47,7 +48,8 @@ fun main() {
                     databaseSnapshotSaver.save(ignorePaused = true)
                     exitApplication()
                 }
-            }
+            },
+            onKeyEvent = { event -> keyEventHandler.onKeyEvent(event) }
         ) {
             window.minimumSize = Dimension(350, 600)
             CompositionLocalProvider(
