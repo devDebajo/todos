@@ -1,6 +1,7 @@
 package ru.debajo.todos.security
 
 import java.nio.charset.Charset
+import java.util.concurrent.ConcurrentHashMap
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
@@ -14,6 +15,9 @@ import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalEncodingApi::class)
 object AesHelper {
+
+    private val keyCache: ConcurrentHashMap<String, SecretKey> = ConcurrentHashMap()
+
     suspend fun encrypt(secret: String, rawData: String): String {
         return withContext(Default) {
             val secretKey = createKey(secret)
@@ -35,9 +39,11 @@ object AesHelper {
     }
 
     private fun createKey(secret: String): SecretKey {
-        val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-        val spec = PBEKeySpec(secret.toCharArray(), SALT.toByteArray(Charset.defaultCharset()), 65536, 256)
-        return SecretKeySpec(factory.generateSecret(spec).encoded, "AES")
+        return keyCache.getOrPut(secret) {
+            val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+            val spec = PBEKeySpec(secret.toCharArray(), SALT.toByteArray(Charset.defaultCharset()), 65536, 256)
+            SecretKeySpec(factory.generateSecret(spec).encoded, "AES")
+        }
     }
 
     private fun createCipher(): Cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
