@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package ru.debajo.todos.common
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -18,7 +20,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEvent
 
-@OptIn(ExperimentalFoundationApi::class)
 actual fun Modifier.contextClickable(
     enabled: Boolean,
     onPrimaryClick: (Offset) -> Unit,
@@ -50,13 +51,11 @@ actual fun Modifier.contextClickable(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 private class OffsetMatcherWrapper(
     private val delegatedMatcher: PointerMatcher,
     private val offsetListener: (Offset?) -> Unit,
 ) : PointerMatcher {
 
-    @ExperimentalFoundationApi
     override fun matches(event: PointerEvent): Boolean {
         val matches = delegatedMatcher.matches(event)
         if (matches) {

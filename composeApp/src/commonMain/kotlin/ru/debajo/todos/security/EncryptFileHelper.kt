@@ -1,9 +1,10 @@
-package ru.debajo.todos.data.storage
+package ru.debajo.todos.security
 
 import ru.debajo.todos.auth.PinHash
 import ru.debajo.todos.common.runCatchingAsync
+import ru.debajo.todos.data.storage.FileHelper
+import ru.debajo.todos.data.storage.FilePinStorage
 import ru.debajo.todos.data.storage.model.StorageFile
-import ru.debajo.todos.security.AesHelper
 
 class EncryptFileHelper(
     private val fileHelper: FileHelper,
