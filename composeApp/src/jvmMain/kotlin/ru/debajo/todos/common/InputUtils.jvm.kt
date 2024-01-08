@@ -36,7 +36,7 @@ actual fun Modifier.contextClickable(
             }
         }
 
-        val matcher = remember { MyMatcher { position = it } }
+        val matcher = remember { OffsetMatcherWrapper(PointerMatcher.mouse(PointerButton.Secondary)) { position = it } }
         onClick(
             enabled = enabled,
             matcher = matcher,
@@ -51,13 +51,14 @@ actual fun Modifier.contextClickable(
 }
 
 @OptIn(ExperimentalFoundationApi::class)
-private class MyMatcher(private val offsetListener: (Offset?) -> Unit) : PointerMatcher {
-
-    private val secondaryMatcher: PointerMatcher = PointerMatcher.mouse(PointerButton.Secondary)
+private class OffsetMatcherWrapper(
+    private val delegatedMatcher: PointerMatcher,
+    private val offsetListener: (Offset?) -> Unit,
+) : PointerMatcher {
 
     @ExperimentalFoundationApi
     override fun matches(event: PointerEvent): Boolean {
-        val matches = secondaryMatcher.matches(event)
+        val matches = delegatedMatcher.matches(event)
         if (matches) {
             offsetListener(event.changes.lastOrNull()?.position)
         }
