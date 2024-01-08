@@ -251,6 +251,27 @@ class FileConfigViewModel(
         }
     }
 
+    fun onDeleteFileConfirm() {
+        val file = state.value.filePopupMenuState?.file
+        hideDeleteFileDialog()
+        if (file != null) {
+            screenModelScope.launch {
+                storageFileManager.deleteFileFromList(file)
+            }
+        }
+    }
+
+    fun hideDeleteFileDialog() {
+        updateState {
+            copy(
+                filePopupMenuState = filePopupMenuState?.copy(
+                    visible = false,
+                    showDeleteDialog = false,
+                )
+            )
+        }
+    }
+
     fun onAutoOpenSwitchChanged(value: Boolean) {
         updateState {
             copy(isAutoOpenLastFile = value)

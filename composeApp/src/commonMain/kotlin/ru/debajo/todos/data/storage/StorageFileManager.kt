@@ -102,6 +102,17 @@ class StorageFileManager(
         return fileHelper.createStorageFile(path)
     }
 
+    suspend fun deleteFileFromList(file: StorageFile) {
+        val lastFile = loadLastFile()
+        if (lastFile?.absolutePath == file.absolutePath) {
+            securedPreferences.remove(LastSelectedFileKey)
+        }
+
+        val newList = _files.value.orEmpty().filter { it.absolutePath != file.absolutePath }
+        _files.value = newList
+        saveFilesListUnsafe(newList)
+    }
+
     private suspend fun addFileToList(file: StorageFile) {
         val newList = (_files.value.orEmpty() + listOf(file)).distinctBy { it.absolutePath }
         _files.value = newList

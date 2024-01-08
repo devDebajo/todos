@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -120,6 +121,13 @@ fun FileConfigScreen(viewModel: FileConfigViewModel) {
             onConfirm = { viewModel.onConfirmEnterFilePinDialog() },
         )
     }
+
+    DeleteFileDialog(
+        state = state,
+        onDelete = { viewModel.onDeleteFileConfirm() },
+        onCancel = { viewModel.hideDeleteFileDialog() }
+    )
+
     SnackbarHost(viewModel)
     BlockingLoaderDialog(state.showBlockingLoading)
 }
@@ -133,7 +141,7 @@ private fun FileContextClickPopupMenu(state: FileConfigState, onHide: () -> Unit
         onHide = onHide
     ) {
         PopupItem(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.widthIn(min = 100.dp),
             text = "Delete from list",
             onClick = onDeleteClick,
         )
@@ -278,6 +286,31 @@ private fun SnackbarHost(viewModel: FileConfigViewModel) {
         SnackbarHost(
             hostState = hostState,
             modifier = Modifier.align(Alignment.BottomCenter)
+        )
+    }
+}
+
+@Composable
+private fun DeleteFileDialog(
+    state: FileConfigState,
+    onDelete: () -> Unit,
+    onCancel: () -> Unit,
+) {
+    if (state.filePopupMenuState?.showDeleteDialog == true) {
+        AlertDialog(
+            title = { Text("Delete file?") },
+            text = { Text("Are you sure to delete file from list? These file will be stored in file system") },
+            confirmButton = {
+                TextButton(onClick = onDelete) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onCancel) {
+                    Text("Cancel")
+                }
+            },
+            onDismissRequest = onCancel
         )
     }
 }

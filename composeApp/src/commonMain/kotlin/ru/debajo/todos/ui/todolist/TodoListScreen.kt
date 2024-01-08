@@ -234,20 +234,20 @@ private fun ContextItemPopup(
     ) {
         if (todoItemContextMenuState != null) {
             PopupItem(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.widthIn(min = 100.dp),
                 text = if (todoItemContextMenuState.item.done) "Undone" else "Done",
                 onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Archive) }
             )
 
             PopupItem(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.widthIn(min = 100.dp),
                 text = "Edit",
                 onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Edit) }
             )
 
             val clipboardManager = LocalClipboardManager.current
             PopupItem(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.widthIn(min = 100.dp),
                 text = "Copy",
                 onClick = {
                     clipboardManager.setText(AnnotatedString(todoItemContextMenuState.item.text))
@@ -256,7 +256,7 @@ private fun ContextItemPopup(
             )
 
             PopupItem(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.widthIn(min = 100.dp),
                 text = "Delete",
                 onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Delete) }
             )
