@@ -27,7 +27,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 
@@ -52,6 +55,10 @@ fun BlockingLoaderDialog(show: Boolean) {
             }
         }
     }
+}
+
+fun LayoutCoordinates.calculatePopupPosition(itemOffset: Offset): IntOffset {
+    return positionInRoot().toIntOffset() + itemOffset.toIntOffset()
 }
 
 @Composable

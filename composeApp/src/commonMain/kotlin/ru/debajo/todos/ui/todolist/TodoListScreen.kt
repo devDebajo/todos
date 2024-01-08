@@ -78,6 +78,7 @@ import ru.debajo.todos.app.isHorizontalOrientation
 import ru.debajo.todos.common.BlockingLoaderDialog
 import ru.debajo.todos.common.PopupDialog
 import ru.debajo.todos.common.PopupItem
+import ru.debajo.todos.common.calculatePopupPosition
 import ru.debajo.todos.common.contextClickable
 import ru.debajo.todos.common.roundToPx
 import ru.debajo.todos.common.toDp
@@ -608,7 +609,5 @@ private fun formatText(text: String, urlColor: Color): TextWithUrls {
 }
 
 private val URL_REGEX: Regex = "((https?|ftp|gopher|telnet|file):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)".toRegex(RegexOption.IGNORE_CASE)
-
-expect fun LayoutCoordinates.calculatePopupPosition(itemOffset: Offset): IntOffset
 
 expect fun openUrl(url: String)

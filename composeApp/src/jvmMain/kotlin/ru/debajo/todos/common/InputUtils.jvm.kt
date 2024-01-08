@@ -63,5 +63,4 @@ private class MyMatcher(private val offsetListener: (Offset?) -> Unit) : Pointer
         }
         return matches
     }
-
 }
