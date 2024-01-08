@@ -46,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
@@ -68,7 +69,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
-import io.github.aakira.napier.Napier
 import java.time.format.DateTimeFormatter
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -77,6 +77,7 @@ import kotlinx.datetime.toLocalDateTime
 import ru.debajo.todos.app.isHorizontalOrientation
 import ru.debajo.todos.common.BlockingLoaderDialog
 import ru.debajo.todos.common.PopupDialog
+import ru.debajo.todos.common.PopupItem
 import ru.debajo.todos.common.contextClickable
 import ru.debajo.todos.common.roundToPx
 import ru.debajo.todos.common.toDp
@@ -129,8 +130,8 @@ internal fun ColumnScope.TodoListScreenListWithTypePanel(viewModel: TodoListView
             .fillMaxWidth()
             .weight(1f),
         state = state,
-        onContextClick = { item, coordinates ->
-            viewModel.onItemContextClick(item, coordinates.calculatePopupPosition())
+        onContextClick = { item, coordinates, itemOffset ->
+            viewModel.onItemContextClick(item, coordinates.calculatePopupPosition(itemOffset))
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         },
     )
@@ -231,7 +232,6 @@ private fun ContextItemPopup(
         onHide = onHide,
     ) {
         if (todoItemContextMenuState != null) {
-            Napier.d("yopta todoItemContextMenuState != null")
             PopupItem(
                 modifier = Modifier.fillMaxWidth(),
                 text = if (todoItemContextMenuState.item.done) "Undone" else "Done",
@@ -260,23 +260,6 @@ private fun ContextItemPopup(
                 onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Delete) }
             )
         }
-    }
-}
-
-@Composable
-private fun PopupItem(
-    modifier: Modifier = Modifier,
-    text: String,
-    onClick: () -> Unit,
-) {
-    Box(
-        contentAlignment = Alignment.CenterStart,
-        modifier = modifier
-            .height(46.dp)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp),
-    ) {
-        Text(text = text)
     }
 }
 
@@ -324,7 +307,7 @@ private fun GroupsSpace(
 private fun TodosListWithPlaceholder(
     modifier: Modifier = Modifier,
     state: TodoListState,
-    onContextClick: (TodoItem, LayoutCoordinates) -> Unit,
+    onContextClick: (TodoItem, LayoutCoordinates, Offset) -> Unit,
 ) {
     Box(modifier = modifier) {
         if (state.isEmpty) {
@@ -346,7 +329,7 @@ private fun TodosListWithPlaceholder(
 private fun TodosList(
     modifier: Modifier = Modifier,
     state: TodoListState,
-    onContextClick: (TodoItem, LayoutCoordinates) -> Unit,
+    onContextClick: (TodoItem, LayoutCoordinates, Offset) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier,
@@ -398,13 +381,13 @@ private val itemShape: Shape = RoundedCornerShape(14.dp)
 @Composable
 private fun DismissableTodoCard(
     modifier: Modifier = Modifier,
-    onContextClick: (TodoItem, LayoutCoordinates) -> Unit,
+    onContextClick: (TodoItem, LayoutCoordinates, Offset) -> Unit,
     item: TodoItem,
 ) {
     var position by remember { mutableStateOf<LayoutCoordinates?>(null) }
     TodoCard(
         item = item,
-        onContextClick = { position?.let { onContextClick(item, it) } },
+        onContextClick = { itemOffset -> position?.let { onContextClick(item, it, itemOffset) } },
         modifier = modifier
             .fillMaxWidth()
             .onGloballyPositioned { position = it }
@@ -470,7 +453,7 @@ private fun EditSpace(
 @Composable
 private fun TodoCard(
     item: TodoItem,
-    onContextClick: () -> Unit,
+    onContextClick: (Offset) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -626,6 +609,6 @@ private fun formatText(text: String, urlColor: Color): TextWithUrls {
 
 private val URL_REGEX: Regex = "((https?|ftp|gopher|telnet|file):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)".toRegex(RegexOption.IGNORE_CASE)
 
-expect fun LayoutCoordinates.calculatePopupPosition(): IntOffset
+expect fun LayoutCoordinates.calculatePopupPosition(itemOffset: Offset): IntOffset
 
 expect fun openUrl(url: String)

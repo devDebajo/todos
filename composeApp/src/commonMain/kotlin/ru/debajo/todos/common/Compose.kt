@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +20,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -85,5 +88,22 @@ fun PopupDialog(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun PopupItem(
+    modifier: Modifier = Modifier,
+    text: String,
+    onClick: () -> Unit,
+) {
+    Box(
+        contentAlignment = Alignment.CenterStart,
+        modifier = modifier
+            .height(46.dp)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp),
+    ) {
+        Text(text = text)
     }
 }
