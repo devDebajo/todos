@@ -44,7 +44,14 @@ class DatabaseSnapshotSaver(
         }
     }
 
-    suspend fun saveFile(file: StorageFile) {
+    suspend fun saveLastFileSafe() {
+        runCatchingAsync {
+            val lastFile = storageFileManager.loadLastFile() ?: return
+            saveFile(lastFile)
+        }
+    }
+
+    private suspend fun saveFile(file: StorageFile) {
         val needToSave = needToSave(file)
         if (needToSave !is NeedToSave.Yes) {
             return
@@ -99,19 +106,14 @@ class DatabaseSnapshotSaver(
         )
     }
 
-    private suspend fun loadTimestampFromFile(): Instant? {
-        return runCatchingAsync { loadTimestampUnsafe() }.getOrNull()
+    private suspend fun loadTimestampFromFile(file: StorageFile): Instant? {
+        return runCatchingAsync { loadTimestampUnsafe(file) }.getOrNull()
     }
 
-    private suspend fun loadTimestampUnsafe(): Instant {
-        val fileContent = loadFileContentUnsafe()
+    private suspend fun loadTimestampUnsafe(file: StorageFile): Instant {
+        val fileContent = loadFileContentUnsafe(file)
         val timestamp = json.decodeFromString(StorageTimestampSnapshot.serializer(), fileContent).timestamp
         return Instant.fromEpochMilliseconds(timestamp)
-    }
-
-    private suspend fun loadFileContentUnsafe(): String {
-        val file = storageFileManager.awaitCurrentFile()
-        return loadFileContentUnsafe(file)
     }
 
     private suspend fun loadFileContentUnsafe(file: StorageFile): String {
@@ -122,7 +124,7 @@ class DatabaseSnapshotSaver(
     private suspend fun needToSave(file: StorageFile): NeedToSave {
         val key = getKey(file)
         val timestampFromSettings = onUpdateMutex.locked { securedPreferences.getLong(key) } ?: return NeedToSave.No
-        val timestampFromFile = loadTimestampFromFile() ?: return NeedToSave.Yes(Clock.System.now())
+        val timestampFromFile = loadTimestampFromFile(file) ?: return NeedToSave.Yes(Clock.System.now())
         return if (timestampFromSettings > timestampFromFile.toEpochMilliseconds()) {
             NeedToSave.Yes(Instant.fromEpochMilliseconds(timestampFromSettings))
         } else {

@@ -10,6 +10,7 @@ import ru.debajo.todos.auth.AuthType
 import ru.debajo.todos.auth.Pin
 import ru.debajo.todos.auth.PinHash
 import ru.debajo.todos.common.BaseNewsLessViewModel
+import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.security.BiometricDelegate
 import ru.debajo.todos.security.HashUtils
 import ru.debajo.todos.ui.NavigatorMediator
@@ -19,15 +20,14 @@ class PinViewModel(
     private val biometricDelegate: BiometricDelegate,
     private val securityManager: AppSecurityManager,
     private val navigatorMediator: NavigatorMediator,
+    private val databaseSnapshotSaver: DatabaseSnapshotSaver,
 ) : BaseNewsLessViewModel<PinState>(PinState()) {
 
     override fun onLaunch() {
         screenModelScope.launch {
             val authType = securityManager.getAuthType()
             updateState {
-                copy(
-                    biometricAvailable = authType == AuthType.Biometric && biometricDelegate.available
-                )
+                copy(biometricAvailable = authType == AuthType.Biometric && biometricDelegate.available)
             }
             showBiometric()
         }
@@ -41,6 +41,9 @@ class PinViewModel(
                 }
 
                 if (used) {
+                    withLastFileLoading {
+                        databaseSnapshotSaver.saveLastFileSafe()
+                    }
                     navigatorMediator.replaceAll(AppScreen.SelectFile(true))
                 }
             }
@@ -57,11 +60,14 @@ class PinViewModel(
         if (newPin.length == PinSize) {
             screenModelScope.launch(Default) {
                 val pin = Pin(state.value.pin)
-                val pinHash = HashUtils.hashPin(pin)
-                if (securityManager.offer(pinHash)) {
-                    navigatorMediator.replaceAll(AppScreen.SelectFile(true))
-                } else {
-                    updateState { copy(pin = "", isError = true) }
+                withLastFileLoading {
+                    val pinHash = HashUtils.hashPin(pin)
+                    if (securityManager.offer(pinHash)) {
+                        databaseSnapshotSaver.saveLastFileSafe()
+                        navigatorMediator.replaceAll(AppScreen.SelectFile(true))
+                    } else {
+                        updateState { copy(pin = "", isError = true) }
+                    }
                 }
             }
         }
@@ -69,5 +75,14 @@ class PinViewModel(
 
     fun backspace() {
         updateState { copy(pin = pin.dropLast(1), isError = false) }
+    }
+
+    private suspend fun withLastFileLoading(block: suspend () -> Unit) {
+        updateState { copy(savingLastFile = true) }
+        try {
+            block()
+        } finally {
+            updateState { copy(savingLastFile = false) }
+        }
     }
 }

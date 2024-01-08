@@ -233,7 +233,7 @@ class TodoListViewModel(
 
     fun hideContextPopup() {
         updateState {
-            copy(todoItemContextMenuState = null)
+            copy(todoItemContextMenuState = todoItemContextMenuState?.copy(visible = false))
         }
     }
 

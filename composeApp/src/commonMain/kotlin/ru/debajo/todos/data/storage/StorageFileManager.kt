@@ -36,10 +36,6 @@ class StorageFileManager(
         }
     }
 
-    fun isFileAlreadySelected(): Boolean {
-        return _currentFile.value != null
-    }
-
     suspend fun awaitCurrentFile(): StorageFile {
         return _currentFile.filterNotNull().first()
     }

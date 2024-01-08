@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -69,6 +68,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
+import io.github.aakira.napier.Napier
 import java.time.format.DateTimeFormatter
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -76,6 +76,7 @@ import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toLocalDateTime
 import ru.debajo.todos.app.isHorizontalOrientation
 import ru.debajo.todos.common.BlockingLoaderDialog
+import ru.debajo.todos.common.PopupDialog
 import ru.debajo.todos.common.contextClickable
 import ru.debajo.todos.common.roundToPx
 import ru.debajo.todos.common.toDp
@@ -224,46 +225,40 @@ private fun ContextItemPopup(
     onHide: () -> Unit,
 ) {
     val todoItemContextMenuState = state.todoItemContextMenuState
-    if (todoItemContextMenuState?.visible == true) {
-        Popup(
-            offset = todoItemContextMenuState.position,
-            onDismissRequest = onHide
-        ) {
-            Column(
-                modifier = Modifier
-                    .shadow(elevation = 10.dp, shape = RoundedCornerShape(14.dp))
-                    .width(100.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(MaterialTheme.colorScheme.secondaryContainer)
-            ) {
-                PopupItem(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = if (todoItemContextMenuState.item.done) "Undone" else "Done",
-                    onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Archive) }
-                )
+    PopupDialog(
+        visible = todoItemContextMenuState?.visible == true,
+        position = todoItemContextMenuState?.position ?: IntOffset.Zero,
+        onHide = onHide,
+    ) {
+        if (todoItemContextMenuState != null) {
+            Napier.d("yopta todoItemContextMenuState != null")
+            PopupItem(
+                modifier = Modifier.fillMaxWidth(),
+                text = if (todoItemContextMenuState.item.done) "Undone" else "Done",
+                onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Archive) }
+            )
 
-                PopupItem(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = "Edit",
-                    onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Edit) }
-                )
+            PopupItem(
+                modifier = Modifier.fillMaxWidth(),
+                text = "Edit",
+                onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Edit) }
+            )
 
-                val clipboardManager = LocalClipboardManager.current
-                PopupItem(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = "Copy",
-                    onClick = {
-                        clipboardManager.setText(AnnotatedString(todoItemContextMenuState.item.text))
-                        onTodoAction(todoItemContextMenuState.item, TodoItemAction.Copy)
-                    }
-                )
+            val clipboardManager = LocalClipboardManager.current
+            PopupItem(
+                modifier = Modifier.fillMaxWidth(),
+                text = "Copy",
+                onClick = {
+                    clipboardManager.setText(AnnotatedString(todoItemContextMenuState.item.text))
+                    onTodoAction(todoItemContextMenuState.item, TodoItemAction.Copy)
+                }
+            )
 
-                PopupItem(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = "Delete",
-                    onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Delete) }
-                )
-            }
+            PopupItem(
+                modifier = Modifier.fillMaxWidth(),
+                text = "Delete",
+                onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Delete) }
+            )
         }
     }
 }
@@ -307,6 +302,7 @@ private fun GroupsSpace(
                 val group = state.groups[index]
                 FilterChip(
                     selected = state.currentGroup.id == group.id,
+                    shape = RoundedCornerShape(12.dp),
                     onClick = { onGroupClick(group.id) },
                     label = { Text(text = group.name) }
                 )
@@ -397,7 +393,7 @@ private fun TodosList(
     )
 }
 
-private val itemShape: Shape = RoundedCornerShape(12.dp)
+private val itemShape: Shape = RoundedCornerShape(14.dp)
 
 @Composable
 private fun DismissableTodoCard(
@@ -482,7 +478,7 @@ private fun TodoCard(
             .clip(itemShape)
             .contextClickable(onSecondaryClick = onContextClick)
             .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(vertical = 10.dp, horizontal = 6.dp)
+            .padding(vertical = 14.dp, horizontal = 12.dp)
     ) {
         val colors = MaterialTheme.colorScheme
         val text = rememberTextWithUrls(item.text, colors.tertiary)
