@@ -36,6 +36,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -72,7 +73,8 @@ fun PopupDialog(
     onHide: () -> Unit,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    var containerSize: IntSize by remember { mutableStateOf(IntSize.Zero) }
+    Box(modifier = Modifier.fillMaxSize().onSizeChanged { containerSize = it }) {
         AnimatedVisibility(
             visible = visible,
             enter = fadeIn(),
@@ -88,20 +90,35 @@ fun PopupDialog(
                         interactionSource = remember { MutableInteractionSource() }
                     )
             ) {
-                var minWidth by remember { mutableStateOf(0) }
+                var popupSize: IntSize by remember { mutableStateOf(IntSize.Zero) }
                 Column(
                     content = content,
                     modifier = Modifier
-                        .offset { position }
+                        .offset { calculateOffset(position, popupSize, containerSize) }
                         .shadow(elevation = 10.dp, shape = RoundedCornerShape(14.dp))
-                        .widthIn(min = minWidth.toDp())
+                        .widthIn(min = popupSize.width.toDp())
                         .clip(RoundedCornerShape(14.dp))
                         .background(MaterialTheme.colorScheme.secondaryContainer)
-                        .onSizeChanged { size -> minWidth = size.width }
+                        .onSizeChanged { popupSize = it }
                 )
             }
         }
     }
+}
+
+private fun calculateOffset(position: IntOffset, popupSize: IntSize, containerSize: IntSize): IntOffset {
+    var x = position.x
+    var y = position.y
+
+    if (x + popupSize.width > containerSize.width) {
+        x = containerSize.width - popupSize.width
+    }
+
+    if (y + popupSize.height > containerSize.height) {
+        y = containerSize.height - popupSize.height
+    }
+
+    return IntOffset(x, y)
 }
 
 @Composable
