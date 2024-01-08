@@ -5,6 +5,7 @@ import android.content.Context
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 import ru.debajo.todos.data.db.DriverFactory
 import ru.debajo.todos.data.preferences.Preferences
@@ -16,6 +17,8 @@ import ru.debajo.todos.data.storage.FileSelectorImpl
 import ru.debajo.todos.db.TodosDatabase
 import ru.debajo.todos.security.BiometricDelegate
 import ru.debajo.todos.security.BiometricDelegateImpl
+import ru.debajo.todos.ui.security.SecuredScreenManager
+import ru.debajo.todos.ui.security.SecuredScreenManagerImpl
 
 internal val AndroidModule: Module = module {
     single<Preferences> {
@@ -43,4 +46,10 @@ internal val AndroidModule: Module = module {
             preferences = get(),
         )
     }
+    single {
+        val activityResultLaunchersHolder = get<ActivityResultLaunchersHolder>()
+        SecuredScreenManagerImpl(
+            activityResultLaunchersProvider = { activityResultLaunchersHolder.activityResultLaunchers }
+        )
+    }.bind<SecuredScreenManager>()
 }

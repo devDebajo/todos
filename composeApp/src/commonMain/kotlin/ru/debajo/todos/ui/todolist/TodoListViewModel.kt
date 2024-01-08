@@ -15,6 +15,7 @@ import ru.debajo.todos.domain.TodoGroup
 import ru.debajo.todos.domain.TodoItem
 import ru.debajo.todos.domain.TodoItemUseCase
 import ru.debajo.todos.ui.NavigatorMediator
+import ru.debajo.todos.ui.security.SecuredScreenManager
 import ru.debajo.todos.ui.todolist.model.TodoItemAction
 import ru.debajo.todos.ui.todolist.model.TodoItemContextMenuState
 import ru.debajo.todos.ui.todolist.model.TodoListNews
@@ -27,6 +28,7 @@ class TodoListViewModel(
     private val todoItemUseCase: TodoItemUseCase,
     private val preferences: Preferences,
     private val navigatorMediator: NavigatorMediator,
+    private val securedScreenManager: SecuredScreenManager,
 ) : BaseViewModel<TodoListState, TodoListNews>(TodoListState()) {
 
     override fun onLaunch() {
@@ -50,7 +52,9 @@ class TodoListViewModel(
         }
         screenModelScope.launch {
             updateState {
-                copy(currentFileName = storageFileManager.awaitCurrentFile().nameWithExtension)
+                val currentFile = storageFileManager.awaitCurrentFile()
+                securedScreenManager.setScreenSecured(currentFile.encrypted)
+                copy(currentFileName = currentFile.nameWithExtension)
             }
         }
     }

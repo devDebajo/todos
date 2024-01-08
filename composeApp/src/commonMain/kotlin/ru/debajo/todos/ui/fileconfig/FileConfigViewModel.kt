@@ -2,6 +2,7 @@ package ru.debajo.todos.ui.fileconfig
 
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.IntOffset
 import cafe.adriel.voyager.core.model.screenModelScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.flow.filterNotNull
@@ -221,7 +222,33 @@ class FileConfigViewModel(
         }
     }
 
-    fun onFileSecondaryClick(file: StorageFile) {
+    fun onFileSecondaryClick(file: StorageFile, position: IntOffset) {
+        updateState {
+            copy(
+                filePopupMenuState = FilePopupMenuState(
+                    file = file,
+                    position = position,
+                )
+            )
+        }
+    }
+
+    fun hideFileContextPopupMenu() {
+        updateState {
+            copy(filePopupMenuState = filePopupMenuState?.copy(visible = false))
+        }
+    }
+
+    fun onDeleteFileClick() {
+        val filePopupMenuState = state.value.filePopupMenuState ?: return
+        updateState {
+            copy(
+                filePopupMenuState = filePopupMenuState.copy(
+                    visible = false,
+                    showDeleteDialog = true,
+                )
+            )
+        }
     }
 
     fun onAutoOpenSwitchChanged(value: Boolean) {

@@ -15,6 +15,8 @@ import ru.debajo.todos.data.storage.FileSelector
 import ru.debajo.todos.data.storage.FileSelectorImpl
 import ru.debajo.todos.security.BiometricDelegate
 import ru.debajo.todos.security.BiometricDelegateImpl
+import ru.debajo.todos.ui.security.SecuredScreenManager
+import ru.debajo.todos.ui.security.SecuredScreenManagerImpl
 
 internal val JvmModule: Module = module {
     factory<FileSelector> { FileSelectorImpl() }
@@ -23,4 +25,5 @@ internal val JvmModule: Module = module {
     single { DriverFactory { JdbcSqliteDriver("jdbc:sqlite:todos.db") } }
     singleOf(::KeyEventHandler)
     factory<BiometricDelegate> { BiometricDelegateImpl }
+    factory<SecuredScreenManager> { SecuredScreenManagerImpl }
 }

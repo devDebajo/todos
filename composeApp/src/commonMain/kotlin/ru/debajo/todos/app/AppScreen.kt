@@ -16,6 +16,9 @@ import ru.debajo.todos.ui.todolist.TodoListViewModel
 
 sealed interface AppScreen : Screen {
 
+    val securedByDefault: Boolean
+        get() = false
+
     data object Splash : AppScreen {
         @Composable
         override fun Content() {
@@ -31,6 +34,8 @@ sealed interface AppScreen : Screen {
     }
 
     data object Pin : AppScreen {
+        override val securedByDefault: Boolean = true
+
         @Composable
         override fun Content() {
             PinScreen(viewModelFromDi())
@@ -38,6 +43,8 @@ sealed interface AppScreen : Screen {
     }
 
     data object NewPin : AppScreen {
+        override val securedByDefault: Boolean = true
+
         @Composable
         override fun Content() {
             NewPinScreen(viewModelFromDi())

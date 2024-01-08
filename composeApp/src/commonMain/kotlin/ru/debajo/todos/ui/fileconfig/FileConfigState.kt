@@ -2,6 +2,7 @@ package ru.debajo.todos.ui.fileconfig
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.IntOffset
 import ru.debajo.todos.data.storage.model.StorageFile
 
 @Immutable
@@ -13,9 +14,18 @@ data class FileConfigState(
     val creatingFile: Boolean = false,
     val enterFilePinDialogState: EnterFilePinDialogState? = null,
     val isAutoOpenLastFile: Boolean = false,
+    val filePopupMenuState: FilePopupMenuState? = null,
 ) {
     val showBlockingLoading: Boolean = files == null || isLoading
 }
+
+@Immutable
+data class FilePopupMenuState(
+    val file: StorageFile,
+    val position: IntOffset,
+    val visible: Boolean = true,
+    val showDeleteDialog: Boolean = false,
+)
 
 @Immutable
 data class EnterFilePinDialogState(

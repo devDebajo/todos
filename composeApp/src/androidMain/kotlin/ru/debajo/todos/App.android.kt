@@ -31,6 +31,7 @@ import ru.debajo.todos.di.getFromDi
 import ru.debajo.todos.di.inject
 import ru.debajo.todos.ui.LocalNavigatorMediator
 import ru.debajo.todos.ui.NavigatorMediator
+import ru.debajo.todos.ui.security.SecuredScreenManagerImpl
 
 class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob()) {
 
@@ -78,9 +79,11 @@ class AppActivity : FragmentActivity() {
     private val storageFileManager: StorageFileManager by inject()
     private val navigatorMediator: NavigatorMediator by inject()
     private val appLifecycleMutable: AppLifecycleMutable by inject()
+    private val securedScreenManagerImpl: SecuredScreenManagerImpl by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        securedScreenManagerImpl.onCreate()
         getFromDi<ActivityResultLaunchersHolder>().activityResultLaunchers = activityResultLaunchers
         tryToExtractUri(intent)
         setContent {

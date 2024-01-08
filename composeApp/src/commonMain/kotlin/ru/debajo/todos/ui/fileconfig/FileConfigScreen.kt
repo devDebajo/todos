@@ -29,15 +29,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ru.debajo.todos.common.BlockingLoaderDialog
+import ru.debajo.todos.common.PopupDialog
+import ru.debajo.todos.common.PopupItem
+import ru.debajo.todos.common.calculatePopupPosition
 import ru.debajo.todos.common.contextClickable
 import ru.debajo.todos.data.storage.model.StorageFile
 import ru.debajo.todos.ui.pin.EnterPinDialog
@@ -55,9 +64,9 @@ fun FileConfigScreen(viewModel: FileConfigViewModel) {
             files = state.files,
             modifier = Modifier.weight(1f),
             onPrimaryClick = { viewModel.onFilePrimaryClick(it) },
-            onSecondaryClick = {
+            onSecondaryClick = { file, coordinates, itemOffset ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                viewModel.onFileSecondaryClick(it)
+                viewModel.onFileSecondaryClick(file, coordinates.calculatePopupPosition(itemOffset))
             },
         )
         Spacer(Modifier.size(8.dp))
@@ -79,6 +88,12 @@ fun FileConfigScreen(viewModel: FileConfigViewModel) {
         state = state,
         onCancel = { viewModel.hideCreateFileDialogs() },
         onConfirm = { encrypted -> viewModel.createFile(encrypted) }
+    )
+
+    FileContextClickPopupMenu(
+        state = state,
+        onHide = { viewModel.hideFileContextPopupMenu() },
+        onDeleteClick = { viewModel.onDeleteFileClick() },
     )
 
     val createEncryptedFileDialogState = state.createEncryptedFileDialogState
@@ -110,6 +125,22 @@ fun FileConfigScreen(viewModel: FileConfigViewModel) {
 }
 
 @Composable
+private fun FileContextClickPopupMenu(state: FileConfigState, onHide: () -> Unit, onDeleteClick: () -> Unit) {
+    val filePopupMenuState = state.filePopupMenuState
+    PopupDialog(
+        visible = filePopupMenuState?.visible == true,
+        position = filePopupMenuState?.position ?: IntOffset.Zero,
+        onHide = onHide
+    ) {
+        PopupItem(
+            modifier = Modifier.fillMaxWidth(),
+            text = "Delete from list",
+            onClick = onDeleteClick,
+        )
+    }
+}
+
+@Composable
 private fun IsAutoOpenSwitch(
     modifier: Modifier = Modifier,
     checked: Boolean,
@@ -129,7 +160,7 @@ private fun IsAutoOpenSwitch(
 private fun FilesListWithPlaceholder(
     files: List<StorageFile>?,
     onPrimaryClick: (StorageFile) -> Unit,
-    onSecondaryClick: (StorageFile) -> Unit,
+    onSecondaryClick: (StorageFile, LayoutCoordinates, Offset) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -169,19 +200,22 @@ private fun FilesListWithPlaceholder(
 private fun FileRender(
     file: StorageFile,
     onPrimaryClick: (StorageFile) -> Unit,
-    onSecondaryClick: (StorageFile) -> Unit,
+    onSecondaryClick: (StorageFile, LayoutCoordinates, Offset) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var position by remember { mutableStateOf<LayoutCoordinates?>(null) }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
             .contextClickable(
                 onPrimaryClick = { onPrimaryClick(file) },
-                onSecondaryClick = { onSecondaryClick(file) },
+                onSecondaryClick = { itemOffset -> position?.let { onSecondaryClick(file, it, itemOffset) } },
             )
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(vertical = 10.dp, horizontal = 8.dp)
+            .onGloballyPositioned { position = it }
     ) {
         Column(Modifier.weight(1f)) {
             Text(
