@@ -5,6 +5,8 @@ import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlPreparedStatement
 import java.nio.charset.Charset
+import ru.debajo.todos.common.toBooleanStrict
+import ru.debajo.todos.common.toLong
 import ru.debajo.todos.security.AesHelper
 
 class EncryptedSqlDriver(
@@ -69,9 +71,9 @@ private class EncryptedSqlCursor(
         return String(stringBytes, Charset.defaultCharset())
     }
 
-    override fun getBoolean(index: Int): Boolean? = getString(index)?.toBooleanStrict()
-
     override fun getLong(index: Int): Long? = getString(index)?.toLong()
+
+    override fun getBoolean(index: Int): Boolean? = getLong(index)?.toBooleanStrict()
 
     override fun getDouble(index: Int): Double? = getLong(index)?.let { Double.fromBits(it) }
 }
@@ -89,12 +91,12 @@ private class EncryptedSqlPreparedStatement(
         bindBytes(index, string?.toByteArray(Charset.defaultCharset()))
     }
 
-    override fun bindBoolean(index: Int, boolean: Boolean?) {
-        bindString(index, boolean?.toString())
-    }
-
     override fun bindLong(index: Int, long: Long?) {
         bindString(index, long?.toString())
+    }
+
+    override fun bindBoolean(index: Int, boolean: Boolean?) {
+        bindLong(index, boolean?.toLong())
     }
 
     override fun bindDouble(index: Int, double: Double?) {
