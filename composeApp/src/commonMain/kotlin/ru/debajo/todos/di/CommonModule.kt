@@ -72,14 +72,13 @@ val CommonModule: Module = module {
 
     single<AsyncProvider<TodosDatabase>>(TodosDatabaseQualifier) {
         val securityManager = get<AppSecurityManager>()
-        AsyncProvider { securityManager.awaitCurrentPinHash().pinHash }
-            .map { secret ->
-                val driver = EncryptedSqlDriver(get<DriverFactory>().createDriver(), secret)
-                val database = TodosDatabase(driver)
-                createSchema(driver)
-                database
-            }
-            .cached()
+        AsyncProvider {
+            val pinHash = securityManager.awaitCurrentPinHash().pinHash
+            val driver = EncryptedSqlDriver(get<DriverFactory>().createDriver(), pinHash)
+            val database = TodosDatabase(driver)
+            createSchema(driver)
+            database
+        }.cached()
     }
     factory<SecuredPreferences> {
         val securityManager = get<AppSecurityManager>()
