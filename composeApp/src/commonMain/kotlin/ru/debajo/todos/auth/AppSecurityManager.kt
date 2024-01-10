@@ -46,6 +46,11 @@ class AppSecurityManager(
         return authType.filterNotNull().first()
     }
 
+    suspend fun awaitCurrentPinHash(): PinHash {
+        awaitAuthorized()
+        return getCurrentPinHash()
+    }
+
     suspend fun getCurrentPinHash(): PinHash {
         return when (getAuthType()) {
             AuthType.NotConfigured -> error("Auth type not configured")

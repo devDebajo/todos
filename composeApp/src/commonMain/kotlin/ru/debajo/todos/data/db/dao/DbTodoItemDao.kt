@@ -4,13 +4,19 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import ru.debajo.todos.db.DbTodoItem
 import ru.debajo.todos.db.DbTodoItemQueries
+import ru.debajo.todos.di.AsyncProvider
 
-class DbTodoItemDao(private val queries: DbTodoItemQueries) {
+class DbTodoItemDao(
+    private val queriesProvider: AsyncProvider<DbTodoItemQueries>,
+) {
     suspend fun save(item: DbTodoItem) {
         withContext(IO) {
+            val queries = queriesProvider.provide()
             queries.transaction {
                 queries.delete(item.id)
                 queries.save(
@@ -26,27 +32,33 @@ class DbTodoItemDao(private val queries: DbTodoItemQueries) {
 
     suspend fun get(id: String): DbTodoItem? {
         return withContext(IO) {
-            queries.get(id).executeAsOneOrNull()
+            queriesProvider.provide().get(id).executeAsOneOrNull()
         }
     }
 
     suspend fun delete(id: String) {
         withContext(IO) {
-            queries.delete(id)
+            queriesProvider.provide().delete(id)
         }
     }
 
     suspend fun delete(ids: List<String>) {
         withContext(IO) {
-            queries.deleteByIds(ids)
+            queriesProvider.provide().deleteByIds(ids)
         }
     }
 
-    fun observeAll(): Flow<List<DbTodoItem>> = queries.getAll().asFlow().mapToList(IO)
+    fun observeAll(): Flow<List<DbTodoItem>> {
+        return flow {
+            emitAll(
+                queriesProvider.provide().getAll().asFlow().mapToList(IO)
+            )
+        }
+    }
 
     suspend fun getAll(): List<DbTodoItem> {
         return withContext(IO) {
-            queries.getAll().executeAsList()
+            queriesProvider.provide().getAll().executeAsList()
         }
     }
 }

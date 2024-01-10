@@ -4,6 +4,8 @@ import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.qualifier.Qualifier
+import org.koin.core.qualifier.qualifier
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import ru.debajo.todos.app.AppLifecycle
@@ -39,6 +41,12 @@ import ru.debajo.todos.ui.pin.PinViewModel
 import ru.debajo.todos.ui.splash.SplashViewModel
 import ru.debajo.todos.ui.todolist.TodoListViewModel
 
+private val TodosDatabaseQualifier: Qualifier = qualifier("TodosDatabase")
+private val DbTodoGroupQueriesQualifier: Qualifier = qualifier("DbTodoGroupQueries")
+private val DbTodoGroupToItemLinkQueriesQualifier: Qualifier = qualifier("DbTodoGroupToItemLinkQueries")
+private val DbTodoItemQueriesQualifier: Qualifier = qualifier("DbTodoItemQueries")
+private val DbFilePathQueriesQualifier: Qualifier = qualifier("DbFilePathQueries")
+
 val CommonModule: Module = module {
     single {
         Json {
@@ -62,32 +70,65 @@ val CommonModule: Module = module {
     factoryOf(::PinViewModel)
     factoryOf(::NewPinViewModel)
 
-    single {
-        val driver = EncryptedSqlDriver(get<DriverFactory>().createDriver(), "secret")
-        val database = TodosDatabase(driver)
-        createSchema(driver)
-        database
+    single<AsyncProvider<TodosDatabase>>(TodosDatabaseQualifier) {
+        val securityManager = get<AppSecurityManager>()
+        AsyncProvider { securityManager.awaitCurrentPinHash().pinHash }
+            .map { secret ->
+                val driver = EncryptedSqlDriver(get<DriverFactory>().createDriver(), secret)
+                val database = TodosDatabase(driver)
+                createSchema(driver)
+                database
+            }
+            .cached()
     }
     factory<SecuredPreferences> {
         val securityManager = get<AppSecurityManager>()
         SecuredPreferencesImpl(
-            secretProvider = {
-                securityManager.awaitAuthorized()
-                securityManager.getCurrentPinHash().pinHash
-            },
+            secretProvider = { securityManager.awaitCurrentPinHash().pinHash },
             preferences = get(),
             json = get()
         )
     }
-    single { get<TodosDatabase>().dbTodoGroupQueries }
-    single { get<TodosDatabase>().dbTodoGroupToItemLinkQueries }
-    single { get<TodosDatabase>().dbTodoItemQueries }
-    single { get<TodosDatabase>().dbFilePathQueries }
+    single(DbTodoGroupQueriesQualifier) {
+        get<AsyncProvider<TodosDatabase>>(TodosDatabaseQualifier)
+            .map { it.dbTodoGroupQueries }
+            .cached()
+    }
+    single(DbTodoGroupToItemLinkQueriesQualifier) {
+        get<AsyncProvider<TodosDatabase>>(TodosDatabaseQualifier)
+            .map { it.dbTodoGroupToItemLinkQueries }
+            .cached()
+    }
+    single(DbTodoItemQueriesQualifier) {
+        get<AsyncProvider<TodosDatabase>>(TodosDatabaseQualifier)
+            .map { it.dbTodoItemQueries }
+            .cached()
+    }
+    single(DbFilePathQueriesQualifier) {
+        get<AsyncProvider<TodosDatabase>>(TodosDatabaseQualifier)
+            .map { it.dbFilePathQueries }
+            .cached()
+    }
     singleOf(::DbTodoGroupDao)
     singleOf(::DbTodoGroupToItemLinkDao)
     singleOf(::DbTodoItemDao)
     singleOf(::ReplaceDao)
     singleOf(::DbFilePathDao)
+
+    single { DbTodoGroupDao(get(DbTodoGroupQueriesQualifier)) }
+    single { DbTodoGroupToItemLinkDao(get(DbTodoGroupToItemLinkQueriesQualifier)) }
+    single { DbTodoItemDao(get(DbTodoItemQueriesQualifier)) }
+    single {
+        ReplaceDao(
+            todosDatabaseProvider = get(TodosDatabaseQualifier),
+            dbTodoGroupQueriesProvider = get(DbTodoGroupQueriesQualifier),
+            dbTodoItemQueriesProvider = get(DbTodoItemQueriesQualifier),
+            dbTodoGroupToItemLinkQueriesProvider = get(DbTodoGroupToItemLinkQueriesQualifier),
+            dbFilePathQueriesProvider = get(DbFilePathQueriesQualifier)
+        )
+    }
+    single { DbFilePathDao(get(DbFilePathQueriesQualifier)) }
+
     singleOf(::AppSecurityManager)
 
     factoryOf(::TodoGroupRepository)

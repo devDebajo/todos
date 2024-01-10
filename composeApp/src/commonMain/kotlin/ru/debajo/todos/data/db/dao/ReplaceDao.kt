@@ -10,13 +10,14 @@ import ru.debajo.todos.db.DbTodoGroupToItemLinkQueries
 import ru.debajo.todos.db.DbTodoItem
 import ru.debajo.todos.db.DbTodoItemQueries
 import ru.debajo.todos.db.TodosDatabase
+import ru.debajo.todos.di.AsyncProvider
 
 class ReplaceDao(
-    private val todosDatabase: TodosDatabase,
-    private val dbTodoGroupQueries: DbTodoGroupQueries,
-    private val dbTodoItemQueries: DbTodoItemQueries,
-    private val dbTodoGroupToItemLinkQueries: DbTodoGroupToItemLinkQueries,
-    private val dbFilePathQueries: DbFilePathQueries,
+    private val todosDatabaseProvider: AsyncProvider<TodosDatabase>,
+    private val dbTodoGroupQueriesProvider: AsyncProvider<DbTodoGroupQueries>,
+    private val dbTodoItemQueriesProvider: AsyncProvider<DbTodoItemQueries>,
+    private val dbTodoGroupToItemLinkQueriesProvider: AsyncProvider<DbTodoGroupToItemLinkQueries>,
+    private val dbFilePathQueriesProvider: AsyncProvider<DbFilePathQueries>,
 ) {
     suspend fun replace(
         path: String,
@@ -25,7 +26,11 @@ class ReplaceDao(
         items: List<DbTodoItem>,
     ) {
         withContext(IO) {
-            todosDatabase.transaction {
+            val dbTodoGroupQueries = dbTodoGroupQueriesProvider.provide()
+            val dbTodoItemQueries = dbTodoItemQueriesProvider.provide()
+            val dbTodoGroupToItemLinkQueries = dbTodoGroupToItemLinkQueriesProvider.provide()
+            val dbFilePathQueries = dbFilePathQueriesProvider.provide()
+            todosDatabaseProvider.provide().transaction {
                 dbTodoGroupQueries.deleteAll()
                 dbTodoItemQueries.deleteAll()
                 dbTodoGroupToItemLinkQueries.deleteAll()
