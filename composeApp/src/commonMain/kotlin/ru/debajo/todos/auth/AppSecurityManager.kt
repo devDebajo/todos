@@ -9,6 +9,7 @@ import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.security.AesHelper
 import ru.debajo.todos.security.EncryptedPinHash
 import ru.debajo.todos.security.HashUtils
+import ru.debajo.todos.security.encryptStringAsync
 
 class AppSecurityManager(
     private val preferences: Preferences,
@@ -108,13 +109,13 @@ class AppSecurityManager(
     }
 
     private suspend fun savePinHashHack(pinHash: PinHash) {
-        val encryptedHack = AesHelper.encrypt(pinHash.pinHash, PIN_HASH_HACK)
+        val encryptedHack = AesHelper.encryptStringAsync(pinHash.pinHash, PIN_HASH_HACK)
         preferences.putString(PIN_HASH_HACK_KEY, encryptedHack)
     }
 
     private suspend fun isHashValid(pinHash: PinHash): Boolean {
         val encryptedHackFromPrefs = preferences.getString(PIN_HASH_HACK_KEY) ?: return false
-        val encryptedHack = AesHelper.encrypt(pinHash.pinHash, PIN_HASH_HACK)
+        val encryptedHack = AesHelper.encryptStringAsync(pinHash.pinHash, PIN_HASH_HACK)
         return encryptedHackFromPrefs == encryptedHack
     }
 

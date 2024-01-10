@@ -38,7 +38,7 @@ class EncryptFileHelper(
             return fileContent
         }
         return if (file.encrypted) {
-            AesHelper.decrypt(pinHash!!.pinHash, fileContent)
+            AesHelper.decryptStringAsync(pinHash!!.pinHash, fileContent)
         } else {
             fileContent
         }
@@ -46,7 +46,7 @@ class EncryptFileHelper(
 
     suspend fun encryptFile(file: StorageFile, content: String, pinHash: PinHash?): String {
         return if (file.encrypted) {
-            AesHelper.encrypt(pinHash!!.pinHash, content)
+            AesHelper.encryptStringAsync(pinHash!!.pinHash, content)
         } else {
             content
         }

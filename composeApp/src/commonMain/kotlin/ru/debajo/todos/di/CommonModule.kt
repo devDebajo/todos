@@ -11,6 +11,7 @@ import ru.debajo.todos.app.AppLifecycleMutable
 import ru.debajo.todos.auth.AppSecurityManager
 import ru.debajo.todos.common.isDebug
 import ru.debajo.todos.data.db.DriverFactory
+import ru.debajo.todos.data.db.EncryptedSqlDriver
 import ru.debajo.todos.data.db.createSchema
 import ru.debajo.todos.data.db.dao.DbFilePathDao
 import ru.debajo.todos.data.db.dao.DbTodoGroupDao
@@ -62,7 +63,7 @@ val CommonModule: Module = module {
     factoryOf(::NewPinViewModel)
 
     single {
-        val driver = get<DriverFactory>().createDriver()
+        val driver = EncryptedSqlDriver(get<DriverFactory>().createDriver(), "secret")
         val database = TodosDatabase(driver)
         createSchema(driver)
         database

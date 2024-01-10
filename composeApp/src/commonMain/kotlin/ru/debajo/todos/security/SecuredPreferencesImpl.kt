@@ -15,16 +15,16 @@ internal class SecuredPreferencesImpl(
 
     override suspend fun putString(key: String, value: String) {
         val secret = secretProvider()
-        val encryptedKey = AesHelper.encrypt(secret, key)
-        val encryptedValue = AesHelper.encrypt(secret, value)
+        val encryptedKey = AesHelper.encryptStringAsync(secret, key)
+        val encryptedValue = AesHelper.encryptStringAsync(secret, value)
         preferences.putString(encryptedKey, encryptedValue)
     }
 
     override suspend fun getString(key: String): String? {
         val secret = secretProvider()
-        val encryptedKey = AesHelper.encrypt(secret, key)
+        val encryptedKey = AesHelper.encryptStringAsync(secret, key)
         val encryptedValue = preferences.getString(encryptedKey) ?: return null
-        return AesHelper.decrypt(secret, encryptedValue)
+        return AesHelper.decryptStringAsync(secret, encryptedValue)
     }
 
     override suspend fun putStringList(key: String, value: List<String>): Unit = putString(key, encodeStringList(value))
@@ -48,7 +48,7 @@ internal class SecuredPreferencesImpl(
 
     override suspend fun remove(key: String) {
         val secret = secretProvider()
-        val encryptedKey = AesHelper.encrypt(secret, key)
+        val encryptedKey = AesHelper.encryptStringAsync(secret, key)
         preferences.remove(encryptedKey)
     }
 
