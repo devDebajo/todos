@@ -74,7 +74,11 @@ fun PopupDialog(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     var containerSize: IntSize by remember { mutableStateOf(IntSize.Zero) }
-    Box(modifier = Modifier.fillMaxSize().onSizeChanged { containerSize = it }) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .onSizeChanged { containerSize = it }
+    ) {
         AnimatedVisibility(
             visible = visible,
             enter = fadeIn(),

@@ -8,6 +8,7 @@ import ru.debajo.todos.data.db.dao.DbTodoGroupToItemLinkDao
 import ru.debajo.todos.data.storage.DatabaseChangeListener
 import ru.debajo.todos.db.DbTodoGroup
 import ru.debajo.todos.db.DbTodoGroupToItemLink
+import ru.debajo.todos.strings.R
 
 class TodoGroupRepository(
     private val dbTodoGroupDao: DbTodoGroupDao,
@@ -97,7 +98,7 @@ class TodoGroupRepository(
     private fun createAllGroup(todos: List<TodoItem>): TodoGroup {
         return createGroup(
             id = AllTodosGroupId,
-            name = AllTodosGroupName,
+            name = R.strings.allTodosGroupName,
             todos = todos,
             editable = false,
         )
@@ -106,7 +107,7 @@ class TodoGroupRepository(
     private fun createOtherGroup(todos: List<TodoItem>): TodoGroup {
         return createGroup(
             id = OtherTodosGroupId,
-            name = "Other",
+            name = R.strings.otherTodosGroupName,
             todos = todos,
             editable = false,
         )

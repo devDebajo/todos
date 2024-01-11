@@ -14,6 +14,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import ru.debajo.todos.common.ellipsize
+import ru.debajo.todos.strings.R
 import ru.debajo.todos.ui.todolist.model.TodoListState
 
 @Composable
@@ -25,8 +26,8 @@ internal fun NewGroupDialog(
 ) {
     if (state.newGroupDialogVisible) {
         TextFieldDialog(
-            title = "Create folder",
-            placeholder = "Folder name",
+            title = R.strings.newFolderDialogTitle,
+            placeholder = R.strings.newFolderDialogPlaceholder,
             value = state.newGroupName,
             onValueChanged = onNameChanged,
             onHide = onHide,
@@ -44,22 +45,22 @@ internal fun DeleteGroupDialog(
     val currentDeletingGroup = state.currentDeletingGroup
     if (currentDeletingGroup != null) {
         AlertDialog(
-            title = { Text("Delete folder?") },
+            title = { Text(R.strings.deleteGroupDialogTitle) },
             text = {
-                Text("Are you sure to delete folder ${currentDeletingGroup.name}?")
+                Text(R.strings.deleteGroupDialogText.format(currentDeletingGroup.name))
             },
             confirmButton = {
                 Column(horizontalAlignment = Alignment.End) {
                     TextButton(onClick = { onConfirm(false) }) {
-                        Text("Delete only folder")
+                        Text(R.strings.deleteGroupDialogDeleteOnlyFolder)
                     }
 
                     TextButton(onClick = { onConfirm(true) }) {
-                        Text("Delete folder with todos")
+                        Text(R.strings.deleteGroupDialogDeleteFolderWithTodos)
                     }
 
                     TextButton(onClick = onHide) {
-                        Text("Cancel")
+                        Text(R.strings.cancel)
                     }
                 }
             },
@@ -78,8 +79,8 @@ internal fun RenameGroupDialog(
     val currentRenamingGroup = state.currentRenamingGroup
     if (currentRenamingGroup != null) {
         TextFieldDialog(
-            title = "Rename folder",
-            placeholder = "Folder name",
+            title = R.strings.renameGroupDialogTitle,
+            placeholder = R.strings.renameGroupDialogPlaceholder,
             value = state.currentRenamingGroupName,
             onValueChanged = onNameChanged,
             onHide = onHide,
@@ -98,8 +99,8 @@ internal fun UpdateItemTextDialog(
     val todoItemContextMenuState = state.todoItemContextMenuState
     if (todoItemContextMenuState?.changeTextDialogVisible == true) {
         TextFieldDialog(
-            title = "Update TODO",
-            placeholder = "Text",
+            title = R.strings.updateItemTextDialogTitle,
+            placeholder = R.strings.updateItemTextDialogPlaceholder,
             value = todoItemContextMenuState.changeTextDialogValue,
             onValueChanged = onNameChanged,
             onHide = onHide,
@@ -117,18 +118,18 @@ internal fun DeleteTodoItemDialog(
     val todoItemContextMenuState = state.todoItemContextMenuState
     if (todoItemContextMenuState?.showDeleteDialog == true) {
         AlertDialog(
-            title = { Text("Delete TODO?") },
+            title = { Text(R.strings.deleteTodoItemDialogTitle) },
             text = {
-                Text("Are you sure to delete TODO ${todoItemContextMenuState.item.text.ellipsize(20)}?")
+                Text(R.strings.deleteTodoItemDialogText.format(todoItemContextMenuState.item.text.ellipsize(20)))
             },
             dismissButton = {
                 TextButton(onClick = onHide) {
-                    Text("Cancel")
+                    Text(R.strings.cancel)
                 }
             },
             confirmButton = {
                 TextButton(onClick = onConfirm) {
-                    Text("Delete")
+                    Text(R.strings.delete)
                 }
             },
             onDismissRequest = onHide
@@ -167,12 +168,12 @@ private fun TextFieldDialog(
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("Save")
+                Text(R.strings.save)
             }
         },
         dismissButton = {
             TextButton(onClick = onHide) {
-                Text("Cancel")
+                Text(R.strings.cancel)
             }
         },
         onDismissRequest = onHide

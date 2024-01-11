@@ -20,12 +20,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import ru.debajo.todos.strings.R
 
 @Composable
 fun EnterPinDialog(
     pin1: TextFieldValue,
     pin2: TextFieldValue,
-    text: String = "New PIN-code",
+    text: String = R.strings.newPinCode,
     isError: Boolean = false,
     visible: Boolean = true,
     onPin1Changed: (TextFieldValue) -> Unit,
@@ -41,7 +42,7 @@ fun EnterPinDialog(
             text = {
                 Column {
                     TextField(
-                        placeholder = { Text("PIN") },
+                        placeholder = { Text(R.strings.pin) },
                         value = pin1,
                         onValueChange = onPin1Changed,
                         isError = isError,
@@ -66,7 +67,7 @@ fun EnterPinDialog(
 
                     TextField(
                         modifier = Modifier.focusRequester(second),
-                        placeholder = { Text("Confirm PIN") },
+                        placeholder = { Text(R.strings.confirmPin) },
                         value = pin2,
                         onValueChange = onPin2Changed,
                         isError = isError,
@@ -92,7 +93,7 @@ fun EnterPinDialog(
             },
             dismissButton = {
                 TextButton(onClick = onCancel) {
-                    Text("Cancel")
+                    Text(R.strings.cancel)
                 }
             },
             confirmButton = {
@@ -100,7 +101,7 @@ fun EnterPinDialog(
                     onClick = onConfirm,
                     enabled = savePinButtonEnabled,
                 ) {
-                    Text("Save")
+                    Text(R.strings.save)
                 }
             },
             onDismissRequest = onCancel,
@@ -112,7 +113,7 @@ fun EnterPinDialog(
 @Composable
 fun EnterPinDialog(
     pin: TextFieldValue,
-    text: String = "PIN-code",
+    text: String = R.strings.pinCode,
     isError: Boolean = false,
     visible: Boolean = true,
     onPinChanged: (TextFieldValue) -> Unit,
@@ -128,7 +129,7 @@ fun EnterPinDialog(
             text = {
                 TextField(
                     modifier = Modifier.focusRequester(requester),
-                    placeholder = { Text("PIN") },
+                    placeholder = { Text(R.strings.pin) },
                     value = pin,
                     onValueChange = onPinChanged,
                     isError = isError,
@@ -153,7 +154,7 @@ fun EnterPinDialog(
             },
             dismissButton = {
                 TextButton(onClick = onCancel) {
-                    Text("Cancel")
+                    Text(R.strings.cancel)
                 }
             },
             confirmButton = {
@@ -161,7 +162,7 @@ fun EnterPinDialog(
                     onClick = onConfirm,
                     enabled = savePinButtonEnabled,
                 ) {
-                    Text("Save")
+                    Text(R.strings.save)
                 }
             },
             onDismissRequest = onCancel,

@@ -84,6 +84,7 @@ import ru.debajo.todos.common.roundToPx
 import ru.debajo.todos.common.toDp
 import ru.debajo.todos.domain.GroupId
 import ru.debajo.todos.domain.TodoItem
+import ru.debajo.todos.strings.R
 import ru.debajo.todos.ui.todolist.model.TodoItemAction
 import ru.debajo.todos.ui.todolist.model.TodoListNews
 import ru.debajo.todos.ui.todolist.model.TodoListState
@@ -235,20 +236,20 @@ private fun ContextItemPopup(
         if (todoItemContextMenuState != null) {
             PopupItem(
                 modifier = Modifier.widthIn(min = 100.dp),
-                text = if (todoItemContextMenuState.item.done) "Undone" else "Done",
+                text = if (todoItemContextMenuState.item.done) R.strings.undone else R.strings.done,
                 onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Archive) }
             )
 
             PopupItem(
                 modifier = Modifier.widthIn(min = 100.dp),
-                text = "Edit",
+                text = R.strings.edit,
                 onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Edit) }
             )
 
             val clipboardManager = LocalClipboardManager.current
             PopupItem(
                 modifier = Modifier.widthIn(min = 100.dp),
-                text = "Copy",
+                text = R.strings.copy,
                 onClick = {
                     clipboardManager.setText(AnnotatedString(todoItemContextMenuState.item.text))
                     onTodoAction(todoItemContextMenuState.item, TodoItemAction.Copy)
@@ -257,7 +258,7 @@ private fun ContextItemPopup(
 
             PopupItem(
                 modifier = Modifier.widthIn(min = 100.dp),
-                text = "Delete",
+                text = R.strings.delete,
                 onClick = { onTodoAction(todoItemContextMenuState.item, TodoItemAction.Delete) }
             )
         }
@@ -313,7 +314,7 @@ private fun TodosListWithPlaceholder(
     Box(modifier = modifier) {
         if (state.isEmpty) {
             Text(
-                text = "Empty",
+                text = R.strings.emptyTodoList,
                 modifier = Modifier.align(Alignment.Center)
             )
         } else {
@@ -357,7 +358,7 @@ private fun TodosList(
 
             if (state.done.isNotEmpty()) {
                 item {
-                    Text(text = "Done")
+                    Text(text = R.strings.doneDivider)
                 }
             }
 
@@ -424,7 +425,7 @@ private fun EditSpace(
                     contentAlignment = Alignment.CenterStart,
                 ) {
                     if (state.textFieldState.text.isEmpty()) {
-                        Text("Enter TODO")
+                        Text(R.strings.enterTodo)
                     }
                     content()
                 }
@@ -497,9 +498,9 @@ private fun TodoCard(
 private fun formatDate(item: TodoItem): String {
     return remember(item.createTimestamp, item.updateTimestamp) {
         if (item.createTimestamp == item.updateTimestamp) {
-            "Created ${item.createTimestamp.format()}"
+            R.strings.todoCreatedAt.format(item.createTimestamp.format())
         } else {
-            "Edited ${item.updateTimestamp.format()}"
+            R.strings.todoEditedAt.format(item.updateTimestamp.format())
         }
     }
 }
@@ -542,7 +543,7 @@ private fun GroupMenu(
             ) {
                 PopupItem(
                     modifier = Modifier.widthIn(min = columnWidth.toDp()),
-                    text = "Rename folder",
+                    text = R.strings.renameFolder,
                     onClick = {
                         onRenameClick()
                         popupVisible = false
@@ -551,7 +552,7 @@ private fun GroupMenu(
 
                 PopupItem(
                     modifier = Modifier.widthIn(min = columnWidth.toDp()),
-                    text = "Delete folder",
+                    text = R.strings.deleteFolder,
                     onClick = {
                         onDeleteClick()
                         popupVisible = false
@@ -560,14 +561,14 @@ private fun GroupMenu(
                 if (canMoveLeft) {
                     PopupItem(
                         modifier = Modifier.widthIn(min = columnWidth.toDp()),
-                        text = if (isHorizontalOrientation) "Move up" else "Move left",
+                        text = if (isHorizontalOrientation) R.strings.moveFolderUp else R.strings.moveFolderLeft,
                         onClick = onMoveLeftClick
                     )
                 }
                 if (canMoveRight) {
                     PopupItem(
                         modifier = Modifier.widthIn(min = columnWidth.toDp()),
-                        text = if (isHorizontalOrientation) "Move down" else "Move right",
+                        text = if (isHorizontalOrientation) R.strings.moveFolderDown else R.strings.moveFolderRight,
                         onClick = onMoveRightClick
                     )
                 }

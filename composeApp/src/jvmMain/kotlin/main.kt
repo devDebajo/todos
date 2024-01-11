@@ -26,6 +26,7 @@ import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
 import ru.debajo.todos.di.CommonModule
 import ru.debajo.todos.di.JvmModule
 import ru.debajo.todos.di.getFromDi
+import ru.debajo.todos.strings.R
 import ru.debajo.todos.ui.LocalNavigatorMediator
 import ru.debajo.todos.ui.NavigatorMediator
 
@@ -40,7 +41,7 @@ fun main() {
     val keyEventHandler = getFromDi<KeyEventHandler>()
     application {
         Window(
-            title = "// TODO",
+            title = R.strings.appName,
             state = rememberWindowState(width = 800.dp, height = 600.dp),
             onCloseRequest = {
                 savingJob.cancel()

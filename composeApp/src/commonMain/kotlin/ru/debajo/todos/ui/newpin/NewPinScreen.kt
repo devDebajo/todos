@@ -22,6 +22,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import ru.debajo.todos.strings.R
 import ru.debajo.todos.ui.pin.ActionType
 import ru.debajo.todos.ui.pin.PinDots
 import ru.debajo.todos.ui.pin.PinPad
@@ -60,9 +61,9 @@ fun NewPinScreen(viewModel: NewPinViewModel) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     if (index == 0) {
-                        Text("Input PIN")
+                        Text(R.strings.inputPin)
                     } else {
-                        Text("Confirm PIN")
+                        Text(R.strings.confirmPin)
                     }
                     Spacer(Modifier.size(14.dp))
                     PinDots(
@@ -101,16 +102,16 @@ private fun UseBiometricDialog(
 ) {
     if (state.biometricDialogVisible) {
         AlertDialog(
-            title = { Text("Use biometric?") },
-            text = { Text("Enable biometric to authentication the app?") },
+            title = { Text(R.strings.useBiometricDialogTitle) },
+            text = { Text(R.strings.useBiometricDialogText) },
             dismissButton = {
                 TextButton(onClick = onCancel) {
-                    Text("Disable")
+                    Text(R.strings.disable)
                 }
             },
             confirmButton = {
                 TextButton(onClick = onConfirm) {
-                    Text("Enable")
+                    Text(R.strings.enable)
                 }
             },
             onDismissRequest = {}

@@ -1,6 +1,7 @@
 package ru.debajo.todos.domain
 
 import androidx.compose.runtime.Immutable
+import ru.debajo.todos.strings.R
 
 @Immutable
 data class TodoGroup(
@@ -14,12 +15,11 @@ data class TodoGroup(
 }
 
 val AllTodosGroupId: GroupId = GroupId("AllTodosGroup")
-const val AllTodosGroupName: String = "All"
 val OtherTodosGroupId: GroupId = GroupId("OtherTodosGroup")
 
 val AllTodosGroup: TodoGroup = TodoGroup(
     id = AllTodosGroupId,
-    name = AllTodosGroupName,
+    name = R.strings.allTodosGroupName,
     actualTodos = emptyList(),
     doneTodos = emptyList(),
     editable = false,

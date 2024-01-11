@@ -50,6 +50,7 @@ import ru.debajo.todos.common.PopupItem
 import ru.debajo.todos.common.calculatePopupPosition
 import ru.debajo.todos.common.contextClickable
 import ru.debajo.todos.data.storage.model.StorageFile
+import ru.debajo.todos.strings.R
 import ru.debajo.todos.ui.pin.EnterPinDialog
 
 @Composable
@@ -75,11 +76,11 @@ fun FileConfigScreen(viewModel: FileConfigViewModel) {
         Spacer(Modifier.size(8.dp))
         Row {
             Button(onClick = { viewModel.createNewFile() }) {
-                Text("Create file")
+                Text(R.strings.createFile)
             }
             Spacer(modifier = Modifier.size(40.dp))
             Button(onClick = { viewModel.selectFile() }) {
-                Text("Select file")
+                Text(R.strings.selectFile)
             }
         }
         Spacer(Modifier.size(20.dp))
@@ -113,7 +114,7 @@ fun FileConfigScreen(viewModel: FileConfigViewModel) {
     val enterFilePinDialogState = state.enterFilePinDialogState
     if (enterFilePinDialogState != null && enterFilePinDialogState.visible) {
         EnterPinDialog(
-            text = "PIN-code for ${enterFilePinDialogState.file.nameWithExtension}",
+            text = R.strings.pinCodeFor.format(enterFilePinDialogState.file.nameWithExtension),
             pin = enterFilePinDialogState.pin,
             isError = enterFilePinDialogState.isError,
             onPinChanged = { viewModel.onEnterFilePinDialogPinChanged(it) },
@@ -142,7 +143,7 @@ private fun FileContextClickPopupMenu(state: FileConfigState, onHide: () -> Unit
     ) {
         PopupItem(
             modifier = Modifier.widthIn(min = 100.dp),
-            text = "Delete from list",
+            text = R.strings.deleteFromList,
             onClick = onDeleteClick,
         )
     }
@@ -158,7 +159,7 @@ private fun IsAutoOpenSwitch(
         modifier = modifier.height(48.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("Auto open last file")
+        Text(R.strings.autoOpenLastFile)
         Spacer(Modifier.weight(1f))
         Switch(checked = checked, onCheckedChange = { onChanged(it) })
     }
@@ -177,7 +178,7 @@ private fun FilesListWithPlaceholder(
     ) {
         when {
             files == null -> Unit
-            files.isEmpty() -> Text("No files")
+            files.isEmpty() -> Text(R.strings.noFiles)
             else -> {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -255,16 +256,16 @@ private fun CreateFileDialog(
 ) {
     if (state.showCreateFileDialog) {
         AlertDialog(
-            title = { Text("Create file") },
-            text = { Text("Create encrypted file? Encryption increases the security of your data") },
+            title = { Text(R.strings.createFileDialogTitle) },
+            text = { Text(R.strings.createFileDialogText) },
             confirmButton = {
                 TextButton(onClick = { onConfirm(true) }) {
-                    Text("Encrypt")
+                    Text(R.strings.encrypt)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { onConfirm(false) }) {
-                    Text("Not encrypt")
+                    Text(R.strings.notEncrypt)
                 }
             },
             onDismissRequest = onCancel
@@ -298,16 +299,16 @@ private fun DeleteFileDialog(
 ) {
     if (state.filePopupMenuState?.showDeleteDialog == true) {
         AlertDialog(
-            title = { Text("Delete file?") },
-            text = { Text("Are you sure to delete file from list? These file will be stored in file system") },
+            title = { Text(R.strings.deleteFileDialogTitle) },
+            text = { Text(R.strings.deleteFileDialogText) },
             confirmButton = {
                 TextButton(onClick = onDelete) {
-                    Text("Delete")
+                    Text(R.strings.delete)
                 }
             },
             dismissButton = {
                 TextButton(onClick = onCancel) {
-                    Text("Cancel")
+                    Text(R.strings.cancel)
                 }
             },
             onDismissRequest = onCancel

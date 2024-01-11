@@ -4,8 +4,6 @@ import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
 
 @Stable
 interface AppLifecycle {
@@ -28,8 +26,4 @@ class AppLifecycleMutable : AppLifecycle {
     fun updateState(state: AppLifecycle.State) {
         _state.value = state
     }
-}
-
-suspend fun AppLifecycle.awaitState(state: AppLifecycle.State) {
-    this.state.filter { it == state }.first()
 }

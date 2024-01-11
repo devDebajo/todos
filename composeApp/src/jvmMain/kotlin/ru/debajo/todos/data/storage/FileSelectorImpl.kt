@@ -5,6 +5,7 @@ import java.awt.Frame
 import java.io.File
 import kotlin.coroutines.suspendCoroutine
 import ru.debajo.todos.data.storage.model.StorageFile
+import ru.debajo.todos.strings.R
 
 internal class FileSelectorImpl : FileSelector {
 
@@ -33,7 +34,7 @@ internal class FileSelectorImpl : FileSelector {
     }
 
     private fun showSaveDialog(name: String, extension: String, callback: (File?) -> Unit) {
-        val dialog = object : FileDialog(null as Frame?, "Create a file", SAVE) {
+        val dialog = object : FileDialog(null as Frame?, R.strings.createFile, SAVE) {
             override fun setVisible(value: Boolean) {
                 super.setVisible(value)
                 if (value && !directory.isNullOrEmpty() && !file.isNullOrEmpty()) {
@@ -54,7 +55,7 @@ internal class FileSelectorImpl : FileSelector {
     }
 
     private fun showLoadDialog(callback: (File?) -> Unit) {
-        object : FileDialog(null as Frame?, "Choose a file", LOAD) {
+        object : FileDialog(null as Frame?, R.strings.selectFile, LOAD) {
             override fun setVisible(value: Boolean) {
                 super.setVisible(value)
                 if (value && !directory.isNullOrEmpty() && !file.isNullOrEmpty()) {

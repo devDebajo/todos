@@ -17,6 +17,7 @@ import ru.debajo.todos.data.storage.StorageFileManager
 import ru.debajo.todos.data.storage.model.StorageFile
 import ru.debajo.todos.security.EncryptFileHelper
 import ru.debajo.todos.security.HashUtils
+import ru.debajo.todos.strings.R
 import ru.debajo.todos.ui.NavigatorMediator
 
 const val FilePinSize: Int = 6
@@ -164,16 +165,16 @@ class FileConfigViewModel(
         screenModelScope.launch {
             withLoading {
                 when (encryptFileHelper.isFileReadyToRead(file)) {
-                    EncryptFileHelper.FileReadReadiness.NoPermission -> sendNews(FileConfigNews.Toast("No read permission"))
+                    EncryptFileHelper.FileReadReadiness.NoPermission -> sendNews(FileConfigNews.Toast(R.strings.noReadPermission))
                     EncryptFileHelper.FileReadReadiness.Ready -> {
                         if (storageFileManager.selectFileFromList(file)) {
                             if (databaseSnapshotSaver.load()) {
                                 navigatorMediator.replaceAll(AppScreen.List)
                             } else {
-                                sendNews(FileConfigNews.Toast("Some error with file"))
+                                sendNews(FileConfigNews.Toast(R.strings.someErrorWithFile))
                             }
                         } else {
-                            sendNews(FileConfigNews.Toast("Some error with file"))
+                            sendNews(FileConfigNews.Toast(R.strings.someErrorWithFile))
                         }
                     }
 

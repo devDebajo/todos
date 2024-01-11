@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ru.debajo.todos.strings.R
 
 @Composable
 fun OnboardingScreen(viewModel: OnboardingViewModel) {
@@ -32,19 +33,19 @@ fun OnboardingScreen(viewModel: OnboardingViewModel) {
     ) {
         Spacer(Modifier.size(20.dp))
         Text(
-            text = "Welcome",
+            text = R.strings.welcome,
             fontSize = 36.sp,
             fontWeight = FontWeight.Medium,
         )
         Spacer(Modifier.size(30.dp))
         Text(
-            text = "Before you begin, you need to configure data protection in the application",
+            text = R.strings.welcomeOnboarding,
             fontSize = 20.sp,
         )
         Spacer(Modifier.weight(1f))
 
         Text(
-            text = "Select your preferred security type",
+            text = R.strings.selectPreferredSecurityType,
             textAlign = TextAlign.Center,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
@@ -52,11 +53,11 @@ fun OnboardingScreen(viewModel: OnboardingViewModel) {
 
         Row(Modifier.align(Alignment.CenterHorizontally)) {
             Button({ viewModel.onPinClick() }) {
-                Text("PIN-code")
+                Text(R.strings.pinCode)
             }
             Spacer(Modifier.size(10.dp))
             OutlinedButton({ viewModel.onWeakClick(force = false) }) {
-                Text("Do not secure data")
+                Text(R.strings.doNotSecureDate)
             }
         }
         Spacer(Modifier.size(30.dp))
@@ -77,16 +78,16 @@ private fun WeakAuthTypeWarningDialog(
 ) {
     if (state.weakAuthTypeWarningDialogVisible) {
         AlertDialog(
-            title = { Text("Do not use encryption?") },
-            text = { Text("Are you sure to disable encryption?") },
+            title = { Text(R.strings.weakAuthTypeWarningDialogTitle) },
+            text = { Text(R.strings.weakAuthTypeWarningDialogText) },
             dismissButton = {
                 TextButton(onClick = onDisable) {
-                    Text("Disable")
+                    Text(R.strings.disable)
                 }
             },
             confirmButton = {
                 TextButton(onClick = onUsePin) {
-                    Text("Use pin")
+                    Text(R.strings.usePin)
                 }
             },
             onDismissRequest = {}
