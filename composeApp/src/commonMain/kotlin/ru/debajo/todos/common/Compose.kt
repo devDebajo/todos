@@ -7,8 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -33,11 +31,13 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import kotlin.math.max
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,7 +71,7 @@ fun PopupDialog(
     visible: Boolean = false,
     position: IntOffset = IntOffset.Zero,
     onHide: () -> Unit,
-    content: @Composable ColumnScope.() -> Unit,
+    content: @Composable () -> Unit,
 ) {
     var containerSize: IntSize by remember { mutableStateOf(IntSize.Zero) }
     Box(
@@ -95,7 +95,7 @@ fun PopupDialog(
                     )
             ) {
                 var popupSize: IntSize by remember { mutableStateOf(IntSize.Zero) }
-                Column(
+                SameSizeColumn(
                     content = content,
                     modifier = Modifier
                         .offset { calculateOffset(position, popupSize, containerSize) }
@@ -105,6 +105,36 @@ fun PopupDialog(
                         .background(MaterialTheme.colorScheme.secondaryContainer)
                         .onSizeChanged { popupSize = it }
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SameSizeColumn(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    SubcomposeLayout(modifier = modifier) { constraints ->
+        var width = 0
+        var height = 0
+
+        val measurables1StPass = subcompose(0, content)
+        for (measurable in measurables1StPass) {
+            val placeable = measurable.measure(constraints)
+            width = max(width, placeable.width)
+            height += placeable.height
+        }
+
+        val newConstraints = constraints.copy(minWidth = width, maxWidth = width)
+        val measurables2StPass = subcompose(1, content)
+        val placeables = measurables2StPass.map { it.measure(newConstraints) }
+
+        layout(width, height) {
+            var y = 0
+            for (placeable in placeables) {
+                placeable.placeRelative(x = 0, y = y)
+                y += placeable.height
             }
         }
     }
