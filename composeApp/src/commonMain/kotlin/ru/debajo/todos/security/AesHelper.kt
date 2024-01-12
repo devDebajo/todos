@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalEncodingApi::class)
-
 package ru.debajo.todos.security
 
 import java.nio.charset.Charset
@@ -10,8 +8,6 @@ import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
-import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.withContext
 
@@ -62,11 +58,11 @@ suspend fun AesHelper.decryptStringAsync(secret: String, encryptedData: String):
 fun AesHelper.encryptString(secret: String, rawData: String): String {
     val rawBytes = rawData.toByteArray(Charset.defaultCharset())
     val encryptedBytes = encryptBytes(secret, rawBytes)
-    return Base64.UrlSafe.encode(encryptedBytes)
+    return Base64Utils.encode(encryptedBytes)
 }
 
 fun AesHelper.decryptString(secret: String, encryptedData: String): String {
-    val encryptedBytes = Base64.UrlSafe.decode(encryptedData)
+    val encryptedBytes = Base64Utils.decode(encryptedData)
     val decryptedBytes = decryptBytes(secret, encryptedBytes)
     return String(decryptedBytes, Charset.defaultCharset())
 }

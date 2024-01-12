@@ -7,6 +7,7 @@ import ru.debajo.todos.data.db.dao.DbTodoGroupToItemLinkDao
 import ru.debajo.todos.data.db.dao.DbTodoItemDao
 import ru.debajo.todos.data.db.dao.ReplaceDao
 import ru.debajo.todos.data.storage.model.StorageSnapshot
+import ru.debajo.todos.data.storage.model.StorageSnapshotWithMeta
 import ru.debajo.todos.data.storage.model.StorageTodoGroup
 import ru.debajo.todos.data.storage.model.StorageTodoGroupToItemLink
 import ru.debajo.todos.data.storage.model.StorageTodoItem
@@ -21,13 +22,15 @@ class DatabaseSnapshotHelper(
     private val dbFilePathDao: DbFilePathDao,
     private val replaceDao: ReplaceDao,
 ) {
-    suspend fun getSnapshot(timestamp: Instant): StorageSnapshot {
-        return StorageSnapshot(
-            timestamp = timestamp.toEpochMilliseconds(),
-            groups = dbTodoGroupDao.getAll().map { it.convert() },
-            links = dbTodoGroupToItemLinkDao.getAll().map { it.convert() },
-            todos = dbTodoItemDao.getAll().map { it.convert() },
-            absolutePath = dbFilePathDao.get(),
+    suspend fun getSnapshot(timestamp: Instant): StorageSnapshotWithMeta {
+        return StorageSnapshotWithMeta(
+            editTimestampUtc = timestamp.toEpochMilliseconds(),
+            snapshot = StorageSnapshot(
+                groups = dbTodoGroupDao.getAll().map { it.convert() },
+                links = dbTodoGroupToItemLinkDao.getAll().map { it.convert() },
+                todos = dbTodoItemDao.getAll().map { it.convert() },
+            ),
+            absolutePath = dbFilePathDao.get().orEmpty(),
         )
     }
 
