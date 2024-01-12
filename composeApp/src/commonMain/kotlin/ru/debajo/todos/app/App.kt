@@ -13,7 +13,7 @@ import ru.debajo.todos.ui.theme.AppTheme
 
 @Composable
 internal fun App() {
-    AppTheme(systemIsDark = true) {
+    AppTheme {
         val securedScreenManager = remember { getFromDi<SecuredScreenManager>() }
         val mediator = LocalNavigatorMediator.current
         Navigator(AppScreen.Splash) {
