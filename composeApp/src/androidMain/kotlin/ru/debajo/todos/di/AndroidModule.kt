@@ -7,6 +7,7 @@ import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import ru.debajo.todos.data.db.DatabaseName
 import ru.debajo.todos.data.db.DriverFactory
 import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.data.preferences.SharedPreferencesImpl
@@ -37,7 +38,7 @@ internal val AndroidModule: Module = module {
         )
     }
     factory<FileHelper> { FileHelperImpl(get()) }
-    single { DriverFactory { AndroidSqliteDriver(TodosDatabase.Schema, get(), "todos.db") } }
+    single { DriverFactory { AndroidSqliteDriver(TodosDatabase.Schema, get(), DatabaseName) } }
     factory<BiometricDelegate> {
         val activityResultLaunchersHolder = get<ActivityResultLaunchersHolder>()
         BiometricDelegateImpl(

@@ -1,5 +1,6 @@
 package ru.debajo.todos.di
 
+import io.github.aakira.napier.Napier
 import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.factoryOf
@@ -20,6 +21,7 @@ import ru.debajo.todos.data.db.dao.DbTodoGroupDao
 import ru.debajo.todos.data.db.dao.DbTodoGroupToItemLinkDao
 import ru.debajo.todos.data.db.dao.DbTodoItemDao
 import ru.debajo.todos.data.db.dao.ReplaceDao
+import ru.debajo.todos.data.db.deleteDatabaseFile
 import ru.debajo.todos.data.storage.DatabaseChangeListener
 import ru.debajo.todos.data.storage.DatabaseSnapshotHelper
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
@@ -71,14 +73,7 @@ val CommonModule: Module = module {
     factoryOf(::NewPinViewModel)
 
     single<AsyncProvider<TodosDatabase>>(TodosDatabaseQualifier) {
-        val securityManager = get<AppSecurityManager>()
-        AsyncProvider {
-            val pinHash = securityManager.awaitCurrentPinHash().pinHash
-            val driver = EncryptedSqlDriver(get<DriverFactory>().createDriver(), pinHash)
-            val database = TodosDatabase(driver)
-            createSchema(driver)
-            database
-        }.cached()
+        AsyncProvider { createDatabase(get(), get()) }.cached()
     }
     factory<SecuredPreferences> {
         val securityManager = get<AppSecurityManager>()
@@ -135,4 +130,21 @@ val CommonModule: Module = module {
     factoryOf(::TodoItemUseCase)
 
     single { AppLifecycleMutable() }.bind<AppLifecycle>()
+}
+
+private suspend fun createDatabase(securityManager: AppSecurityManager, driverFactory: DriverFactory): TodosDatabase {
+    val pinHash = securityManager.awaitCurrentPinHash().pinHash
+    val driver = EncryptedSqlDriver(driverFactory.createDriver(), pinHash)
+    val database = TodosDatabase(driver)
+
+    try {
+        createSchema(driver)
+        database.dbFilePathQueries.get().executeAsOneOrNull()
+    } catch (e: Throwable) {
+        Napier.e("createSchema error", e)
+        deleteDatabaseFile()
+        createSchema(driver)
+    }
+
+    return database
 }

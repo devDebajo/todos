@@ -6,6 +6,7 @@ import java.io.File
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
+import ru.debajo.todos.data.db.DatabaseFilePath
 import ru.debajo.todos.data.db.DriverFactory
 import ru.debajo.todos.data.preferences.FilePreferencesImpl
 import ru.debajo.todos.data.preferences.Preferences
@@ -22,7 +23,7 @@ internal val JvmModule: Module = module {
     factory<FileSelector> { FileSelectorImpl() }
     factory<FileHelper> { FileHelperImpl() }
     single<Preferences> { FilePreferencesImpl(get(), File("todo_prefs")) }
-    single { DriverFactory { JdbcSqliteDriver("jdbc:sqlite:todos.db") } }
+    single { DriverFactory { JdbcSqliteDriver("jdbc:sqlite:$DatabaseFilePath") } }
     singleOf(::KeyEventHandler)
     factory<BiometricDelegate> { BiometricDelegateImpl }
     factory<SecuredScreenManager> { SecuredScreenManagerImpl }

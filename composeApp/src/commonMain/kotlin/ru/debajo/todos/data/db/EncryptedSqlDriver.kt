@@ -5,6 +5,7 @@ import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlPreparedStatement
 import java.nio.charset.Charset
+import javax.crypto.IllegalBlockSizeException
 import ru.debajo.todos.common.toBooleanStrict
 import ru.debajo.todos.common.toLong
 import ru.debajo.todos.security.AesHelper
@@ -71,7 +72,13 @@ private class EncryptedSqlCursor(
         return String(stringBytes, Charset.defaultCharset())
     }
 
-    override fun getLong(index: Int): Long? = getString(index)?.toLong()
+    override fun getLong(index: Int): Long? {
+        return try {
+            getString(index)?.toLong()
+        } catch (e: IllegalBlockSizeException) {
+            delegate.getLong(index)
+        }
+    }
 
     override fun getBoolean(index: Int): Boolean? = getLong(index)?.toBooleanStrict()
 

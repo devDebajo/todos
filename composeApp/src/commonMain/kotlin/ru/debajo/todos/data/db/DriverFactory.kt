@@ -7,3 +7,6 @@ fun interface DriverFactory {
 }
 
 expect fun createSchema(driver: SqlDriver)
+
+expect fun deleteDatabaseFile()
+
