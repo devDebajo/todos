@@ -91,7 +91,7 @@ class FileConfigViewModel(
                 )
             }
             screenModelScope.launch {
-                val file = fileSelector.create("todos", StorageFile.NotEncryptedExtension)
+                val file = fileSelector.create(DefaultFileName)
                 if (file != null) {
                     withLoading {
                         storageFileManager.tryAddFile(file, null)
@@ -152,7 +152,7 @@ class FileConfigViewModel(
 
         val pin = Pin(createEncryptedFileDialogState.pin1.text)
         screenModelScope.launch {
-            val file = fileSelector.create("todos", StorageFile.EncryptedExtension)
+            val file = fileSelector.create(DefaultFileName)
             if (file != null) {
                 withLoading {
                     val pinHash = HashUtils.hashPin(pin)
@@ -305,5 +305,9 @@ class FileConfigViewModel(
         } finally {
             updateState { copy(isLoading = false) }
         }
+    }
+
+    private companion object {
+        const val DefaultFileName: String = "todos.tds"
     }
 }

@@ -14,12 +14,9 @@ internal class FileSelectorImpl(
     private val activityResultLaunchers: ActivityResultLaunchers
         get() = activityResultLaunchersProvider()
 
-    override suspend fun create(name: String, extension: String): StorageFile? {
-        val uri = activityResultLaunchers.createDocument("$name.$extension") ?: return null
+    override suspend fun create(nameWithExtension: String): StorageFile? {
+        val uri = activityResultLaunchers.createDocument(nameWithExtension) ?: return null
         val storageFile = fileHelper.createStorageFile(uri.toString()) ?: return null
-        if (storageFile.extension != extension) {
-            return null
-        }
         if (!contentResolver.canRead(uri)) {
             return null
         }

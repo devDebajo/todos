@@ -9,9 +9,9 @@ import ru.debajo.todos.strings.R
 
 internal class FileSelectorImpl : FileSelector {
 
-    override suspend fun create(name: String, extension: String): StorageFile? {
+    override suspend fun create(nameWithExtension: String): StorageFile? {
         val file: File = suspendCoroutine { continuation ->
-            showSaveDialog(name, extension) { continuation.resumeWith(Result.success(it)) }
+            showSaveDialog(nameWithExtension) { continuation.resumeWith(Result.success(it)) }
         } ?: return null
 
         return StorageFile(
@@ -33,12 +33,12 @@ internal class FileSelectorImpl : FileSelector {
         )
     }
 
-    private fun showSaveDialog(name: String, extension: String, callback: (File?) -> Unit) {
+    private fun showSaveDialog(nameWithExtension: String, callback: (File?) -> Unit) {
         val dialog = object : FileDialog(null as Frame?, R.strings.createFile, SAVE) {
             override fun setVisible(value: Boolean) {
                 super.setVisible(value)
                 if (value && !directory.isNullOrEmpty() && !file.isNullOrEmpty()) {
-                    val uri = "$directory$file.$extension"
+                    val uri = "$directory$file"
                     val file = File(uri)
                     runCatching { file.delete() }
                     runCatching { file.createNewFile() }
@@ -49,7 +49,7 @@ internal class FileSelectorImpl : FileSelector {
             }
         }
 
-        dialog.file = name
+        dialog.file = nameWithExtension
         dialog.isEnabled = false
         dialog.isVisible = true
     }

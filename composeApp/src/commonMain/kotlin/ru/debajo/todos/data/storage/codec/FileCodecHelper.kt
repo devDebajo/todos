@@ -20,18 +20,10 @@ class FileCodecHelper(
     private val json: Json,
     private val fileHelper: FileHelper,
 ) : StorageFileCodec {
+
     suspend fun canDecryptFile(file: StorageFile, pinHash: PinHash?): Boolean {
         return runCatchingAsync { getDecoder(file)?.getTimestamp(file, pinHash) != null }
             .getOrElse { false }
-    }
-
-    suspend fun getDecoder(file: StorageFile): StorageFileDecoder? {
-        val format = getFileFormat(file) ?: return null
-        return getDecoder(format)!!
-    }
-
-    suspend fun requireDecoder(file: StorageFile): StorageFileDecoder {
-        return getDecoder(file) ?: error("Could not file decoder for file: ${file.absolutePath}")
     }
 
     suspend fun isFileReadyToRead(file: StorageFile, pinHash: PinHash?): FileReadReadiness {
@@ -48,22 +40,6 @@ class FileCodecHelper(
             FileReadReadiness.Ready
         } else {
             FileReadReadiness.NoPin
-        }
-    }
-
-    private suspend fun getFileFormat(file: StorageFile): String? {
-        val format = getTokens(file).first()
-        return when (format) {
-            Tds01 -> Tds01
-            else -> Tds00 // временно, потом будет null
-        }
-    }
-
-    private fun getDecoder(format: String): StorageFileDecoder? {
-        return when (format) {
-            Tds00 -> StorageFileCodec00(json, ::getTokens)
-            Tds01 -> StorageFileCodec01(json, ::getTokens)
-            else -> null
         }
     }
 
@@ -95,6 +71,30 @@ class FileCodecHelper(
         }
     }
 
+    private suspend fun getFileFormat(file: StorageFile): String? {
+        return when (getTokens(file).first()) {
+            Tds01 -> Tds01
+            else -> null
+        }
+    }
+
+
+    private fun getDecoder(format: String): StorageFileDecoder? {
+        return when (format) {
+            Tds01 -> StorageFileCodec01(json, ::getTokens)
+            else -> null
+        }
+    }
+
+    private suspend fun getDecoder(file: StorageFile): StorageFileDecoder? {
+        val format = getFileFormat(file) ?: return null
+        return getDecoder(format)!!
+    }
+
+    private suspend fun requireDecoder(file: StorageFile): StorageFileDecoder {
+        return getDecoder(file) ?: error("Could not file decoder for file: ${file.absolutePath}")
+    }
+
     enum class FileReadReadiness {
         NoPermission,
         UnknownFormat,
@@ -103,7 +103,6 @@ class FileCodecHelper(
     }
 
     private companion object {
-        const val Tds00: String = "TDS00"
         const val Tds01: String = StorageFileCodec01.Tds01
     }
 }
