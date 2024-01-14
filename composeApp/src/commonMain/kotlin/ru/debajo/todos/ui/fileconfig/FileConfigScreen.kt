@@ -41,6 +41,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,7 +51,9 @@ import ru.debajo.todos.common.PopupItem
 import ru.debajo.todos.common.calculatePopupPosition
 import ru.debajo.todos.common.contextClickable
 import ru.debajo.todos.strings.R
-import ru.debajo.todos.ui.pin.EnterPinDialog
+import ru.debajo.todos.ui.pin.EnterPin1Dialog
+import ru.debajo.todos.ui.pin.EnterPin2Dialog
+import ru.debajo.todos.ui.pin.EnterPin3Dialog
 
 @Composable
 fun FileConfigScreen(viewModel: FileConfigViewModel) {
@@ -94,12 +97,15 @@ fun FileConfigScreen(viewModel: FileConfigViewModel) {
     FileContextClickPopupMenu(
         state = state,
         onHide = { viewModel.hideFileContextPopupMenu() },
+        onChangePinClick = { viewModel.onChangePinClick(ChangeFilePinState.Mode.Change) },
+        onRemovePinClick = { viewModel.onChangePinClick(ChangeFilePinState.Mode.Remove) },
+        onAddPinClick = { viewModel.onChangePinClick(ChangeFilePinState.Mode.AddNew) },
         onDeleteClick = { viewModel.onDeleteFileClick() },
     )
 
     val createEncryptedFileDialogState = state.createEncryptedFileDialogState
     if (createEncryptedFileDialogState != null && createEncryptedFileDialogState.visible) {
-        EnterPinDialog(
+        EnterPin2Dialog(
             pin1 = createEncryptedFileDialogState.pin1,
             pin2 = createEncryptedFileDialogState.pin2,
             isError = createEncryptedFileDialogState.isError,
@@ -112,7 +118,7 @@ fun FileConfigScreen(viewModel: FileConfigViewModel) {
 
     val enterFilePinDialogState = state.enterFilePinDialogState
     if (enterFilePinDialogState != null && enterFilePinDialogState.visible) {
-        EnterPinDialog(
+        EnterPin1Dialog(
             text = R.strings.pinCodeFor.format(enterFilePinDialogState.file.nameWithExtension),
             pin = enterFilePinDialogState.pin,
             isError = enterFilePinDialogState.isError,
@@ -128,18 +134,57 @@ fun FileConfigScreen(viewModel: FileConfigViewModel) {
         onCancel = { viewModel.hideDeleteFileDialog() }
     )
 
+    ChangeFilePinDialogGroup(
+        state = state,
+        onPin1Changed = { viewModel.onChangeFilePin1Changed(it) },
+        onPin2Changed = { viewModel.onChangeFilePin2Changed(it) },
+        onPin3Changed = { viewModel.onChangeFilePin3Changed(it) },
+        onCancel = { viewModel.hideChangeFilePinDialog() },
+        onConfirm = { viewModel.confirmChangeFilePinDialog() },
+    )
+
     SnackbarHost(viewModel)
     BlockingLoaderDialog(state.showBlockingLoading)
 }
 
 @Composable
-private fun FileContextClickPopupMenu(state: FileConfigState, onHide: () -> Unit, onDeleteClick: () -> Unit) {
+private fun FileContextClickPopupMenu(
+    state: FileConfigState,
+    onHide: () -> Unit,
+    onChangePinClick: () -> Unit,
+    onRemovePinClick: () -> Unit,
+    onAddPinClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+) {
     val filePopupMenuState = state.filePopupMenuState
     PopupDialog(
         visible = filePopupMenuState?.visible == true,
         position = filePopupMenuState?.position ?: IntOffset.Zero,
         onHide = onHide
     ) {
+        val file = filePopupMenuState?.file
+        if (file != null) {
+            if (file.encrypted) {
+                PopupItem(
+                    modifier = Modifier.widthIn(min = 100.dp),
+                    text = R.strings.changeFilePin,
+                    onClick = onChangePinClick,
+                )
+
+                PopupItem(
+                    modifier = Modifier.widthIn(min = 100.dp),
+                    text = R.strings.removeFileEncryption,
+                    onClick = onRemovePinClick,
+                )
+            } else {
+                PopupItem(
+                    modifier = Modifier.widthIn(min = 100.dp),
+                    text = R.strings.addFileEncryption,
+                    onClick = onAddPinClick,
+                )
+            }
+        }
+
         PopupItem(
             modifier = Modifier.widthIn(min = 100.dp),
             text = R.strings.deleteFromList,
@@ -158,9 +203,15 @@ private fun IsAutoOpenSwitch(
         modifier = modifier.height(48.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(R.strings.autoOpenLastFile)
-        Spacer(Modifier.weight(1f))
-        Switch(checked = checked, onCheckedChange = { onChanged(it) })
+        Text(
+            modifier = Modifier.weight(1f),
+            text = R.strings.autoOpenLastFile
+        )
+        Spacer(Modifier.size(6.dp))
+        Switch(
+            checked = checked,
+            onCheckedChange = { onChanged(it) }
+        )
     }
 }
 
@@ -314,3 +365,49 @@ private fun DeleteFileDialog(
         )
     }
 }
+
+@Composable
+private fun ChangeFilePinDialogGroup(
+    state: FileConfigState,
+    onPin1Changed: (TextFieldValue) -> Unit,
+    onPin2Changed: (TextFieldValue) -> Unit,
+    onPin3Changed: (TextFieldValue) -> Unit,
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    val changeFilePinState = state.filePopupMenuState?.changeFilePinState ?: return
+    when (changeFilePinState.mode) {
+        ChangeFilePinState.Mode.AddNew -> EnterPin2Dialog(
+            pin1 = changeFilePinState.pin2,
+            pin2 = changeFilePinState.pin3,
+            isError = changeFilePinState.isError,
+            onPin1Changed = onPin2Changed,
+            onPin2Changed = onPin3Changed,
+            onCancel = onCancel,
+            onConfirm = onConfirm,
+        )
+
+        ChangeFilePinState.Mode.Remove -> EnterPin1Dialog(
+            pin = changeFilePinState.pin1,
+            isError = changeFilePinState.isError,
+            onPinChanged = onPin1Changed,
+            onCancel = onCancel,
+            onConfirm = onConfirm,
+        )
+
+        ChangeFilePinState.Mode.Change -> EnterPin3Dialog(
+            pin1 = changeFilePinState.pin1,
+            pin2 = changeFilePinState.pin2,
+            pin3 = changeFilePinState.pin3,
+            isError = changeFilePinState.isError,
+            onPin1Changed = onPin1Changed,
+            onPin2Changed = onPin2Changed,
+            onPin3Changed = onPin3Changed,
+            onCancel = onCancel,
+            onConfirm = onConfirm,
+        )
+    }
+}
+
+// TODO Чтение файла при первом запуске работает плохо, зависает, или вылетает
+// TODO При первом старте фалг открытия последнего файла, как будто true, хотя в UI false

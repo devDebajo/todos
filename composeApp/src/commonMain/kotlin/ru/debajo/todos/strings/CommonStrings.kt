@@ -47,11 +47,17 @@ interface CommonStrings {
     val createFileDialogText: String
     val autoOpenLastFile: String
     val deleteFromList: String
+    val changeFilePin: String
+    val removeFileEncryption: String
+    val addFileEncryption: String
     val noReadPermission: String
     val unknownFileFormat: String
     val someErrorWithFile: String
 
     val pinCode: String
+    val oldPin: String
+    val newPin: String
+    val confirmNewPin: String
     val pin: String
     val confirmPin: String
     val newPinCode: String

@@ -9,6 +9,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import ru.debajo.todos.app.AppLifecycle
+import ru.debajo.todos.auth.PinHash
 import ru.debajo.todos.common.runCatchingAsync
 import ru.debajo.todos.data.storage.codec.FileCodecHelper
 import ru.debajo.todos.data.storage.model.StorageFile
@@ -46,6 +47,27 @@ class DatabaseSnapshotSaver(
         runCatchingAsync {
             val lastFile = storageFileManager.loadLastFile() ?: return
             saveFile(lastFile)
+        }
+    }
+
+    suspend fun changePin(file: StorageFile, oldPinHash: PinHash? = null, newPinHash: PinHash? = null) {
+        mutex.locked {
+            val encrypted = fileCodecHelper.isEncrypted(file)
+            if (encrypted && oldPinHash == null) {
+                error("Could not change pin without old pin")
+            }
+
+            val snapshot = fileCodecHelper.decode(file, oldPinHash)
+                .copy(encrypted = newPinHash != null)
+
+            val content = fileCodecHelper.encode(snapshot, file, newPinHash)
+            fileHelper.openOutputStream(file).bufferedWriter().use { it.write(content) }
+
+            if (newPinHash == null) {
+                filePinStorage.remove(file)
+            } else {
+                filePinStorage.save(file, newPinHash)
+            }
         }
     }
 
@@ -101,7 +123,7 @@ class DatabaseSnapshotSaver(
         return runCatchingAsync { loadTimestampUnsafe(file) }.getOrNull()
     }
 
-    private suspend fun loadTimestampUnsafe(file: StorageFile): Instant? {
+    private suspend fun loadTimestampUnsafe(file: StorageFile): Instant {
         val pinHash = filePinStorage.get(file)
         val timestamp = fileCodecHelper.getTimestamp(file, pinHash)
         return Instant.fromEpochMilliseconds(timestamp)

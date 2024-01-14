@@ -23,8 +23,20 @@ data class FilePopupMenuState(
     val file: UiStorageFile,
     val position: IntOffset,
     val visible: Boolean = true,
+    val changeFilePinState: ChangeFilePinState? = null,
     val showDeleteDialog: Boolean = false,
 )
+
+@Immutable
+data class ChangeFilePinState(
+    val mode: Mode,
+    val pin1: TextFieldValue = TextFieldValue(""),
+    val pin2: TextFieldValue = TextFieldValue(""),
+    val pin3: TextFieldValue = TextFieldValue(""),
+    val isError: Boolean = false,
+) {
+    enum class Mode { AddNew, Remove, Change }
+}
 
 @Immutable
 data class EnterFilePinDialogState(

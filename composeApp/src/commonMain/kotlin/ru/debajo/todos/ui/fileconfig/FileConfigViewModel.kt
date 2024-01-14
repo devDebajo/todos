@@ -244,7 +244,13 @@ class FileConfigViewModel(
 
     fun hideFileContextPopupMenu() {
         updateState {
-            copy(filePopupMenuState = filePopupMenuState?.copy(visible = false))
+            copy(
+                filePopupMenuState = filePopupMenuState?.copy(
+                    visible = false,
+                    changeFilePinState = null,
+                    showDeleteDialog = false,
+                )
+            )
         }
     }
 
@@ -255,6 +261,18 @@ class FileConfigViewModel(
                 filePopupMenuState = filePopupMenuState.copy(
                     visible = false,
                     showDeleteDialog = true,
+                )
+            )
+        }
+    }
+
+    fun onChangePinClick(mode: ChangeFilePinState.Mode) {
+        val filePopupMenuState = state.value.filePopupMenuState ?: return
+        updateState {
+            copy(
+                filePopupMenuState = filePopupMenuState.copy(
+                    visible = false,
+                    changeFilePinState = ChangeFilePinState(mode),
                 )
             )
         }
@@ -299,6 +317,98 @@ class FileConfigViewModel(
                     navigatorMediator.replaceAll(AppScreen.List)
                 }
             }
+        }
+    }
+
+    fun onChangeFilePin1Changed(pin: TextFieldValue) {
+        val filePopupMenuState = state.value.filePopupMenuState ?: return
+        val changeFilePinState = filePopupMenuState.changeFilePinState ?: return
+        updateState {
+            copy(
+                filePopupMenuState = filePopupMenuState.copy(
+                    changeFilePinState = changeFilePinState.copy(pin1 = pin.limit(FilePinSize), isError = false)
+                )
+            )
+        }
+    }
+
+    fun onChangeFilePin2Changed(pin: TextFieldValue) {
+        val filePopupMenuState = state.value.filePopupMenuState ?: return
+        val changeFilePinState = filePopupMenuState.changeFilePinState ?: return
+        updateState {
+            copy(
+                filePopupMenuState = filePopupMenuState.copy(
+                    changeFilePinState = changeFilePinState.copy(pin2 = pin.limit(FilePinSize), isError = false)
+                )
+            )
+        }
+    }
+
+    fun onChangeFilePin3Changed(pin: TextFieldValue) {
+        val filePopupMenuState = state.value.filePopupMenuState ?: return
+        val changeFilePinState = filePopupMenuState.changeFilePinState ?: return
+        updateState {
+            copy(
+                filePopupMenuState = filePopupMenuState.copy(
+                    changeFilePinState = changeFilePinState.copy(pin3 = pin.limit(FilePinSize), isError = false)
+                )
+            )
+        }
+    }
+
+    fun hideChangeFilePinDialog() {
+        updateState {
+            copy(filePopupMenuState = filePopupMenuState?.copy(changeFilePinState = null))
+        }
+    }
+
+    fun confirmChangeFilePinDialog() {
+        val filePopupMenuState = state.value.filePopupMenuState ?: return
+        val changeFilePinState = filePopupMenuState.changeFilePinState ?: return
+
+        screenModelScope.launch(IO) {
+            withLoading {
+                val domainFile = filePopupMenuState.file.toStorageFile()
+                if (changeFilePinState.validate(domainFile)) {
+                    when (changeFilePinState.mode) {
+                        ChangeFilePinState.Mode.AddNew -> databaseSnapshotSaver.changePin(
+                            file = domainFile,
+                            newPinHash = HashUtils.hashPin(Pin(changeFilePinState.pin2.text)),
+                        )
+
+                        ChangeFilePinState.Mode.Remove -> databaseSnapshotSaver.changePin(
+                            file = domainFile,
+                            oldPinHash = HashUtils.hashPin(Pin(changeFilePinState.pin1.text)),
+                        )
+
+                        ChangeFilePinState.Mode.Change -> databaseSnapshotSaver.changePin(
+                            file = domainFile,
+                            oldPinHash = HashUtils.hashPin(Pin(changeFilePinState.pin1.text)),
+                            newPinHash = HashUtils.hashPin(Pin(changeFilePinState.pin2.text)),
+                        )
+                    }
+                    hideChangeFilePinDialog()
+                    updateState {
+                        copy(files = storageFileManager.files.value.orEmpty().convert())
+                    }
+                } else {
+                    updateState {
+                        copy(
+                            filePopupMenuState = filePopupMenuState.copy(
+                                changeFilePinState = changeFilePinState.copy(isError = true)
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun ChangeFilePinState.validate(file: StorageFile): Boolean {
+        return when (mode) {
+            ChangeFilePinState.Mode.AddNew -> pin2.text == pin3.text
+            ChangeFilePinState.Mode.Remove -> fileCodecHelper.canDecryptFile(file, HashUtils.hashPin(Pin(pin1.text)))
+            ChangeFilePinState.Mode.Change -> pin2.text == pin3.text && fileCodecHelper.canDecryptFile(file, HashUtils.hashPin(Pin(pin1.text)))
         }
     }
 
