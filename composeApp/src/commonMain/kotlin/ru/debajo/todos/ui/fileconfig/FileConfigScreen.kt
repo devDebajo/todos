@@ -49,7 +49,6 @@ import ru.debajo.todos.common.PopupDialog
 import ru.debajo.todos.common.PopupItem
 import ru.debajo.todos.common.calculatePopupPosition
 import ru.debajo.todos.common.contextClickable
-import ru.debajo.todos.data.storage.model.StorageFile
 import ru.debajo.todos.strings.R
 import ru.debajo.todos.ui.pin.EnterPinDialog
 
@@ -167,9 +166,9 @@ private fun IsAutoOpenSwitch(
 
 @Composable
 private fun FilesListWithPlaceholder(
-    files: List<StorageFile>?,
-    onPrimaryClick: (StorageFile) -> Unit,
-    onSecondaryClick: (StorageFile, LayoutCoordinates, Offset) -> Unit,
+    files: List<UiStorageFile>?,
+    onPrimaryClick: (UiStorageFile) -> Unit,
+    onSecondaryClick: (UiStorageFile, LayoutCoordinates, Offset) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -196,7 +195,6 @@ private fun FilesListWithPlaceholder(
                                 onPrimaryClick = onPrimaryClick,
                                 onSecondaryClick = onSecondaryClick,
                                 modifier = Modifier.fillMaxWidth(),
-                                encrypted = false // TODO поправить
                             )
                         }
                     )
@@ -208,10 +206,9 @@ private fun FilesListWithPlaceholder(
 
 @Composable
 private fun FileRender(
-    file: StorageFile,
-    encrypted: Boolean,
-    onPrimaryClick: (StorageFile) -> Unit,
-    onSecondaryClick: (StorageFile, LayoutCoordinates, Offset) -> Unit,
+    file: UiStorageFile,
+    onPrimaryClick: (UiStorageFile) -> Unit,
+    onSecondaryClick: (UiStorageFile, LayoutCoordinates, Offset) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var position by remember { mutableStateOf<LayoutCoordinates?>(null) }
@@ -239,7 +236,7 @@ private fun FileRender(
                 color = MaterialTheme.colorScheme.secondary,
             )
         }
-        if (encrypted) {
+        if (file.encrypted) {
             Icon(
                 modifier = Modifier.size(14.dp),
                 contentDescription = null,

@@ -5,8 +5,10 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import cafe.adriel.voyager.core.model.screenModelScope
 import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.debajo.todos.app.AppScreen
 import ru.debajo.todos.auth.Pin
 import ru.debajo.todos.common.BaseViewModel
@@ -37,7 +39,7 @@ class FileConfigViewModel(
         screenModelScope.launch {
             storageFileManager.files.filterNotNull().collect { list ->
                 updateState {
-                    copy(files = list)
+                    copy(files = list.convert())
                 }
             }
         }
@@ -151,7 +153,7 @@ class FileConfigViewModel(
         }
 
         val pin = Pin(createEncryptedFileDialogState.pin1.text)
-        screenModelScope.launch {
+        screenModelScope.launch(IO) {
             val file = fileSelector.create(DefaultFileName)
             if (file != null) {
                 withLoading {
@@ -163,15 +165,16 @@ class FileConfigViewModel(
         }
     }
 
-    fun onFilePrimaryClick(file: StorageFile) {
-        screenModelScope.launch {
+    fun onFilePrimaryClick(file: UiStorageFile) {
+        screenModelScope.launch(IO) {
             withLoading {
-                val pinHash = filePinStorage.get(file)
-                when (fileCodecHelper.isFileReadyToRead(file, pinHash)) {
+                val domainFile = file.toStorageFile()
+                val pinHash = filePinStorage.get(domainFile)
+                when (fileCodecHelper.isFileReadyToRead(domainFile, pinHash)) {
                     FileCodecHelper.FileReadReadiness.NoPermission -> sendNews(FileConfigNews.Toast(R.strings.noReadPermission))
                     FileCodecHelper.FileReadReadiness.UnknownFormat -> sendNews(FileConfigNews.Toast(R.strings.unknownFileFormat))
                     FileCodecHelper.FileReadReadiness.Ready -> {
-                        if (storageFileManager.selectFileFromList(file)) {
+                        if (storageFileManager.selectFileFromList(domainFile)) {
                             if (databaseSnapshotSaver.load()) {
                                 navigatorMediator.replaceAll(AppScreen.List)
                             } else {
@@ -208,9 +211,10 @@ class FileConfigViewModel(
         screenModelScope.launch(Default) {
             withLoading {
                 val pinHash = HashUtils.hashPin(pin)
-                if (fileCodecHelper.canDecryptFile(enterFilePinDialogState.file, pinHash)) {
+                val domainFile = enterFilePinDialogState.file.toStorageFile()
+                if (fileCodecHelper.canDecryptFile(domainFile, pinHash)) {
                     updateState { copy(enterFilePinDialogState = null) }
-                    storageFileManager.savePinHash(enterFilePinDialogState.file, pinHash)
+                    storageFileManager.savePinHash(domainFile, pinHash)
                     navigatorMediator.replaceAll(AppScreen.List)
                 } else {
                     updateState {
@@ -227,7 +231,7 @@ class FileConfigViewModel(
         }
     }
 
-    fun onFileSecondaryClick(file: StorageFile, position: IntOffset) {
+    fun onFileSecondaryClick(file: UiStorageFile, position: IntOffset) {
         updateState {
             copy(
                 filePopupMenuState = FilePopupMenuState(
@@ -261,7 +265,7 @@ class FileConfigViewModel(
         hideDeleteFileDialog()
         if (file != null) {
             screenModelScope.launch {
-                storageFileManager.deleteFileFromList(file)
+                storageFileManager.deleteFileFromList(file.toStorageFile())
             }
         }
     }
@@ -294,6 +298,19 @@ class FileConfigViewModel(
                 if (lastFile != null && storageFileManager.selectFileFromList(lastFile)) {
                     navigatorMediator.replaceAll(AppScreen.List)
                 }
+            }
+        }
+    }
+
+    private suspend fun List<StorageFile>.convert(): List<UiStorageFile> {
+        return withContext(IO) {
+            map { domainFile ->
+                UiStorageFile(
+                    name = domainFile.name,
+                    extension = domainFile.extension,
+                    absolutePath = domainFile.absolutePath,
+                    encrypted = fileCodecHelper.isEncrypted(domainFile)
+                )
             }
         }
     }
