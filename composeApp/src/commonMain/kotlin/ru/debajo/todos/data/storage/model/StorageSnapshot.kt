@@ -5,6 +5,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class StorageSnapshot(
+    @SerialName("t")
+    val timestamp: Long = 0L,
+
     @SerialName("gs")
     val groups: List<StorageTodoGroup> = emptyList(),
 

@@ -40,6 +40,7 @@ object EnStrings : CommonStrings {
     override val autoOpenLastFile: String = "Auto open last file"
     override val deleteFromList: String = "Delete from list"
     override val noReadPermission: String = "No read permission"
+    override val unknownFileFormat: String = "Unknown file format. Try to update app"
     override val someErrorWithFile: String = "Some error with file"
     override val pinCode: String = "PIN-code"
     override val pin: String = "PIN"

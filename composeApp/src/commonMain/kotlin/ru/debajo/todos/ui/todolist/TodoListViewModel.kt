@@ -10,6 +10,7 @@ import ru.debajo.todos.common.BaseViewModel
 import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.data.storage.StorageFileManager
+import ru.debajo.todos.data.storage.codec.FileCodecHelper
 import ru.debajo.todos.domain.GroupId
 import ru.debajo.todos.domain.TodoGroup
 import ru.debajo.todos.domain.TodoItem
@@ -25,6 +26,7 @@ import ru.debajo.todos.ui.todolist.model.TodoListState
 class TodoListViewModel(
     private val databaseSnapshotSaver: DatabaseSnapshotSaver,
     private val storageFileManager: StorageFileManager,
+    private val fileCodecHelper: FileCodecHelper,
     private val todoItemUseCase: TodoItemUseCase,
     private val preferences: Preferences,
     private val navigatorMediator: NavigatorMediator,
@@ -53,7 +55,8 @@ class TodoListViewModel(
         screenModelScope.launch {
             updateState {
                 val currentFile = storageFileManager.awaitCurrentFile()
-                securedScreenManager.setScreenSecured(currentFile.encrypted)
+                val encrypted = fileCodecHelper.isEncrypted(currentFile)
+                securedScreenManager.setScreenSecured(encrypted)
                 copy(currentFileName = currentFile.nameWithExtension)
             }
         }

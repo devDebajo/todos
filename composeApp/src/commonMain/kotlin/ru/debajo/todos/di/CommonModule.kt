@@ -28,11 +28,11 @@ import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
 import ru.debajo.todos.data.storage.FilePinStorage
 import ru.debajo.todos.data.storage.StorageFileManager
+import ru.debajo.todos.data.storage.codec.FileCodecHelper
 import ru.debajo.todos.db.TodosDatabase
 import ru.debajo.todos.domain.TodoGroupRepository
 import ru.debajo.todos.domain.TodoItemRepository
 import ru.debajo.todos.domain.TodoItemUseCase
-import ru.debajo.todos.security.EncryptFileHelper
 import ru.debajo.todos.security.SecuredPreferences
 import ru.debajo.todos.security.SecuredPreferencesImpl
 import ru.debajo.todos.ui.NavigatorMediator
@@ -62,7 +62,7 @@ val CommonModule: Module = module {
     singleOf(::DatabaseSnapshotWorker)
     singleOf(::StorageFileManager)
     factoryOf(::FilePinStorage)
-    factoryOf(::EncryptFileHelper)
+    factoryOf(::FileCodecHelper)
 
     singleOf(::NavigatorMediator)
     factoryOf(::FileConfigViewModel)

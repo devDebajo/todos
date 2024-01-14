@@ -2,33 +2,26 @@ package ru.debajo.todos.data.storage
 
 import io.github.aakira.napier.Napier
 import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import kotlinx.serialization.json.Json
 import ru.debajo.todos.app.AppLifecycle
 import ru.debajo.todos.common.runCatchingAsync
+import ru.debajo.todos.data.storage.codec.FileCodecHelper
 import ru.debajo.todos.data.storage.model.StorageFile
-import ru.debajo.todos.data.storage.model.StorageSnapshot
 import ru.debajo.todos.data.storage.model.StorageSnapshotWithMeta
-import ru.debajo.todos.data.storage.model.StorageTimestampSnapshot
-import ru.debajo.todos.security.AesHelper
-import ru.debajo.todos.security.Base64Utils
-import ru.debajo.todos.security.EncryptFileHelper
 import ru.debajo.todos.security.HashUtils
 import ru.debajo.todos.security.SecuredPreferences
-import ru.debajo.todos.security.encryptString
 
 class DatabaseSnapshotSaver(
-    private val json: Json,
     private val databaseSnapshotHelper: DatabaseSnapshotHelper,
     private val storageFileManager: StorageFileManager,
     private val fileHelper: FileHelper,
     private val filePinStorage: FilePinStorage,
-    private val encryptFileHelper: EncryptFileHelper,
+    private val fileCodecHelper: FileCodecHelper,
     private val securedPreferences: SecuredPreferences,
     private val appLifecycle: AppLifecycle,
 ) : DatabaseChangeListener {
@@ -63,7 +56,7 @@ class DatabaseSnapshotSaver(
         }
 
         val pinHash = filePinStorage.get(file)
-        if (file.encrypted && pinHash == null) {
+        if (fileCodecHelper.isEncrypted(file) && pinHash == null) {
             return
         }
 
@@ -73,23 +66,8 @@ class DatabaseSnapshotSaver(
         }
 
         val stream = fileHelper.openOutputStream(file)
-        var fileContent = json.encodeToString(StorageSnapshot.serializer(), snapshot.snapshot)
-        fileContent = encryptFileHelper.encryptFile(file, fileContent, pinHash)
-        stream.bufferedWriter().use {
-            it.write("TDS01;")
-            if (file.encrypted) {
-                it.write("1;")
-            } else {
-                it.write("0;")
-            }
-            val timestamp = if (file.encrypted) {
-                AesHelper.encryptString(pinHash!!.pinHash, snapshot.editTimestampUtc.toString())
-            } else {
-                Base64Utils.encodeString(snapshot.editTimestampUtc.toString())
-            }
-            it.write("$timestamp;")
-            it.write(fileContent)
-        }
+        val fileContent = fileCodecHelper.encode(snapshot, file, pinHash)
+        stream.bufferedWriter().use { it.write(fileContent) }
     }
 
     suspend fun load(): Boolean {
@@ -116,36 +94,22 @@ class DatabaseSnapshotSaver(
 
     private suspend fun loadUnsafe(): StorageSnapshotWithMeta {
         val file = storageFileManager.awaitCurrentFile()
-        val fileContent = loadFileContentUnsafe(file)
-
-
-        if (fileContent.isEmpty()) {
-            return StorageSnapshot(absolutePath = file.absolutePath)
-        }
-        return json.decodeFromString(StorageSnapshot.serializer(), fileContent).copy(
-            absolutePath = file.absolutePath
-        )
+        return loadFileContentUnsafe(file)
     }
 
     private suspend fun loadTimestampFromFile(file: StorageFile): Instant? {
         return runCatchingAsync { loadTimestampUnsafe(file) }.getOrNull()
     }
 
-    private suspend fun loadTimestampUnsafe(file: StorageFile): Instant {
-        val fileContent = loadFileContentUnsafe(file)
-        val timestamp = json.decodeFromString(StorageTimestampSnapshot.serializer(), fileContent).timestamp
+    private suspend fun loadTimestampUnsafe(file: StorageFile): Instant? {
+        val pinHash = filePinStorage.get(file)
+        val timestamp = fileCodecHelper.getTimestamp(file, pinHash)
         return Instant.fromEpochMilliseconds(timestamp)
     }
 
-
-    private suspend fun loadFileRawContentUnsafe(file: StorageFile): String {
+    private suspend fun loadFileContentUnsafe(file: StorageFile): StorageSnapshotWithMeta {
         val pinHash = filePinStorage.get(file)
-        return encryptFileHelper.decryptFile(file, pinHash)
-    }
-
-    private suspend fun loadFileContentUnsafe(file: StorageFile): String {
-        val pinHash = filePinStorage.get(file)
-        return encryptFileHelper.decryptFile(file, pinHash)
+        return fileCodecHelper.decode(file, pinHash)
     }
 
     private suspend fun needToSave(file: StorageFile): NeedToSave {
@@ -169,12 +133,11 @@ class DatabaseSnapshotSaver(
         return "${LAST_UPDATE_KEY}_${hash}"
     }
 
-    private suspend fun <T> Mutex.locked(context: CoroutineContext = Dispatchers.IO, action: suspend () -> T): T {
+    private suspend fun <T> Mutex.locked(context: CoroutineContext = IO, action: suspend () -> T): T {
         return withLock { withContext(context) { action() } }
     }
 
     private companion object {
         const val LAST_UPDATE_KEY: String = "last_update"
-        const val TDS01_FORMAT: String = "TDS01"
     }
 }

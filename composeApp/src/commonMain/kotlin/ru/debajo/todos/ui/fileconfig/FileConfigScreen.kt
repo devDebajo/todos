@@ -195,7 +195,8 @@ private fun FilesListWithPlaceholder(
                                 file = file,
                                 onPrimaryClick = onPrimaryClick,
                                 onSecondaryClick = onSecondaryClick,
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                encrypted = false // TODO поправить
                             )
                         }
                     )
@@ -208,6 +209,7 @@ private fun FilesListWithPlaceholder(
 @Composable
 private fun FileRender(
     file: StorageFile,
+    encrypted: Boolean,
     onPrimaryClick: (StorageFile) -> Unit,
     onSecondaryClick: (StorageFile, LayoutCoordinates, Offset) -> Unit,
     modifier: Modifier = Modifier,
@@ -237,7 +239,7 @@ private fun FileRender(
                 color = MaterialTheme.colorScheme.secondary,
             )
         }
-        if (file.encrypted) {
+        if (encrypted) {
             Icon(
                 modifier = Modifier.size(14.dp),
                 contentDescription = null,

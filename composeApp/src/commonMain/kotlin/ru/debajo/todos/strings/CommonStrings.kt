@@ -48,6 +48,7 @@ interface CommonStrings {
     val autoOpenLastFile: String
     val deleteFromList: String
     val noReadPermission: String
+    val unknownFileFormat: String
     val someErrorWithFile: String
 
     val pinCode: String

@@ -12,10 +12,11 @@ import ru.debajo.todos.auth.Pin
 import ru.debajo.todos.common.BaseViewModel
 import ru.debajo.todos.common.limit
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
+import ru.debajo.todos.data.storage.FilePinStorage
 import ru.debajo.todos.data.storage.FileSelector
 import ru.debajo.todos.data.storage.StorageFileManager
+import ru.debajo.todos.data.storage.codec.FileCodecHelper
 import ru.debajo.todos.data.storage.model.StorageFile
-import ru.debajo.todos.security.EncryptFileHelper
 import ru.debajo.todos.security.HashUtils
 import ru.debajo.todos.strings.R
 import ru.debajo.todos.ui.NavigatorMediator
@@ -28,7 +29,8 @@ class FileConfigViewModel(
     private val fileSelector: FileSelector,
     private val navigatorMediator: NavigatorMediator,
     private val databaseSnapshotSaver: DatabaseSnapshotSaver,
-    private val encryptFileHelper: EncryptFileHelper,
+    private val filePinStorage: FilePinStorage,
+    private val fileCodecHelper: FileCodecHelper,
 ) : BaseViewModel<FileConfigState, FileConfigNews>(FileConfigState()) {
 
     override fun onLaunch() {
@@ -164,9 +166,11 @@ class FileConfigViewModel(
     fun onFilePrimaryClick(file: StorageFile) {
         screenModelScope.launch {
             withLoading {
-                when (encryptFileHelper.isFileReadyToRead(file)) {
-                    EncryptFileHelper.FileReadReadiness.NoPermission -> sendNews(FileConfigNews.Toast(R.strings.noReadPermission))
-                    EncryptFileHelper.FileReadReadiness.Ready -> {
+                val pinHash = filePinStorage.get(file)
+                when (fileCodecHelper.isFileReadyToRead(file, pinHash)) {
+                    FileCodecHelper.FileReadReadiness.NoPermission -> sendNews(FileConfigNews.Toast(R.strings.noReadPermission))
+                    FileCodecHelper.FileReadReadiness.UnknownFormat -> sendNews(FileConfigNews.Toast(R.strings.unknownFileFormat))
+                    FileCodecHelper.FileReadReadiness.Ready -> {
                         if (storageFileManager.selectFileFromList(file)) {
                             if (databaseSnapshotSaver.load()) {
                                 navigatorMediator.replaceAll(AppScreen.List)
@@ -178,7 +182,7 @@ class FileConfigViewModel(
                         }
                     }
 
-                    EncryptFileHelper.FileReadReadiness.NoPin -> {
+                    FileCodecHelper.FileReadReadiness.NoPin -> {
                         updateState {
                             copy(enterFilePinDialogState = EnterFilePinDialogState(file = file))
                         }
@@ -204,7 +208,7 @@ class FileConfigViewModel(
         screenModelScope.launch(Default) {
             withLoading {
                 val pinHash = HashUtils.hashPin(pin)
-                if (encryptFileHelper.canDecryptFile(enterFilePinDialogState.file, pinHash)) {
+                if (fileCodecHelper.canDecryptFile(enterFilePinDialogState.file, pinHash)) {
                     updateState { copy(enterFilePinDialogState = null) }
                     storageFileManager.savePinHash(enterFilePinDialogState.file, pinHash)
                     navigatorMediator.replaceAll(AppScreen.List)

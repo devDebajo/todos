@@ -34,16 +34,16 @@ class DatabaseSnapshotHelper(
         )
     }
 
-    suspend fun replace(snapshot: StorageSnapshot) {
+    suspend fun replace(snapshot: StorageSnapshotWithMeta) {
         val path = snapshot.absolutePath
-        if (path.isNullOrEmpty()) {
+        if (path.isEmpty()) {
             error("Path should not be empty")
         }
         replaceDao.replace(
             path = path,
-            groups = snapshot.groups.map { it.convert() },
-            links = snapshot.links.map { it.convert() },
-            items = snapshot.todos.map { it.convert() },
+            groups = snapshot.snapshot.groups.map { it.convert() },
+            links = snapshot.snapshot.links.map { it.convert() },
+            items = snapshot.snapshot.todos.map { it.convert() },
         )
     }
 

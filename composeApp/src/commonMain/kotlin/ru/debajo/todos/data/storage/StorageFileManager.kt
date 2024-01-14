@@ -13,6 +13,7 @@ import kotlinx.coroutines.withContext
 import ru.debajo.todos.auth.PinHash
 import ru.debajo.todos.common.runCatchingAsync
 import ru.debajo.todos.data.preferences.Preferences
+import ru.debajo.todos.data.storage.codec.FileCodecHelper
 import ru.debajo.todos.data.storage.model.StorageFile
 import ru.debajo.todos.security.SecuredPreferences
 
@@ -22,6 +23,7 @@ class StorageFileManager(
     appScope: CoroutineScope,
     private val fileHelper: FileHelper,
     private val filePinStorage: FilePinStorage,
+    private val fileCodecHelper: FileCodecHelper,
 ) {
     private val _files: MutableStateFlow<List<StorageFile>?> = MutableStateFlow(null)
     val files: StateFlow<List<StorageFile>?> = _files.asStateFlow()
@@ -41,10 +43,6 @@ class StorageFileManager(
     }
 
     suspend fun selectFileFromList(file: StorageFile): Boolean {
-        if (!file.isValidExtension) {
-            return false
-        }
-
         if (file !in _files.value.orEmpty()) {
             return false
         }
@@ -81,9 +79,9 @@ class StorageFileManager(
         }
 
         return withContext(Dispatchers.IO) {
-            if (file.isValidExtension && fileHelper.canRead(file)) {
+            if (fileHelper.canRead(file)) {
                 addFileToList(file)
-                if (file.encrypted && pinHash != null) {
+                if (fileCodecHelper.isEncrypted(file) && pinHash != null) {
                     filePinStorage.save(file, pinHash)
                 }
                 true

@@ -1,6 +1,7 @@
 package ru.debajo.todos.strings
 
-object RuStrings : CommonStrings by EnStrings {
+object RuStrings : CommonStrings {
+    override val appName: String by EnStrings::appName
     override val welcome: String = "Добро пожаловать"
     override val welcomeOnboarding: String = "Прежде чем начать нужно настроить защиту приложения"
     override val selectPreferredSecurityType: String = "Выберите предпочтительный тип защиты"
@@ -40,6 +41,7 @@ object RuStrings : CommonStrings by EnStrings {
     override val autoOpenLastFile: String = "Автоматически открывать последний файл"
     override val deleteFromList: String = "Удалить из списка"
     override val noReadPermission: String = "Нет прав для чтения файла"
+    override val unknownFileFormat: String = "Неизвестный формат файла. Попробуйте обновить приложение"
     override val someErrorWithFile: String = "Ошибка при работе с файлом"
     override val pinCode: String = "ПИН-код"
     override val pin: String = "ПИН"
