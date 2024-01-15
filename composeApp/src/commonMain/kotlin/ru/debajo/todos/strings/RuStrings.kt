@@ -69,4 +69,5 @@ object RuStrings : CommonStrings {
     override val moveFolderRight: String = "Сдвинуть право"
     override val todoCreatedAt: String = "Создано %S"
     override val todoEditedAt: String = "Изменено %S"
+    override val biometricTitle: String = "Вход в $appName"
 }

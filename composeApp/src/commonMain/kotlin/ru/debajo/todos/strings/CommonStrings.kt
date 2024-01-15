@@ -81,4 +81,6 @@ interface CommonStrings {
     val moveFolderRight: String
     val todoCreatedAt: String
     val todoEditedAt: String
+
+    val biometricTitle: String
 }

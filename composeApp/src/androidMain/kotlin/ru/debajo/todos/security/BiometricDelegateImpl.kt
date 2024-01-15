@@ -17,13 +17,13 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 import kotlinx.coroutines.suspendCancellableCoroutine
 import ru.debajo.todos.ActivityResultLaunchers
-import ru.debajo.todos.R
 import ru.debajo.todos.common.runCatchingAsync
 import ru.debajo.todos.data.preferences.Preferences
+import ru.debajo.todos.strings.R
 
 // https://gist.github.com/frengky/b2b96a4b1ec234080e9d8a9164240f1a
 internal class BiometricDelegateImpl(
-    private val applicationContext: Context,
+    applicationContext: Context,
     private val activityResultLaunchersProvider: () -> ActivityResultLaunchers,
     private val preferences: Preferences,
 ) : BiometricDelegate {
@@ -46,7 +46,7 @@ internal class BiometricDelegateImpl(
         val secretKey = createSecretKey(SECRET_KEY_ALIAS) ?: return null
         val cipher = getCipher()
         cipher.init(Cipher.ENCRYPT_MODE, secretKey)
-        val biometricResult = awaitBiometricPrompt(applicationContext, cipher)
+        val biometricResult = awaitBiometricPrompt(cipher)
 
         if (biometricResult is BiometricResult.Succeeded) {
             val encodedData = cipher.doFinal(rawData.toByteArray(Charset.defaultCharset()))
@@ -72,7 +72,7 @@ internal class BiometricDelegateImpl(
         val iv = getFromPrefsBytes(IV_KEY) ?: return null
         val ivParameterSpec = IvParameterSpec(iv)
         cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec)
-        val biometricResult = awaitBiometricPrompt(applicationContext, cipher)
+        val biometricResult = awaitBiometricPrompt(cipher)
 
         if (biometricResult is BiometricResult.Succeeded) {
             val decodedData = cipher.doFinal(Base64.decode(encryptedData, Base64.NO_WRAP))
@@ -82,12 +82,11 @@ internal class BiometricDelegateImpl(
         return null
     }
 
-    private suspend fun awaitBiometricPrompt(context: Context, cipher: Cipher): BiometricResult {
+    private suspend fun awaitBiometricPrompt(cipher: Cipher): BiometricResult {
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
             .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
-            .setTitle(context.getString(R.string.biometric_title))
-            .setSubtitle(context.getString(R.string.biometric_subtitle))
-            .setNegativeButtonText(context.getString(R.string.biometric_cancel))
+            .setTitle(R.strings.biometricTitle)
+            .setNegativeButtonText(R.strings.cancel)
             .build()
 
         val activity = activityResultLaunchersProvider().activity
