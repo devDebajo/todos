@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import ru.debajo.todos.app.AppScreen
 
 @Stable
-class NavigatorMediator {
+internal class NavigatorMediator {
 
     private val flow: MutableSharedFlow<Navigate> = MutableSharedFlow()
 
@@ -26,4 +26,4 @@ class NavigatorMediator {
     class Navigate(val screen: AppScreen, val replaceAll: Boolean)
 }
 
-val LocalNavigatorMediator: ProvidableCompositionLocal<NavigatorMediator> = staticCompositionLocalOf { error("") }
+internal val LocalNavigatorMediator: ProvidableCompositionLocal<NavigatorMediator> = staticCompositionLocalOf { error("") }

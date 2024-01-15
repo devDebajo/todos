@@ -7,7 +7,7 @@ import kotlinx.coroutines.supervisorScope
 import ru.debajo.todos.app.AppLifecycle
 import ru.debajo.todos.common.runCatchingAsync
 
-class DatabaseSnapshotWorker(
+internal class DatabaseSnapshotWorker(
     private val databaseSnapshotSaver: DatabaseSnapshotSaver,
     private val appLifecycle: AppLifecycle,
 ) {

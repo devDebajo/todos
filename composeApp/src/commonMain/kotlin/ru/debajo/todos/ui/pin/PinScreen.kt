@@ -15,7 +15,7 @@ import ru.debajo.todos.common.BlockingLoaderDialog
 const val PinSize: Int = 4
 
 @Composable
-fun PinScreen(viewModel: PinViewModel) {
+internal fun PinScreen(viewModel: PinViewModel) {
     val state by viewModel.state.collectAsState()
 
     Column(

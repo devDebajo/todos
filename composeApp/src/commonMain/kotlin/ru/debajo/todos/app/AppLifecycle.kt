@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 @Stable
-interface AppLifecycle {
+internal interface AppLifecycle {
     val state: StateFlow<State>
 
     val isPaused: Boolean
@@ -19,7 +19,7 @@ interface AppLifecycle {
 }
 
 @Stable
-class AppLifecycleMutable : AppLifecycle {
+internal class AppLifecycleMutable : AppLifecycle {
     private val _state: MutableStateFlow<AppLifecycle.State> = MutableStateFlow(AppLifecycle.State.Paused)
     override val state: StateFlow<AppLifecycle.State> = _state.asStateFlow()
 

@@ -14,7 +14,7 @@ import ru.debajo.todos.ui.todolist.HorizontalTodoListScreen
 import ru.debajo.todos.ui.todolist.TodoListScreen
 import ru.debajo.todos.ui.todolist.TodoListViewModel
 
-sealed interface AppScreen : Screen {
+internal sealed interface AppScreen : Screen {
 
     val securedByDefault: Boolean
         get() = false

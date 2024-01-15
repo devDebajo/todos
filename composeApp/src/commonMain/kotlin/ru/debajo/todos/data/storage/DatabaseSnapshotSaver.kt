@@ -18,7 +18,7 @@ import ru.debajo.todos.data.storage.model.StorageSnapshotWithMeta
 import ru.debajo.todos.security.HashUtils
 import ru.debajo.todos.security.SecuredPreferences
 
-class DatabaseSnapshotSaver(
+internal class DatabaseSnapshotSaver(
     private val databaseSnapshotHelper: DatabaseSnapshotHelper,
     private val storageFileManager: StorageFileManager,
     private val fileHelper: FileHelper,

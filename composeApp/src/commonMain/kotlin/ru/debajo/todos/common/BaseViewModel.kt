@@ -29,7 +29,7 @@ abstract class BaseViewModel<S, N>(initialState: S) : StateScreenModel<S>(initia
 }
 
 @Composable
-inline fun <reified T : BaseViewModel<*, *>> Screen.viewModelFromDi(tag: String? = null): T {
+internal inline fun <reified T : BaseViewModel<*, *>> Screen.viewModelFromDi(tag: String? = null): T {
     val viewModel = rememberScreenModel(tag) { getFromDi<T>() }
     LaunchedEffect(viewModel) { viewModel.onLaunch() }
     return viewModel

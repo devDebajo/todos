@@ -14,6 +14,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import ru.debajo.todos.common.ellipsize
+import ru.debajo.todos.common.formatKmp
 import ru.debajo.todos.strings.R
 import ru.debajo.todos.ui.todolist.model.TodoListState
 
@@ -47,7 +48,7 @@ internal fun DeleteGroupDialog(
         AlertDialog(
             title = { Text(R.strings.deleteGroupDialogTitle) },
             text = {
-                Text(R.strings.deleteGroupDialogText.format(currentDeletingGroup.name))
+                Text(R.strings.deleteGroupDialogText.formatKmp(currentDeletingGroup.name))
             },
             confirmButton = {
                 Column(horizontalAlignment = Alignment.End) {
@@ -120,7 +121,7 @@ internal fun DeleteTodoItemDialog(
         AlertDialog(
             title = { Text(R.strings.deleteTodoItemDialogTitle) },
             text = {
-                Text(R.strings.deleteTodoItemDialogText.format(todoItemContextMenuState.item.text.ellipsize(20)))
+                Text(R.strings.deleteTodoItemDialogText.formatKmp(todoItemContextMenuState.item.text.ellipsize(20)))
             },
             dismissButton = {
                 TextButton(onClick = onHide) {

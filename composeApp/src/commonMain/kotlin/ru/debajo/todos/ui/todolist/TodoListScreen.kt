@@ -87,7 +87,7 @@ import ru.debajo.todos.ui.todolist.model.TodoListNews
 import ru.debajo.todos.ui.todolist.model.TodoListState
 
 @Composable
-fun TodoListScreen(viewModel: TodoListViewModel) {
+internal fun TodoListScreen(viewModel: TodoListViewModel) {
     val state by viewModel.state.collectAsState()
     val groupsLazyListState = rememberLazyListState()
 

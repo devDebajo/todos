@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 import ru.debajo.todos.strings.R
 
 @Composable
-fun OnboardingScreen(viewModel: OnboardingViewModel) {
+internal fun OnboardingScreen(viewModel: OnboardingViewModel) {
     val state by viewModel.state.collectAsState()
 
     Column(

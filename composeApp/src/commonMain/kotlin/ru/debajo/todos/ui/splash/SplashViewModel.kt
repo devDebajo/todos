@@ -10,7 +10,7 @@ import ru.debajo.todos.common.BaseNewsLessViewModel
 import ru.debajo.todos.ui.NavigatorMediator
 
 @Stable
-class SplashViewModel(
+internal class SplashViewModel(
     private val navigatorMediator: NavigatorMediator,
     private val securityManager: AppSecurityManager,
 ) : BaseNewsLessViewModel<Unit>(Unit) {

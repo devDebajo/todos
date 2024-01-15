@@ -30,7 +30,7 @@ import ru.debajo.todos.ui.pin.PinSize
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NewPinScreen(viewModel: NewPinViewModel) {
+internal fun NewPinScreen(viewModel: NewPinViewModel) {
     val state by viewModel.state.collectAsState()
     val pagerState = rememberPagerState { 2 }
     val usePin1AsState = rememberUpdatedState(state.usePin1)

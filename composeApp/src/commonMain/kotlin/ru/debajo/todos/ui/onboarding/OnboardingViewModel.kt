@@ -9,7 +9,7 @@ import ru.debajo.todos.common.BaseNewsLessViewModel
 import ru.debajo.todos.ui.NavigatorMediator
 
 @Stable
-class OnboardingViewModel(
+internal class OnboardingViewModel(
     private val securityManager: AppSecurityManager,
     private val navigatorMediator: NavigatorMediator,
 ) : BaseNewsLessViewModel<OnboardingState>(OnboardingState()) {

@@ -23,7 +23,7 @@ import ru.debajo.todos.ui.todolist.model.TodoListNews
 import ru.debajo.todos.ui.todolist.model.TodoListState
 
 @Stable
-class TodoListViewModel(
+internal class TodoListViewModel(
     private val databaseSnapshotSaver: DatabaseSnapshotSaver,
     private val storageFileManager: StorageFileManager,
     private val fileCodecHelper: FileCodecHelper,

@@ -17,7 +17,7 @@ import ru.debajo.todos.security.hashPin
 import ru.debajo.todos.ui.NavigatorMediator
 
 @Stable
-class PinViewModel(
+internal class PinViewModel(
     private val biometricDelegate: BiometricDelegate,
     private val securityManager: AppSecurityManager,
     private val navigatorMediator: NavigatorMediator,

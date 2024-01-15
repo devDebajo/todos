@@ -50,13 +50,14 @@ import ru.debajo.todos.common.PopupDialog
 import ru.debajo.todos.common.PopupItem
 import ru.debajo.todos.common.calculatePopupPosition
 import ru.debajo.todos.common.contextClickable
+import ru.debajo.todos.common.formatKmp
 import ru.debajo.todos.strings.R
 import ru.debajo.todos.ui.pin.EnterPin1Dialog
 import ru.debajo.todos.ui.pin.EnterPin2Dialog
 import ru.debajo.todos.ui.pin.EnterPin3Dialog
 
 @Composable
-fun FileConfigScreen(viewModel: FileConfigViewModel) {
+internal fun FileConfigScreen(viewModel: FileConfigViewModel) {
     val state by viewModel.state.collectAsState()
     val haptic = LocalHapticFeedback.current
 
@@ -119,7 +120,7 @@ fun FileConfigScreen(viewModel: FileConfigViewModel) {
     val enterFilePinDialogState = state.enterFilePinDialogState
     if (enterFilePinDialogState != null && enterFilePinDialogState.visible) {
         EnterPin1Dialog(
-            text = R.strings.pinCodeFor.format(enterFilePinDialogState.file.nameWithExtension),
+            text = R.strings.pinCodeFor.formatKmp(enterFilePinDialogState.file.nameWithExtension),
             pin = enterFilePinDialogState.pin,
             isError = enterFilePinDialogState.isError,
             onPinChanged = { viewModel.onEnterFilePinDialogPinChanged(it) },

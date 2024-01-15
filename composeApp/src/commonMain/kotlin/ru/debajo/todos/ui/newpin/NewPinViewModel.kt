@@ -16,7 +16,7 @@ import ru.debajo.todos.ui.NavigatorMediator
 import ru.debajo.todos.ui.pin.PinSize
 
 @Stable
-class NewPinViewModel(
+internal class NewPinViewModel(
     private val biometricDelegate: BiometricDelegate,
     private val securityManager: AppSecurityManager,
     private val navigatorMediator: NavigatorMediator,

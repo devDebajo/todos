@@ -41,7 +41,7 @@ import kotlin.math.max
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun BlockingLoaderDialog(show: Boolean) {
+internal fun BlockingLoaderDialog(show: Boolean) {
     if (show) {
         AlertDialog(onDismissRequest = { /** could not close dialog **/ }) {
             Box(Modifier.fillMaxSize()) {
@@ -62,12 +62,12 @@ fun BlockingLoaderDialog(show: Boolean) {
     }
 }
 
-fun LayoutCoordinates.calculatePopupPosition(itemOffset: Offset): IntOffset {
+internal fun LayoutCoordinates.calculatePopupPosition(itemOffset: Offset): IntOffset {
     return positionInRoot().toIntOffset() + itemOffset.toIntOffset()
 }
 
 @Composable
-fun PopupDialog(
+internal fun PopupDialog(
     visible: Boolean = false,
     position: IntOffset = IntOffset.Zero,
     onHide: () -> Unit,
@@ -156,7 +156,7 @@ private fun calculateOffset(position: IntOffset, popupSize: IntSize, containerSi
 }
 
 @Composable
-fun PopupItem(
+internal fun PopupItem(
     modifier: Modifier = Modifier,
     text: String,
     onClick: () -> Unit,

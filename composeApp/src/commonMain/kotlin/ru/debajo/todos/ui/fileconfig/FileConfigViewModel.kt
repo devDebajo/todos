@@ -28,7 +28,7 @@ import ru.debajo.todos.ui.NavigatorMediator
 const val FilePinSize: Int = 6
 
 @Stable
-class FileConfigViewModel(
+internal class FileConfigViewModel(
     private val storageFileManager: StorageFileManager,
     private val fileSelector: FileSelector,
     private val navigatorMediator: NavigatorMediator,
