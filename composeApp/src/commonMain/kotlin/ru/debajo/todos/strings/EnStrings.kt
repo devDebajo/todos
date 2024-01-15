@@ -1,7 +1,7 @@
 package ru.debajo.todos.strings
 
 object EnStrings : CommonStrings {
-    override val appName: String = "//TODOs"
+    override val appName: String = "TODOs"
     override val welcome: String = "Welcome"
     override val welcomeOnboarding: String = "Before you begin, you need to configure data protection in the application"
     override val selectPreferredSecurityType: String = "Select your preferred security type"
