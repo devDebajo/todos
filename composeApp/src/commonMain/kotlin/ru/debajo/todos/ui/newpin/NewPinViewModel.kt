@@ -11,6 +11,7 @@ import ru.debajo.todos.common.BaseNewsLessViewModel
 import ru.debajo.todos.security.BiometricDelegate
 import ru.debajo.todos.security.HashUtils
 import ru.debajo.todos.security.encryptPinHash
+import ru.debajo.todos.security.hashPin
 import ru.debajo.todos.ui.NavigatorMediator
 import ru.debajo.todos.ui.pin.PinSize
 

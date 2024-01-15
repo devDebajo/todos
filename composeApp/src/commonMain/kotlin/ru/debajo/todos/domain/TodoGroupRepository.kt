@@ -1,8 +1,8 @@
 package ru.debajo.todos.domain
 
-import java.util.UUID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import ru.debajo.todos.common.UUID
 import ru.debajo.todos.data.db.dao.DbTodoGroupDao
 import ru.debajo.todos.data.db.dao.DbTodoGroupToItemLinkDao
 import ru.debajo.todos.data.storage.DatabaseChangeListener

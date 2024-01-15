@@ -15,7 +15,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
 
 @OptIn(ExperimentalFoundationApi::class)
-actual fun Modifier.contextClickable(
+internal actual fun Modifier.contextClickable(
     enabled: Boolean,
     onPrimaryClick: (Offset) -> Unit,
     onSecondaryClick: (Offset) -> Unit,

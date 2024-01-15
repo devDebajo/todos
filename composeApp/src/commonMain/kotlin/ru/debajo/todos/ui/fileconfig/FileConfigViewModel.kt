@@ -4,8 +4,9 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import cafe.adriel.voyager.core.model.screenModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.Default
-import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,6 +21,7 @@ import ru.debajo.todos.data.storage.StorageFileManager
 import ru.debajo.todos.data.storage.codec.FileCodecHelper
 import ru.debajo.todos.data.storage.model.StorageFile
 import ru.debajo.todos.security.HashUtils
+import ru.debajo.todos.security.hashPin
 import ru.debajo.todos.strings.R
 import ru.debajo.todos.ui.NavigatorMediator
 
@@ -153,7 +155,7 @@ class FileConfigViewModel(
         }
 
         val pin = Pin(createEncryptedFileDialogState.pin1.text)
-        screenModelScope.launch(IO) {
+        screenModelScope.launch(Dispatchers.IO) {
             val file = fileSelector.create(DefaultFileName)
             if (file != null) {
                 withLoading {
@@ -166,7 +168,7 @@ class FileConfigViewModel(
     }
 
     fun onFilePrimaryClick(file: UiStorageFile) {
-        screenModelScope.launch(IO) {
+        screenModelScope.launch(Dispatchers.IO) {
             withLoading {
                 val domainFile = file.toStorageFile()
                 val pinHash = filePinStorage.get(domainFile)
@@ -366,7 +368,7 @@ class FileConfigViewModel(
         val filePopupMenuState = state.value.filePopupMenuState ?: return
         val changeFilePinState = filePopupMenuState.changeFilePinState ?: return
 
-        screenModelScope.launch(IO) {
+        screenModelScope.launch(Dispatchers.IO) {
             withLoading {
                 val domainFile = filePopupMenuState.file.toStorageFile()
                 if (changeFilePinState.validate(domainFile)) {
@@ -413,7 +415,7 @@ class FileConfigViewModel(
     }
 
     private suspend fun List<StorageFile>.convert(): List<UiStorageFile> {
-        return withContext(IO) {
+        return withContext(Dispatchers.IO) {
             map { domainFile ->
                 UiStorageFile(
                     name = domainFile.name,

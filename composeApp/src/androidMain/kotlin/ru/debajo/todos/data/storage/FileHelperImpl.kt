@@ -7,8 +7,11 @@ import android.provider.MediaStore
 import io.github.aakira.napier.Napier
 import java.io.InputStream
 import java.io.OutputStream
+import kotlinx.coroutines.flow.Flow
 import ru.debajo.todos.common.canRead
 import ru.debajo.todos.data.storage.model.StorageFile
+import ru.debajo.todos.java.utils.linesFlow
+import ru.debajo.todos.java.utils.write
 
 internal class FileHelperImpl(
     private val contentResolver: ContentResolver,
@@ -26,12 +29,12 @@ internal class FileHelperImpl(
         }
     }
 
-    override fun openOutputStream(file: StorageFile): OutputStream {
-        return contentResolver.openOutputStream(Uri.parse(file.absolutePath), "wt")!!
+    override fun openOutputStream(file: StorageFile): FileWriter {
+        return FileWriterImpl(contentResolver.openOutputStream(Uri.parse(file.absolutePath), "wt")!!)
     }
 
-    override fun openInputStream(file: StorageFile): InputStream {
-        return contentResolver.openInputStream(Uri.parse(file.absolutePath))!!
+    override fun openInputStream(file: StorageFile): FileReader {
+        return FileReaderImpl(contentResolver.openInputStream(Uri.parse(file.absolutePath))!!)
     }
 
     private fun Uri.requestPersistablePermission() {
@@ -84,4 +87,12 @@ internal class FileHelperImpl(
         }
         return null
     }
+}
+
+private class FileWriterImpl(private val outputStream: OutputStream) : FileWriter {
+    override suspend fun write(content: String): Unit = outputStream.write(content)
+}
+
+private class FileReaderImpl(private val inputStream: InputStream) : FileReader {
+    override fun lineFlow(): Flow<String> = inputStream.linesFlow()
 }

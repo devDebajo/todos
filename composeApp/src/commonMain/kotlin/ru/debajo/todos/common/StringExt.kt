@@ -7,3 +7,7 @@ fun String.ellipsize(limit: Int): String {
 
     return take(limit) + "…"
 }
+
+expect fun String.toByteArray(): ByteArray
+
+expect fun String.formatKmp(vararg args: Any): String

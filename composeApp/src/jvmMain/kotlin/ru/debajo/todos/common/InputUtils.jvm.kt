@@ -20,7 +20,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEvent
 
-actual fun Modifier.contextClickable(
+internal actual fun Modifier.contextClickable(
     enabled: Boolean,
     onPrimaryClick: (Offset) -> Unit,
     onSecondaryClick: (Offset) -> Unit,

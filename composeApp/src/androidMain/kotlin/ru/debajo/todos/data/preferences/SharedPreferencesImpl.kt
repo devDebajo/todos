@@ -2,7 +2,7 @@ package ru.debajo.todos.data.preferences
 
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
-import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 internal class SharedPreferencesImpl(
@@ -54,13 +54,13 @@ internal class SharedPreferencesImpl(
 
     @SuppressLint("ApplySharedPref")
     private suspend fun update(block: SharedPreferences.Editor.() -> Unit) {
-        withContext(IO) {
+        withContext(Dispatchers.IO) {
             sharedPreferences.edit().also(block).commit()
         }
     }
 
     private suspend fun <T> extract(block: SharedPreferences.() -> T?): T? {
-        return withContext(IO) {
+        return withContext(Dispatchers.IO) {
             sharedPreferences.block()
         }
     }

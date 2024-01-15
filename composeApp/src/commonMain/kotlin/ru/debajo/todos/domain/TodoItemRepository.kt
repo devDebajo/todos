@@ -1,10 +1,10 @@
 package ru.debajo.todos.domain
 
-import java.util.UUID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import ru.debajo.todos.common.UUID
 import ru.debajo.todos.common.toBoolean
 import ru.debajo.todos.common.toLong
 import ru.debajo.todos.data.db.dao.DbTodoGroupToItemLinkDao

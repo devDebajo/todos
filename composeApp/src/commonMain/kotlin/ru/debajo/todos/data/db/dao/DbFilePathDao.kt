@@ -1,6 +1,7 @@
 package ru.debajo.todos.data.db.dao
 
-import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import ru.debajo.todos.db.DbFilePathQueries
 import ru.debajo.todos.di.AsyncProvider
@@ -10,7 +11,7 @@ class DbFilePathDao(
 ) {
 
     suspend fun save(path: String) {
-        withContext(IO) {
+        withContext(Dispatchers.IO) {
             val queries = queriesProvider.provide()
             queries.transaction {
                 queries.clear()
@@ -20,7 +21,7 @@ class DbFilePathDao(
     }
 
     suspend fun get(): String? {
-        return withContext(IO) {
+        return withContext(Dispatchers.IO) {
             queriesProvider.provide().get().executeAsOneOrNull()
         }
     }

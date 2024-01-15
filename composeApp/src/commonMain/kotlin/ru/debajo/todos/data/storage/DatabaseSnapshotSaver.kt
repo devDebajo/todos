@@ -2,7 +2,8 @@ package ru.debajo.todos.data.storage
 
 import io.github.aakira.napier.Napier
 import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -61,7 +62,7 @@ class DatabaseSnapshotSaver(
                 .copy(encrypted = newPinHash != null)
 
             val content = fileCodecHelper.encode(snapshot, file, newPinHash)
-            fileHelper.openOutputStream(file).bufferedWriter().use { it.write(content) }
+            fileHelper.openOutputStream(file).write(content)
 
             if (newPinHash == null) {
                 filePinStorage.remove(file)
@@ -89,7 +90,7 @@ class DatabaseSnapshotSaver(
 
         val stream = fileHelper.openOutputStream(file)
         val fileContent = fileCodecHelper.encode(snapshot, file, pinHash)
-        stream.bufferedWriter().use { it.write(fileContent) }
+        stream.write(fileContent)
     }
 
     suspend fun load(): Boolean {
@@ -155,7 +156,7 @@ class DatabaseSnapshotSaver(
         return "${LAST_UPDATE_KEY}_${hash}"
     }
 
-    private suspend fun <T> Mutex.locked(context: CoroutineContext = IO, action: suspend () -> T): T {
+    private suspend fun <T> Mutex.locked(context: CoroutineContext = Dispatchers.IO, action: suspend () -> T): T {
         return withLock { withContext(context) { action() } }
     }
 

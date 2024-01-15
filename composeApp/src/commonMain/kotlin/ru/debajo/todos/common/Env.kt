@@ -1,3 +1,3 @@
 package ru.debajo.todos.common
 
-expect val isDebug: Boolean
+internal expect val isDebug: Boolean

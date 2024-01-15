@@ -5,7 +5,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalWindowInfo
 
 @OptIn(ExperimentalComposeUiApi::class)
-actual val currentOrientation: AppOrientation
+internal actual val currentOrientation: AppOrientation
     @Composable
     get() {
         val containerSize = LocalWindowInfo.current.containerSize

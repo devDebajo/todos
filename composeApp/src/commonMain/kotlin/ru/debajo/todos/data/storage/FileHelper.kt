@@ -1,7 +1,5 @@
 package ru.debajo.todos.data.storage
 
-import java.io.InputStream
-import java.io.OutputStream
 import ru.debajo.todos.data.storage.model.StorageFile
 
 interface FileHelper {
@@ -9,7 +7,7 @@ interface FileHelper {
 
     fun canRead(file: StorageFile): Boolean
 
-    fun openOutputStream(file: StorageFile): OutputStream
+    fun openOutputStream(file: StorageFile): FileWriter
 
-    fun openInputStream(file: StorageFile): InputStream
+    fun openInputStream(file: StorageFile): FileReader
 }

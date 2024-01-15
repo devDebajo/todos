@@ -6,7 +6,7 @@ import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.key
 
 @Composable
-expect fun KeyListener(listener: (KeyEvent) -> Boolean)
+internal expect fun KeyListener(listener: (KeyEvent) -> Boolean)
 
 val KeyEvent.isBackspace: Boolean
     get() = key.keyCode == Key.Backspace.keyCode

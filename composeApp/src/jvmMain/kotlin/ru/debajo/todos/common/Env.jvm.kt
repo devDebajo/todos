@@ -1,4 +1,4 @@
 package ru.debajo.todos.common
 
-actual val isDebug: Boolean
+internal actual val isDebug: Boolean
     get() = true

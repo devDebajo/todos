@@ -1,6 +1,7 @@
 package ru.debajo.todos.data.db.dao
 
-import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import ru.debajo.todos.db.DbFilePathQueries
 import ru.debajo.todos.db.DbTodoGroup
@@ -25,7 +26,7 @@ class ReplaceDao(
         links: List<DbTodoGroupToItemLink>,
         items: List<DbTodoItem>,
     ) {
-        withContext(IO) {
+        withContext(Dispatchers.IO) {
             val dbTodoGroupQueries = dbTodoGroupQueriesProvider.provide()
             val dbTodoItemQueries = dbTodoItemQueriesProvider.provide()
             val dbTodoGroupToItemLinkQueries = dbTodoGroupToItemLinkQueriesProvider.provide()

@@ -69,17 +69,14 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
-import java.time.format.DateTimeFormatter
-import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toJavaLocalDateTime
-import kotlinx.datetime.toLocalDateTime
 import ru.debajo.todos.app.isHorizontalOrientation
 import ru.debajo.todos.common.BlockingLoaderDialog
 import ru.debajo.todos.common.PopupDialog
 import ru.debajo.todos.common.PopupItem
 import ru.debajo.todos.common.calculatePopupPosition
 import ru.debajo.todos.common.contextClickable
+import ru.debajo.todos.common.formatDateTime
+import ru.debajo.todos.common.formatKmp
 import ru.debajo.todos.common.roundToPx
 import ru.debajo.todos.common.toDp
 import ru.debajo.todos.domain.GroupId
@@ -498,17 +495,11 @@ private fun TodoCard(
 private fun formatDate(item: TodoItem): String {
     return remember(item.createTimestamp, item.updateTimestamp) {
         if (item.createTimestamp == item.updateTimestamp) {
-            R.strings.todoCreatedAt.format(item.createTimestamp.format())
+            R.strings.todoCreatedAt.formatKmp(item.createTimestamp.formatDateTime())
         } else {
-            R.strings.todoEditedAt.format(item.updateTimestamp.format())
+            R.strings.todoEditedAt.formatKmp(item.updateTimestamp.formatDateTime())
         }
     }
-}
-
-private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-
-private fun Instant.format(): String {
-    return formatter.format(toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime())
 }
 
 @Composable

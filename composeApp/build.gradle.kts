@@ -20,6 +20,17 @@ kotlin {
 
     jvm()
 
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach {
+        it.binaries.framework {
+            baseName = "ComposeApp"
+            isStatic = true
+        }
+    }
+
     sourceSets {
         all {
             languageSettings {
@@ -39,15 +50,11 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
             implementation(libs.koin.core)
-            implementation(libs.kstore)
             implementation(libs.sqlDelight.coroutines)
         }
 
-        commonTest.dependencies {
-            implementation(kotlin("test"))
-        }
-
         androidMain.dependencies {
+            implementation(project(":java-utils"))
             implementation(libs.androidx.appcompat)
             implementation(libs.androidx.activityCompose)
             implementation(libs.compose.uitooling)
@@ -57,10 +64,15 @@ kotlin {
         }
 
         jvmMain.dependencies {
+            implementation(project(":java-utils"))
             implementation(compose.desktop.common)
             implementation(compose.desktop.currentOs)
             implementation(libs.sqlDelight.driver.sqlite)
             implementation(libs.kotlinx.coroutines.jvm)
+        }
+
+        iosMain.dependencies {
+            implementation(libs.sqlDelight.driver.native)
         }
     }
 }
@@ -121,5 +133,5 @@ sqldelight {
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
-    kotlinOptions.freeCompilerArgs = listOf("-Xmulti-platform")
+    kotlinOptions.freeCompilerArgs = listOf("-Xmulti-platform", "-Xexpect-actual-classes")
 }

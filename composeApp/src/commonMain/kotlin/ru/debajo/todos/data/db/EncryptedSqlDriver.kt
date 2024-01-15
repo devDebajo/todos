@@ -4,9 +4,9 @@ import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlPreparedStatement
-import java.nio.charset.Charset
-import javax.crypto.IllegalBlockSizeException
+import ru.debajo.todos.common.createString
 import ru.debajo.todos.common.toBooleanStrict
+import ru.debajo.todos.common.toByteArray
 import ru.debajo.todos.common.toLong
 import ru.debajo.todos.security.AesHelper
 
@@ -69,13 +69,13 @@ private class EncryptedSqlCursor(
 
     override fun getString(index: Int): String? {
         val stringBytes = getBytes(index) ?: return null
-        return String(stringBytes, Charset.defaultCharset())
+        return stringBytes.createString()
     }
 
     override fun getLong(index: Int): Long? {
         return try {
             getString(index)?.toLong()
-        } catch (e: IllegalBlockSizeException) {
+        } catch (e: Throwable) {
             delegate.getLong(index)
         }
     }
@@ -95,7 +95,7 @@ private class EncryptedSqlPreparedStatement(
     }
 
     override fun bindString(index: Int, string: String?) {
-        bindBytes(index, string?.toByteArray(Charset.defaultCharset()))
+        bindBytes(index, string?.toByteArray())
     }
 
     override fun bindLong(index: Int, long: Long?) {

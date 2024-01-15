@@ -2,7 +2,8 @@ package ru.debajo.todos.data.db.dao
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
@@ -19,19 +20,19 @@ class DbTodoGroupDao(
     fun observeGroups(): Flow<List<DbTodoGroup>> {
         return flow {
             emitAll(
-                queriesProvider.provide().getAll().asFlow().mapToList(IO)
+                queriesProvider.provide().getAll().asFlow().mapToList(Dispatchers.IO)
             )
         }
     }
 
     suspend fun getAll(): List<DbTodoGroup> {
-        return withContext(IO) {
+        return withContext(Dispatchers.IO) {
             queriesProvider.provide().getAll().executeAsList()
         }
     }
 
     suspend fun save(id: String, name: String) {
-        withContext(IO) {
+        withContext(Dispatchers.IO) {
             val queries = queriesProvider.provide()
             queries.transaction {
                 val count = queries.count().executeAsOne()
@@ -41,19 +42,19 @@ class DbTodoGroupDao(
     }
 
     suspend fun rename(groupId: String, name: String) {
-        withContext(IO) {
+        withContext(Dispatchers.IO) {
             queriesProvider.provide().rename(id = groupId, name = name)
         }
     }
 
     suspend fun delete(id: String) {
-        withContext(IO) {
+        withContext(Dispatchers.IO) {
             queriesProvider.provide().delete(id)
         }
     }
 
     suspend fun updateOrder(id: String, moveRight: Boolean) {
-        withContext(IO) {
+        withContext(Dispatchers.IO) {
             val queries = queriesProvider.provide()
             queries.transaction {
                 val mutableGroups = queries.getAll().executeAsList().toMutableList()

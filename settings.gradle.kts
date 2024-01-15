@@ -1,5 +1,6 @@
 rootProject.name = "TODOs"
 include(":composeApp")
+include(":java-utils")
 
 pluginManagement {
     repositories {

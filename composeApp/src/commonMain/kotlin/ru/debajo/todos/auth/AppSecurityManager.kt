@@ -10,6 +10,7 @@ import ru.debajo.todos.security.AesHelper
 import ru.debajo.todos.security.EncryptedPinHash
 import ru.debajo.todos.security.HashUtils
 import ru.debajo.todos.security.encryptStringAsync
+import ru.debajo.todos.security.hashPin
 
 class AppSecurityManager(
     private val preferences: Preferences,

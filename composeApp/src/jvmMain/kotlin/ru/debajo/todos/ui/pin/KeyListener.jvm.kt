@@ -9,7 +9,7 @@ import androidx.compose.ui.input.key.KeyEvent
 import ru.debajo.todos.di.getFromDi
 
 @Composable
-actual fun KeyListener(listener: (KeyEvent) -> Boolean) {
+internal actual fun KeyListener(listener: (KeyEvent) -> Boolean) {
     val keyEventHandler = remember { getFromDi<KeyEventHandler>() }
     val listenerLatest = rememberUpdatedState(listener)
 
