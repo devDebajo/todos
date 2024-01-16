@@ -40,9 +40,8 @@ internal class FileConfigViewModel(
     override fun onLaunch() {
         screenModelScope.launch {
             storageFileManager.files.filterNotNull().collect { list ->
-                updateState {
-                    copy(files = list.convert())
-                }
+                val uiFiles = list.convert()
+                updateState { copy(files = uiFiles) }
             }
         }
         screenModelScope.launch {
@@ -390,9 +389,8 @@ internal class FileConfigViewModel(
                         )
                     }
                     hideChangeFilePinDialog()
-                    updateState {
-                        copy(files = storageFileManager.files.value.orEmpty().convert())
-                    }
+                    val uiFiles = storageFileManager.files.value.orEmpty().convert()
+                    updateState { copy(files = uiFiles) }
                 } else {
                     updateState {
                         copy(

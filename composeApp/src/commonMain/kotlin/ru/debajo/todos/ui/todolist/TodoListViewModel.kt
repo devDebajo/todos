@@ -37,26 +37,26 @@ internal class TodoListViewModel(
         screenModelScope.launch {
             var first = true
             todoItemUseCase.observeGroups().collect { groups ->
-                updateState {
-                    if (first) {
-                        first = false
-                        val (groupId, groupIndex) = findInitialGroupId(groups)
-                        sendNews(TodoListNews.ScrollToGroup(groupIndex))
+                if (first) {
+                    first = false
+                    val (groupId, groupIndex) = findInitialGroupId(groups)
+                    sendNews(TodoListNews.ScrollToGroup(groupIndex))
+                    updateState {
                         copy(
                             groups = groups,
                             selectedGroupId = groupId,
                         )
-                    } else {
-                        copy(groups = groups)
                     }
+                } else {
+                    updateState { copy(groups = groups) }
                 }
             }
         }
         screenModelScope.launch {
+            val currentFile = storageFileManager.awaitCurrentFile()
+            val encrypted = fileCodecHelper.isEncrypted(currentFile)
+            securedScreenManager.setScreenSecured(encrypted)
             updateState {
-                val currentFile = storageFileManager.awaitCurrentFile()
-                val encrypted = fileCodecHelper.isEncrypted(currentFile)
-                securedScreenManager.setScreenSecured(encrypted)
                 copy(currentFileName = currentFile.nameWithExtension)
             }
         }

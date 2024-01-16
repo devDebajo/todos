@@ -23,8 +23,13 @@ abstract class BaseViewModel<S, N>(initialState: S) : StateScreenModel<S>(initia
         mutableNews.emit(news)
     }
 
-    protected inline fun updateState(block: S.() -> S) {
-        mutableState.value = mutableState.value.block()
+    protected fun updateState(block: S.() -> S) {
+        var success: Boolean
+        do {
+            val currentState = mutableState.value
+            val newState = currentState.block()
+            success = mutableState.compareAndSet(currentState, newState)
+        } while (!success)
     }
 }
 
