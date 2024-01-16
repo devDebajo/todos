@@ -7,7 +7,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -34,9 +37,11 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlin.math.max
 
 @Composable
@@ -169,5 +174,33 @@ internal fun PopupItem(
             .padding(horizontal = 12.dp),
     ) {
         Text(text = text)
+    }
+}
+
+@Composable
+internal fun ScreenToolbar(
+    title: String,
+    navigationButton: @Composable (() -> Unit)? = null,
+    menuButton: @Composable (() -> Unit)? = null,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Spacer(Modifier.size(4.dp))
+        if (navigationButton != null) {
+            navigationButton()
+            Spacer(Modifier.size(8.dp))
+        }
+        Text(
+            modifier = Modifier.padding(vertical = 16.dp),
+            text = title,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Medium,
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        if (menuButton != null) {
+            menuButton()
+        }
     }
 }

@@ -3,6 +3,11 @@ package ru.debajo.todos.strings
 interface CommonStrings {
     val appName: String
 
+    val aboutTitle: String
+    val aboutAppVersion: String
+    val aboutAppDeveloper: String
+    val aboutEmailToDeveloper: String
+
     val welcome: String
     val welcomeOnboarding: String
     val selectPreferredSecurityType: String
@@ -11,6 +16,7 @@ interface CommonStrings {
     val doNotSecureDate: String
     val usePin: String
 
+    val ok: String
     val delete: String
     val cancel: String
     val copy: String
@@ -38,6 +44,7 @@ interface CommonStrings {
     val deleteGroupDialogDeleteOnlyFolder: String
     val deleteGroupDialogDeleteFolderWithTodos: String
 
+    val fileConfigTitle: String
     val createFile: String
     val selectFile: String
     val deleteFileDialogTitle: String

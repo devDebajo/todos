@@ -16,7 +16,7 @@ internal class FileSelectorImpl : FileSelector {
 
         return StorageFile(
             absolutePath = file.absolutePath,
-            name = file.name,
+            name = file.nameWithoutExtension,
             extension = file.extension
         )
     }
@@ -28,7 +28,7 @@ internal class FileSelectorImpl : FileSelector {
 
         return StorageFile(
             absolutePath = file.absolutePath,
-            name = file.name,
+            name = file.nameWithoutExtension,
             extension = file.extension
         )
     }

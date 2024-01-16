@@ -16,10 +16,12 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -48,10 +50,12 @@ import androidx.compose.ui.unit.sp
 import ru.debajo.todos.common.BlockingLoaderDialog
 import ru.debajo.todos.common.PopupDialog
 import ru.debajo.todos.common.PopupItem
+import ru.debajo.todos.common.ScreenToolbar
 import ru.debajo.todos.common.calculatePopupPosition
 import ru.debajo.todos.common.contextClickable
 import ru.debajo.todos.common.formatKmp
 import ru.debajo.todos.strings.R
+import ru.debajo.todos.ui.about.AboutDialog
 import ru.debajo.todos.ui.pin.EnterPin1Dialog
 import ru.debajo.todos.ui.pin.EnterPin2Dialog
 import ru.debajo.todos.ui.pin.EnterPin3Dialog
@@ -65,6 +69,20 @@ internal fun FileConfigScreen(viewModel: FileConfigViewModel) {
         modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        ScreenToolbar(
+            title = R.strings.fileConfigTitle,
+            menuButton = {
+                IconButton(
+                    onClick = { viewModel.showAbout() },
+                    content = {
+                        Icon(
+                            contentDescription = null,
+                            imageVector = Icons.Default.Info,
+                        )
+                    }
+                )
+            }
+        )
         FilesListWithPlaceholder(
             files = state.files,
             modifier = Modifier.weight(1f),
@@ -146,6 +164,9 @@ internal fun FileConfigScreen(viewModel: FileConfigViewModel) {
 
     SnackbarHost(viewModel)
     BlockingLoaderDialog(state.showBlockingLoading)
+    if (state.showAboutDialog) {
+        AboutDialog { viewModel.hideAboutDialog() }
+    }
 }
 
 @Composable

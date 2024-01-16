@@ -11,6 +11,7 @@ import ru.debajo.todos.ui.LocalNavigatorMediator
 import ru.debajo.todos.ui.security.SecuredScreenManager
 import ru.debajo.todos.ui.theme.AppTheme
 
+// TODO https://github.com/jordond/materialkolor
 @Composable
 internal fun App() {
     AppTheme {
@@ -33,7 +34,3 @@ internal fun App() {
         }
     }
 }
-
-// баг с тем, что в первый запуск список пустой, хотя файл не пустой
-// настройки
-// TODO https://github.com/jordond/materialkolor

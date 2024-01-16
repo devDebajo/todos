@@ -404,6 +404,14 @@ internal class FileConfigViewModel(
         }
     }
 
+    fun hideAboutDialog() {
+        updateState { copy(showAboutDialog = false) }
+    }
+
+    fun showAbout() {
+        updateState { copy(showAboutDialog = true) }
+    }
+
     private suspend fun ChangeFilePinState.validate(file: StorageFile): Boolean {
         return when (mode) {
             ChangeFilePinState.Mode.AddNew -> pin2.text == pin3.text

@@ -1,3 +1,4 @@
+import java.util.Properties
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
@@ -86,8 +87,11 @@ android {
         targetSdk = 34
 
         applicationId = "ru.debajo.todos.androidApp"
-        versionCode = 1
-        versionName = "1.0.0"
+
+        val properties = Properties()
+        properties.load(rootProject.file("project.properties").inputStream())
+        versionCode = properties.getProperty("versionNumber").toInt()
+        versionName = properties.getProperty("packageVersion")
     }
     sourceSets["main"].apply {
         manifest.srcFile("src/androidMain/AndroidManifest.xml")
@@ -114,14 +118,23 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "ru.debajo.todos.desktopApp"
-            packageVersion = "1.0.0"
+
+            val properties = Properties()
+            properties.load(rootProject.file("project.properties").inputStream())
+            packageVersion = properties.getProperty("packageVersion")
         }
     }
 }
 
 buildConfig {
-    // BuildConfig configuration here.
-    // https://github.com/gmazzo/gradle-buildconfig-plugin#usage-in-kts
+    packageName = "ru.debajo.todos.buildconfig"
+
+    val properties = Properties()
+    properties.load(rootProject.file("project.properties").inputStream())
+    buildConfigField("String", "APP_VERSION", "\"${properties.getProperty("packageVersion")}\"")
+    buildConfigField("Int", "VERSION_NUMBER", properties.getProperty("versionNumber"))
+    buildConfigField("String", "DEVELOPER_NAME", "\"${properties.getProperty("developerName")}\"")
+    buildConfigField("String", "DEVELOPER_EMAIL", "\"${properties.getProperty("developerEmail")}\"")
 }
 
 sqldelight {

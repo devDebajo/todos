@@ -62,7 +62,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.UrlAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
@@ -70,9 +69,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import ru.debajo.todos.app.isHorizontalOrientation
+import ru.debajo.todos.app.openUrl
 import ru.debajo.todos.common.BlockingLoaderDialog
 import ru.debajo.todos.common.PopupDialog
 import ru.debajo.todos.common.PopupItem
+import ru.debajo.todos.common.ScreenToolbar
 import ru.debajo.todos.common.calculatePopupPosition
 import ru.debajo.todos.common.contextClickable
 import ru.debajo.todos.common.formatDateTime
@@ -147,36 +148,29 @@ internal fun ColumnScope.TodoListScreenListWithTypePanel(viewModel: TodoListView
 @Composable
 internal fun TodoListScreenToolbar(viewModel: TodoListViewModel) {
     val state by viewModel.state.collectAsState()
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Spacer(Modifier.size(4.dp))
-        IconButton({ viewModel.closeFile() }) {
-            Icon(
-                contentDescription = null,
-                imageVector = Icons.Default.Close,
-            )
+    ScreenToolbar(
+        title = state.currentFileName,
+        navigationButton = {
+            IconButton({ viewModel.closeFile() }) {
+                Icon(
+                    contentDescription = null,
+                    imageVector = Icons.Default.Close,
+                )
+            }
+        },
+        menuButton = {
+            if (state.currentGroup.editable) {
+                GroupMenu(
+                    canMoveLeft = remember(state) { state.canMoveCurrentGroupLeft() },
+                    canMoveRight = remember(state) { state.canMoveCurrentGroupRight() },
+                    onRenameClick = { viewModel.onRenameCurrentGroupClick() },
+                    onDeleteClick = { viewModel.onDeleteCurrentGroupClick() },
+                    onMoveLeftClick = { viewModel.moveCurrentGroupLeft() },
+                    onMoveRightClick = { viewModel.moveCurrentGroupRight() }
+                )
+            }
         }
-        Spacer(Modifier.size(8.dp))
-        Text(
-            modifier = Modifier.padding(vertical = 16.dp),
-            text = state.currentFileName,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Medium,
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        if (state.currentGroup.editable) {
-            GroupMenu(
-                canMoveLeft = remember(state) { state.canMoveCurrentGroupLeft() },
-                canMoveRight = remember(state) { state.canMoveCurrentGroupRight() },
-                onRenameClick = { viewModel.onRenameCurrentGroupClick() },
-                onDeleteClick = { viewModel.onDeleteCurrentGroupClick() },
-                onMoveLeftClick = { viewModel.moveCurrentGroupLeft() },
-                onMoveRightClick = { viewModel.moveCurrentGroupRight() }
-            )
-        }
-    }
+    )
 }
 
 @Composable
@@ -601,5 +595,3 @@ private fun formatText(text: String, urlColor: Color): TextWithUrls {
 }
 
 private val URL_REGEX: Regex = "((https?|ftp|gopher|telnet|file):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)".toRegex(RegexOption.IGNORE_CASE)
-
-expect fun openUrl(url: String)
