@@ -12,8 +12,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.debajo.todos.app.AppScreen
 import ru.debajo.todos.auth.Pin
+import ru.debajo.todos.auth.PinHash
 import ru.debajo.todos.common.BaseViewModel
 import ru.debajo.todos.common.limit
+import ru.debajo.todos.common.runCatchingAsync
+import ru.debajo.todos.common.toNapier
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.data.storage.FilePinStorage
 import ru.debajo.todos.data.storage.FileSelector
@@ -40,8 +43,9 @@ internal class FileConfigViewModel(
     override fun onLaunch() {
         screenModelScope.launch {
             storageFileManager.files.filterNotNull().collect { list ->
-                val uiFiles = list.convert()
-                updateState { copy(files = uiFiles) }
+                val convertResult = list.convert()
+                removeFromList(convertResult.failed)
+                updateState { copy(files = convertResult.success) }
             }
         }
         screenModelScope.launch {
@@ -94,7 +98,7 @@ internal class FileConfigViewModel(
                 )
             }
             screenModelScope.launch {
-                val file = fileSelector.create(DefaultFileName)
+                val file = prepareEmptyFile(fileSelector.create(DefaultFileName))
                 if (file != null) {
                     withLoading {
                         storageFileManager.tryAddFile(file, null)
@@ -155,10 +159,10 @@ internal class FileConfigViewModel(
 
         val pin = Pin(createEncryptedFileDialogState.pin1.text)
         screenModelScope.launch(Dispatchers.IO) {
-            val file = fileSelector.create(DefaultFileName)
+            val pinHash = HashUtils.hashPin(pin)
+            val file = prepareEmptyFile(fileSelector.create(DefaultFileName), pinHash)
             if (file != null) {
                 withLoading {
-                    val pinHash = HashUtils.hashPin(pin)
                     storageFileManager.tryAddFile(file, pinHash)
                 }
             }
@@ -389,8 +393,9 @@ internal class FileConfigViewModel(
                         )
                     }
                     hideChangeFilePinDialog()
-                    val uiFiles = storageFileManager.files.value.orEmpty().convert()
-                    updateState { copy(files = uiFiles) }
+                    val convertResult = storageFileManager.files.value.orEmpty().convert()
+                    removeFromList(convertResult.failed)
+                    updateState { copy(files = convertResult.success) }
                 } else {
                     updateState {
                         copy(
@@ -412,6 +417,13 @@ internal class FileConfigViewModel(
         updateState { copy(showAboutDialog = true) }
     }
 
+    private suspend fun prepareEmptyFile(file: StorageFile?, pinHash: PinHash? = null): StorageFile? {
+        file ?: return null
+        return runCatchingAsync { databaseSnapshotSaver.saveEmpty(file, pinHash) }
+            .map { file }
+            .getOrNull()
+    }
+
     private suspend fun ChangeFilePinState.validate(file: StorageFile): Boolean {
         return when (mode) {
             ChangeFilePinState.Mode.AddNew -> pin2.text == pin3.text
@@ -420,16 +432,38 @@ internal class FileConfigViewModel(
         }
     }
 
-    private suspend fun List<StorageFile>.convert(): List<UiStorageFile> {
+    private suspend fun List<StorageFile>.convert(): ConvertResult {
         return withContext(Dispatchers.IO) {
-            map { domainFile ->
-                UiStorageFile(
-                    name = domainFile.name,
-                    extension = domainFile.extension,
-                    absolutePath = domainFile.absolutePath,
-                    encrypted = fileCodecHelper.isEncrypted(domainFile)
-                )
+            val invalidFiles = mutableListOf<StorageFile>()
+            val successFiles = mutableListOf<UiStorageFile>()
+
+            for (domainFile in this@convert) {
+                val encrypted = runCatchingAsync { fileCodecHelper.isEncrypted(domainFile) }
+                    .toNapier("isEncrypted error")
+                    .getOrNull()
+
+                if (encrypted != null) {
+                    successFiles += UiStorageFile(
+                        name = domainFile.name,
+                        extension = domainFile.extension,
+                        absolutePath = domainFile.absolutePath,
+                        encrypted = encrypted
+                    )
+                } else {
+                    invalidFiles.add(domainFile)
+                }
             }
+
+            ConvertResult(
+                success = successFiles,
+                failed = invalidFiles
+            )
+        }
+    }
+
+    private suspend fun removeFromList(files: List<StorageFile>) {
+        for (file in files) {
+            storageFileManager.deleteFileFromList(file)
         }
     }
 
@@ -441,6 +475,11 @@ internal class FileConfigViewModel(
             updateState { copy(isLoading = false) }
         }
     }
+
+    private class ConvertResult(
+        val success: List<UiStorageFile>,
+        val failed: List<StorageFile>,
+    )
 
     private companion object {
         const val DefaultFileName: String = "todos.tds"

@@ -110,6 +110,9 @@ class AppActivity : FragmentActivity() {
         appLifecycleMutable.updateState(AppLifecycle.State.Resumed)
     }
 
+    // TODO холодный запуск - список не обновляется
+    // TODO файл очень долго открывается, видимо дешифровка долгая, надо оптимизировать как-то
+    // TODO чистить базу, при входе
     private fun tryToExtractUri(intent: Intent) {
         val data = intent.data ?: return
         lifecycleScope.launch {

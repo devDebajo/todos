@@ -51,6 +51,17 @@ internal class DatabaseSnapshotSaver(
         }
     }
 
+    suspend fun saveEmpty(file: StorageFile, pinHash: PinHash?) {
+        val snapshot = StorageSnapshotWithMeta(
+            absolutePath = file.absolutePath,
+            editTimestampUtc = Clock.System.now().toEpochMilliseconds(),
+            encrypted = pinHash != null,
+        )
+        val stream = fileHelper.openOutputStream(file)
+        val fileContent = fileCodecHelper.encode(snapshot, file, pinHash)
+        stream.write(fileContent)
+    }
+
     suspend fun changePin(file: StorageFile, oldPinHash: PinHash? = null, newPinHash: PinHash? = null) {
         mutex.locked {
             val encrypted = fileCodecHelper.isEncrypted(file)

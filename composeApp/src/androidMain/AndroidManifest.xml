@@ -26,6 +26,39 @@
                 <data android:mimeType="text/plain" />
                 <data android:scheme="file" />
                 <data android:scheme="content" />
+
+                <data android:pathPattern=".*\\.tds" />
+                <data android:pathPattern=".*\\..*\\.tds" />
+                <data android:pathPattern=".*\\..*\\..*\\.tds" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\.tds" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\.tds" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\.tds" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\.tds" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\.tds" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\.tds" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\.tds" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:host="*" />
+                <data android:mimeType="application/octet-stream" />
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+
+                <data android:pathPattern=".*" />
+                <data android:pathPattern=".*\\.*" />
+                <data android:pathPattern=".*\\..*\\.*" />
+                <data android:pathPattern=".*\\..*\\..*\\.*" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\.*" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\.*" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\.*" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\.*" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\.*" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\.*" />
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\.*" />
             </intent-filter>
         </activity>
     </application>
