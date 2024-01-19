@@ -26,9 +26,12 @@ import ru.debajo.todos.data.storage.DatabaseChangeListener
 import ru.debajo.todos.data.storage.DatabaseSnapshotHelper
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
+import ru.debajo.todos.data.storage.FileHelper
+import ru.debajo.todos.data.storage.FileHelperContentCache
 import ru.debajo.todos.data.storage.FilePinStorage
 import ru.debajo.todos.data.storage.StorageFileManager
 import ru.debajo.todos.data.storage.codec.FileCodecHelper
+import ru.debajo.todos.data.storage.createFileHelper
 import ru.debajo.todos.db.TodosDatabase
 import ru.debajo.todos.domain.TodoGroupRepository
 import ru.debajo.todos.domain.TodoItemRepository
@@ -62,8 +65,8 @@ val CommonModule: Module = module {
     singleOf(::DatabaseSnapshotWorker)
     singleOf(::StorageFileManager)
     factoryOf(::FilePinStorage)
-    factoryOf(::FileCodecHelper)
-
+    singleOf(::FileCodecHelper)
+    single<FileHelper> { FileHelperContentCache(createFileHelper()) }
     singleOf(::NavigatorMediator)
     factoryOf(::FileConfigViewModel)
     factoryOf(::TodoListViewModel)

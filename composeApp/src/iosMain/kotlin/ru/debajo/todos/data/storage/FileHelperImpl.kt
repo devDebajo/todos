@@ -11,11 +11,11 @@ internal class FileHelperImpl : FileHelper {
         TODO("Not yet implemented")
     }
 
-    override fun openOutputStream(file: StorageFile): FileWriter {
+    override fun openFileWriter(file: StorageFile): FileWriter {
         TODO("Not yet implemented")
     }
 
-    override fun openInputStream(file: StorageFile): FileReader {
+    override fun openFileReader(file: StorageFile): FileReader {
         TODO("Not yet implemented")
     }
 }

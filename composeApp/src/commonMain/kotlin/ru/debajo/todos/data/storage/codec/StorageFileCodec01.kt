@@ -1,9 +1,5 @@
 package ru.debajo.todos.data.storage.codec
 
-import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.toList
 import kotlinx.serialization.json.Json
 import ru.debajo.todos.auth.PinHash
 import ru.debajo.todos.data.storage.model.StorageFile
@@ -48,6 +44,7 @@ class StorageFileCodec01(
             encrypted = encrypted,
         )
     }
+
 
     override suspend fun encode(snapshot: StorageSnapshotWithMeta, file: StorageFile, pinHash: PinHash?): StorageFileExternalContent {
         if (snapshot.encrypted) {

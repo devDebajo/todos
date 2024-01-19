@@ -3,8 +3,6 @@ package ru.debajo.todos.java.utils
 import java.io.InputStream
 import java.io.OutputStream
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 
 suspend fun OutputStream.write(content: String) {
@@ -13,12 +11,8 @@ suspend fun OutputStream.write(content: String) {
     }
 }
 
-fun InputStream.linesFlow(): Flow<String> {
-    return flow {
-        bufferedReader().use {
-            for (line in it.lineSequence()) {
-                emit(line)
-            }
-        }
+suspend fun InputStream.content(): String {
+    return withContext(IO) {
+        bufferedReader().use { it.readText() }
     }
 }

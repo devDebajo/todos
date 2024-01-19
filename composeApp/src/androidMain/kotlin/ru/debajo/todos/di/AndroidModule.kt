@@ -11,8 +11,6 @@ import ru.debajo.todos.data.db.DatabaseName
 import ru.debajo.todos.data.db.DriverFactory
 import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.data.preferences.SharedPreferencesImpl
-import ru.debajo.todos.data.storage.FileHelper
-import ru.debajo.todos.data.storage.FileHelperImpl
 import ru.debajo.todos.data.storage.FileSelector
 import ru.debajo.todos.data.storage.FileSelectorImpl
 import ru.debajo.todos.db.TodosDatabase
@@ -37,7 +35,6 @@ internal val AndroidModule: Module = module {
             fileHelper = get(),
         )
     }
-    factory<FileHelper> { FileHelperImpl(get()) }
     single { DriverFactory { AndroidSqliteDriver(TodosDatabase.Schema, get(), DatabaseName) } }
     factory<BiometricDelegate> {
         val activityResultLaunchersHolder = get<ActivityResultLaunchersHolder>()

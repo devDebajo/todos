@@ -8,8 +8,6 @@ import ru.debajo.todos.data.db.DatabaseName
 import ru.debajo.todos.data.db.DriverFactory
 import ru.debajo.todos.data.preferences.NSUserDefaultsPreferencesImpl
 import ru.debajo.todos.data.preferences.Preferences
-import ru.debajo.todos.data.storage.FileHelper
-import ru.debajo.todos.data.storage.FileHelperImpl
 import ru.debajo.todos.data.storage.FileSelector
 import ru.debajo.todos.data.storage.FileSelectorImpl
 import ru.debajo.todos.db.TodosDatabase
@@ -20,7 +18,6 @@ import ru.debajo.todos.ui.security.SecuredScreenManagerImpl
 
 val IosModule: Module = module {
     factory<FileSelector> { FileSelectorImpl() }
-    factory<FileHelper> { FileHelperImpl() }
     single<Preferences> { NSUserDefaultsPreferencesImpl(NSUserDefaults(suiteName = "todo_prefs")) }
     single { DriverFactory { NativeSqliteDriver(TodosDatabase.Schema, DatabaseName) } }
     factory<BiometricDelegate> { BiometricDelegateImpl() }

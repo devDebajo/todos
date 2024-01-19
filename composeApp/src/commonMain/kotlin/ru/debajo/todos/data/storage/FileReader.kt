@@ -1,7 +1,9 @@
 package ru.debajo.todos.data.storage
 
-import kotlinx.coroutines.flow.Flow
-
 interface FileReader {
-    fun lineFlow(): Flow<String>
+    suspend fun content(): String
+}
+
+class ConstantReader(val value: String) : FileReader {
+    override suspend fun content(): String = value
 }

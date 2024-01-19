@@ -57,7 +57,7 @@ internal class DatabaseSnapshotSaver(
             editTimestampUtc = Clock.System.now().toEpochMilliseconds(),
             encrypted = pinHash != null,
         )
-        val stream = fileHelper.openOutputStream(file)
+        val stream = fileHelper.openFileWriter(file)
         val fileContent = fileCodecHelper.encode(snapshot, file, pinHash)
         stream.write(fileContent)
     }
@@ -73,7 +73,7 @@ internal class DatabaseSnapshotSaver(
                 .copy(encrypted = newPinHash != null)
 
             val content = fileCodecHelper.encode(snapshot, file, newPinHash)
-            fileHelper.openOutputStream(file).write(content)
+            fileHelper.openFileWriter(file).write(content)
 
             if (newPinHash == null) {
                 filePinStorage.remove(file)
@@ -99,7 +99,7 @@ internal class DatabaseSnapshotSaver(
             return
         }
 
-        val stream = fileHelper.openOutputStream(file)
+        val stream = fileHelper.openFileWriter(file)
         val fileContent = fileCodecHelper.encode(snapshot, file, pinHash)
         stream.write(fileContent)
     }

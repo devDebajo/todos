@@ -1,7 +1,5 @@
 package ru.debajo.todos.data.storage.codec
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 import ru.debajo.todos.auth.PinHash
 import ru.debajo.todos.common.runCatchingAsync
@@ -13,7 +11,7 @@ typealias StorageFileExternalContent = String
 
 typealias StorageFileToken = String
 
-typealias TokensProvider = (StorageFile) -> Flow<StorageFileToken>
+typealias TokensProvider = suspend (StorageFile) -> Sequence<StorageFileToken>
 
 class FileCodecHelper(
     private val json: Json,
@@ -60,8 +58,8 @@ class FileCodecHelper(
 
     private fun getEncoder(): StorageFileEncoder = StorageFileCodec01(json, ::getTokens)
 
-    private fun getTokens(file: StorageFile): Flow<String> {
-        return fileHelper.openInputStream(file).lineFlow()
+    private suspend fun getTokens(file: StorageFile): Sequence<String> {
+        return fileHelper.openFileReader(file).content().lineSequence()
     }
 
     private suspend fun getFileFormat(file: StorageFile): String? {
@@ -70,7 +68,6 @@ class FileCodecHelper(
             else -> null
         }
     }
-
 
     private fun getDecoder(format: String): StorageFileDecoder? {
         return when (format) {

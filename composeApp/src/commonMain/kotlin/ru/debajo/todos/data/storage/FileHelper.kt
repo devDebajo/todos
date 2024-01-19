@@ -1,5 +1,6 @@
 package ru.debajo.todos.data.storage
 
+import ru.debajo.todos.common.syncMutableMap
 import ru.debajo.todos.data.storage.model.StorageFile
 
 interface FileHelper {
@@ -7,7 +8,40 @@ interface FileHelper {
 
     fun canRead(file: StorageFile): Boolean
 
-    fun openOutputStream(file: StorageFile): FileWriter
+    fun openFileWriter(file: StorageFile): FileWriter
 
-    fun openInputStream(file: StorageFile): FileReader
+    fun openFileReader(file: StorageFile): FileReader
+}
+
+internal expect fun createFileHelper(): FileHelper
+
+internal class FileHelperContentCache(private val delegate: FileHelper) : FileHelper by delegate {
+
+    private val cache: MutableMap<String, String> = syncMutableMap()
+
+    override fun openFileWriter(file: StorageFile): FileWriter {
+        val writer = delegate.openFileWriter(file)
+        return object : FileWriter {
+            override suspend fun write(content: String) {
+                writer.write(content)
+                cache[file.absolutePath] = content
+            }
+        }
+    }
+
+    override fun openFileReader(file: StorageFile): FileReader {
+        val content = cache[file.absolutePath]
+        return if (content == null) {
+            val reader = delegate.openFileReader(file)
+            object : FileReader {
+                override suspend fun content(): String {
+                    val currentContent = reader.content()
+                    cache[file.absolutePath] = currentContent
+                    return currentContent
+                }
+            }
+        } else {
+            ConstantReader(content)
+        }
+    }
 }
