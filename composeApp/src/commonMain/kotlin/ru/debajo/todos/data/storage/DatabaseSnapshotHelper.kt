@@ -1,36 +1,34 @@
 package ru.debajo.todos.data.storage
 
 import kotlinx.datetime.Instant
-import ru.debajo.todos.data.db.dao.DbFilePathDao
-import ru.debajo.todos.data.db.dao.DbTodoGroupDao
-import ru.debajo.todos.data.db.dao.DbTodoGroupToItemLinkDao
-import ru.debajo.todos.data.db.dao.DbTodoItemDao
-import ru.debajo.todos.data.db.dao.ReplaceDao
+import ru.debajo.todos.common.UUID
+import ru.debajo.todos.data.db.FileSession
+import ru.debajo.todos.data.db.FileSessionManager
+import ru.debajo.todos.data.db.model.DbTodoGroup
+import ru.debajo.todos.data.db.model.DbTodoGroupToItemLink
+import ru.debajo.todos.data.db.model.DbTodoItem
 import ru.debajo.todos.data.storage.model.StorageSnapshot
 import ru.debajo.todos.data.storage.model.StorageSnapshotWithMeta
 import ru.debajo.todos.data.storage.model.StorageTodoGroup
 import ru.debajo.todos.data.storage.model.StorageTodoGroupToItemLink
 import ru.debajo.todos.data.storage.model.StorageTodoItem
-import ru.debajo.todos.db.DbTodoGroup
-import ru.debajo.todos.db.DbTodoGroupToItemLink
-import ru.debajo.todos.db.DbTodoItem
 
 class DatabaseSnapshotHelper(
-    private val dbTodoGroupDao: DbTodoGroupDao,
-    private val dbTodoGroupToItemLinkDao: DbTodoGroupToItemLinkDao,
-    private val dbTodoItemDao: DbTodoItemDao,
-    private val dbFilePathDao: DbFilePathDao,
-    private val replaceDao: ReplaceDao,
+    private val fileSessionManager: FileSessionManager,
 ) {
+    private val fileSession: FileSession
+        get() = fileSessionManager.fileSession
+
     suspend fun getSnapshot(timestamp: Instant): StorageSnapshotWithMeta {
+        val currentFile = requireNotNull(fileSession.currentFile)
         return StorageSnapshotWithMeta(
             editTimestampUtc = timestamp.toEpochMilliseconds(),
             snapshot = StorageSnapshot(
-                groups = dbTodoGroupDao.getAll().map { it.convert() },
-                links = dbTodoGroupToItemLinkDao.getAll().map { it.convert() },
-                todos = dbTodoItemDao.getAll().map { it.convert() },
+                groups = fileSession.dbTodoGroupTable.getAll().map { it.convert() },
+                links = fileSession.dbTodoGroupToItemLinkTable.getAll().map { it.convert() },
+                todos = fileSession.dbTodoItemTable.getAll().map { it.convert() },
             ),
-            absolutePath = dbFilePathDao.get().orEmpty(),
+            absolutePath = currentFile.absolutePath,
         )
     }
 
@@ -39,7 +37,7 @@ class DatabaseSnapshotHelper(
         if (path.isEmpty()) {
             error("Path should not be empty")
         }
-        replaceDao.replace(
+        fileSessionManager.open(
             path = path,
             groups = snapshot.snapshot.groups.map { it.convert() },
             links = snapshot.snapshot.links.map { it.convert() },
@@ -49,51 +47,51 @@ class DatabaseSnapshotHelper(
 
     private fun DbTodoGroup.convert(): StorageTodoGroup {
         return StorageTodoGroup(
-            id = id,
+            id = id.toString(),
             name = name,
-            order = position.toInt(),
+            order = position,
         )
     }
 
     private fun StorageTodoGroup.convert(): DbTodoGroup {
         return DbTodoGroup(
-            id = id,
+            id = UUID(id),
             name = name,
-            position = order.toLong()
+            position = order
         )
     }
 
     private fun DbTodoGroupToItemLink.convert(): StorageTodoGroupToItemLink {
         return StorageTodoGroupToItemLink(
-            groupId = groupId,
-            todoId = todoId,
+            groupId = groupId.toString(),
+            todoId = todoId.toString(),
         )
     }
 
     private fun StorageTodoGroupToItemLink.convert(): DbTodoGroupToItemLink {
         return DbTodoGroupToItemLink(
-            groupId = groupId,
-            todoId = todoId,
+            groupId = UUID(groupId),
+            todoId = UUID(todoId),
         )
     }
 
     private fun DbTodoItem.convert(): StorageTodoItem {
         return StorageTodoItem(
-            id = id,
+            id = id.toString(),
             text = text,
-            createTimestamp = createTimestamp,
-            updateTimestamp = updateTimestamp,
-            done = done == 1L,
+            createTimestamp = createTimestamp.toEpochMilliseconds(),
+            updateTimestamp = updateTimestamp.toEpochMilliseconds(),
+            done = done,
         )
     }
 
     private fun StorageTodoItem.convert(): DbTodoItem {
         return DbTodoItem(
-            id = id,
+            id = UUID(id),
             text = text,
-            createTimestamp = createTimestamp,
-            updateTimestamp = updateTimestamp,
-            done = if (done) 1L else 0L,
+            createTimestamp = Instant.fromEpochMilliseconds(createTimestamp),
+            updateTimestamp = Instant.fromEpochMilliseconds(updateTimestamp),
+            done = done,
         )
     }
 }

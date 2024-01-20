@@ -22,6 +22,7 @@ import ru.debajo.todos.app.AppLifecycle
 import ru.debajo.todos.app.AppLifecycleMutable
 import ru.debajo.todos.app.AppScreen
 import ru.debajo.todos.common.isDebug
+import ru.debajo.todos.data.db.FileSession
 import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
 import ru.debajo.todos.data.storage.StorageFileManager
 import ru.debajo.todos.di.ActivityResultLaunchersHolder
@@ -40,6 +41,16 @@ class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob
         initDi()
         initLog()
         startProcess()
+        initForeground()
+    }
+
+    private fun initForeground() {
+        val fileSession = getFromDi<FileSession>()
+        fileSession.addOnOpenListener {
+            // TODO start foregroundService
+        }.addOnCloseListener {
+            // TODO stop foregroundService
+        }
     }
 
     override fun onTerminate() {
@@ -110,9 +121,6 @@ class AppActivity : FragmentActivity() {
         appLifecycleMutable.updateState(AppLifecycle.State.Resumed)
     }
 
-    // TODO холодный запуск - список не обновляется
-    // TODO файл очень долго открывается, видимо дешифровка долгая, надо оптимизировать как-то
-    // TODO чистить базу, при входе
     private fun tryToExtractUri(intent: Intent) {
         val data = intent.data ?: return
         lifecycleScope.launch {

@@ -7,12 +7,11 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.debajo.todos.auth.PinHash
 import ru.debajo.todos.common.runCatchingAsync
+import ru.debajo.todos.data.db.FileSession
 import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.data.storage.codec.FileCodecHelper
 import ru.debajo.todos.data.storage.model.StorageFile
@@ -25,13 +24,13 @@ class StorageFileManager(
     private val fileHelper: FileHelper,
     private val filePinStorage: FilePinStorage,
     private val fileCodecHelper: FileCodecHelper,
+    private val fileSession: FileSession,
 ) {
     private val _files: MutableStateFlow<List<StorageFile>?> = MutableStateFlow(null)
     val files: StateFlow<List<StorageFile>?> = _files.asStateFlow()
-    private val _currentFile: MutableStateFlow<StorageFile?> = MutableStateFlow(null)
 
     val currentFile: StorageFile?
-        get() = _currentFile.value
+        get() = fileSession.currentFile
 
     init {
         appScope.launch {
@@ -39,9 +38,7 @@ class StorageFileManager(
         }
     }
 
-    suspend fun awaitCurrentFile(): StorageFile {
-        return _currentFile.filterNotNull().first()
-    }
+    suspend fun awaitCurrentFile(): StorageFile = fileSession.awaitOpened()
 
     suspend fun selectFileFromList(file: StorageFile): Boolean {
         if (file !in _files.value.orEmpty()) {
@@ -52,13 +49,8 @@ class StorageFileManager(
             return false
         }
 
-        _currentFile.value = file
         saveLastFile(file)
         return true
-    }
-
-    fun closeFile() {
-        _currentFile.value = null
     }
 
     suspend fun isSelectLastFile(): Boolean {
@@ -75,7 +67,7 @@ class StorageFileManager(
     }
 
     suspend fun tryAddFile(file: StorageFile, pinHash: PinHash?): Boolean {
-        if (_currentFile.value?.absolutePath == file.absolutePath) {
+        if (fileSession.currentFile?.absolutePath == file.absolutePath) {
             return false
         }
 

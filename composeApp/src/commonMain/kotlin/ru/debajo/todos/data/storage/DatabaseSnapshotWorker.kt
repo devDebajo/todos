@@ -1,37 +1,19 @@
 package ru.debajo.todos.data.storage
 
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.joinAll
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
-import ru.debajo.todos.app.AppLifecycle
 import ru.debajo.todos.common.runCatchingAsync
 
 internal class DatabaseSnapshotWorker(
     private val databaseSnapshotSaver: DatabaseSnapshotSaver,
-    private val appLifecycle: AppLifecycle,
 ) {
     suspend fun doWork() {
-        supervisorScope {
-            val foreverWorker = launch {
-                while (true) {
-                    delay(SAVE_DELAY_MS)
-                    runCatchingAsync { databaseSnapshotSaver.save() }
-                }
-            }
-            val pausedWorker = launch {
-                appLifecycle.state.collect {
-                    if (it == AppLifecycle.State.Paused) {
-                        runCatchingAsync { databaseSnapshotSaver.save(ignorePaused = true) }
-                    }
-                }
-            }
-
-            listOf(foreverWorker, pausedWorker)
-        }.joinAll()
+        while (true) {
+            delay(SAVE_DELAY_MS)
+            runCatchingAsync { databaseSnapshotSaver.save() }
+        }
     }
 
     private companion object {
-        const val SAVE_DELAY_MS: Long = 15_000L
+        const val SAVE_DELAY_MS: Long = 5 * 60 * 1000 // 5 minutes
     }
 }

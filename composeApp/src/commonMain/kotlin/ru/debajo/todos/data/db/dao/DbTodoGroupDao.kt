@@ -1,78 +1,56 @@
 package ru.debajo.todos.data.db.dao
 
-import app.cash.sqldelight.coroutines.asFlow
-import app.cash.sqldelight.coroutines.mapToList
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.withContext
+import ru.debajo.todos.common.UUID
 import ru.debajo.todos.common.swapLeft
 import ru.debajo.todos.common.swapRight
-import ru.debajo.todos.db.DbTodoGroup
-import ru.debajo.todos.db.DbTodoGroupQueries
-import ru.debajo.todos.di.AsyncProvider
+import ru.debajo.todos.data.db.FileSession
+import ru.debajo.todos.data.db.model.DbTodoGroup
 
-class DbTodoGroupDao(
-    private val queriesProvider: AsyncProvider<DbTodoGroupQueries>,
-) {
-    fun observeGroups(): Flow<List<DbTodoGroup>> {
-        return flow {
-            emitAll(
-                queriesProvider.provide().getAll().asFlow().mapToList(Dispatchers.IO)
-            )
+class DbTodoGroupDao(fileSession: FileSession) {
+
+    private val table: InMemoryTable<DbTodoGroup> by fileSession::dbTodoGroupTable
+
+    fun observeGroups(): Flow<List<DbTodoGroup>> = table.observe()
+
+    suspend fun getAll(): List<DbTodoGroup> = table.getAll()
+
+    suspend fun save(id: UUID, name: String) {
+        table.updateRaw { groups ->
+            groups + DbTodoGroup(id = id, name = name, position = groups.size)
         }
     }
 
-    suspend fun getAll(): List<DbTodoGroup> {
-        return withContext(Dispatchers.IO) {
-            queriesProvider.provide().getAll().executeAsList()
-        }
+    suspend fun rename(groupId: UUID, name: String) {
+        table.updateBy(
+            predicate = { it.id == groupId },
+            updater = { it.copy(name = name) }
+        )
     }
 
-    suspend fun save(id: String, name: String) {
-        withContext(Dispatchers.IO) {
-            val queries = queriesProvider.provide()
-            queries.transaction {
-                val count = queries.count().executeAsOne()
-                queries.save(id, name, count)
-            }
-        }
+    suspend fun delete(id: UUID) {
+        table.deleteBy { it.id == id }
     }
 
-    suspend fun rename(groupId: String, name: String) {
-        withContext(Dispatchers.IO) {
-            queriesProvider.provide().rename(id = groupId, name = name)
-        }
-    }
-
-    suspend fun delete(id: String) {
-        withContext(Dispatchers.IO) {
-            queriesProvider.provide().delete(id)
-        }
-    }
-
-    suspend fun updateOrder(id: String, moveRight: Boolean) {
-        withContext(Dispatchers.IO) {
-            val queries = queriesProvider.provide()
-            queries.transaction {
-                val mutableGroups = queries.getAll().executeAsList().toMutableList()
-                val index = mutableGroups.indexOfFirst { it.id == id }
-                if (index >= 0) {
-                    if (moveRight) {
-                        mutableGroups.swapRight(index)
-                    } else {
-                        mutableGroups.swapLeft(index)
-                    }
-
-                    for ((groupIndex, group) in mutableGroups.withIndex()) {
-                        queries.changePosition(
-                            id = group.id,
-                            position = groupIndex.toLong(),
-                        )
-                    }
+    suspend fun updateOrder(id: UUID, moveRight: Boolean) {
+        table.updateRaw { groups ->
+            val mutableGroups = groups.toMutableList()
+            val index = mutableGroups.indexOfFirst { it.id == id }
+            if (index >= 0) {
+                if (moveRight) {
+                    mutableGroups.swapRight(index)
+                } else {
+                    mutableGroups.swapLeft(index)
                 }
+
+                for ((groupIndex, group) in mutableGroups.withIndex()) {
+                    val newGroup = group.copy(position = groupIndex)
+                    mutableGroups.removeAt(groupIndex)
+                    mutableGroups.add(groupIndex, newGroup)
+                }
+                mutableGroups
+            } else {
+                groups
             }
         }
     }

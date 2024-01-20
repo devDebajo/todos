@@ -10,7 +10,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ru.debajo.todos.common.BlockingLoaderDialog
 
 const val PinSize: Int = 4
 
@@ -44,6 +43,4 @@ internal fun PinScreen(viewModel: PinViewModel) {
             actionType = state.actionType,
         )
     }
-
-    BlockingLoaderDialog(state.showBlockingLoader)
 }

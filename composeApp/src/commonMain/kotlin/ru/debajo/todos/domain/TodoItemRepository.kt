@@ -3,14 +3,11 @@ package ru.debajo.todos.domain
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import ru.debajo.todos.common.UUID
-import ru.debajo.todos.common.toBoolean
-import ru.debajo.todos.common.toLong
 import ru.debajo.todos.data.db.dao.DbTodoGroupToItemLinkDao
 import ru.debajo.todos.data.db.dao.DbTodoItemDao
+import ru.debajo.todos.data.db.model.DbTodoItem
 import ru.debajo.todos.data.storage.DatabaseChangeListener
-import ru.debajo.todos.db.DbTodoItem
 
 class TodoItemRepository(
     private val dbTodoItemDao: DbTodoItemDao,
@@ -34,7 +31,7 @@ class TodoItemRepository(
     suspend fun update(id: TodoId, text: String): TodoItem {
         val dbItem = dbTodoItemDao.get(id.id)?.copy(
             text = text,
-            updateTimestamp = Clock.System.now().toEpochMilliseconds(),
+            updateTimestamp = Clock.System.now(),
         ) ?: createDbTodoItem(id = id.id, text = text)
 
         dbTodoItemDao.save(dbItem)
@@ -58,24 +55,24 @@ class TodoItemRepository(
         val dbItem = dbTodoItemDao.get(id.id) ?: return
         dbTodoItemDao.save(
             dbItem.copy(
-                done = done.toLong(),
-                updateTimestamp = Clock.System.now().toEpochMilliseconds(),
+                done = done,
+                updateTimestamp = Clock.System.now(),
             )
         )
         databaseChangeListener.onUpdate()
     }
 
     private fun createDbTodoItem(
-        id: String = UUID.randomUUID().toString(),
+        id: UUID = UUID.randomUUID(),
         text: String,
     ): DbTodoItem {
         val now = Clock.System.now()
         return DbTodoItem(
             id = id,
             text = text,
-            createTimestamp = now.toEpochMilliseconds(),
-            updateTimestamp = now.toEpochMilliseconds(),
-            done = 0L,
+            createTimestamp = now,
+            updateTimestamp = now,
+            done = false,
         )
     }
 
@@ -83,9 +80,9 @@ class TodoItemRepository(
         return TodoItem(
             id = TodoId(id),
             text = text,
-            createTimestamp = Instant.fromEpochMilliseconds(createTimestamp),
-            updateTimestamp = Instant.fromEpochMilliseconds(updateTimestamp),
-            done = done.toBoolean(),
+            createTimestamp = createTimestamp,
+            updateTimestamp = updateTimestamp,
+            done = done,
         )
     }
 }

@@ -9,7 +9,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import ru.debajo.todos.app.AppLifecycle
 import ru.debajo.todos.auth.PinHash
 import ru.debajo.todos.common.runCatchingAsync
 import ru.debajo.todos.data.storage.codec.FileCodecHelper
@@ -25,29 +24,17 @@ internal class DatabaseSnapshotSaver(
     private val filePinStorage: FilePinStorage,
     private val fileCodecHelper: FileCodecHelper,
     private val securedPreferences: SecuredPreferences,
-    private val appLifecycle: AppLifecycle,
 ) : DatabaseChangeListener {
 
     private val mutex: Mutex = Mutex()
     private val onUpdateMutex: Mutex = Mutex()
 
-    suspend fun save(ignorePaused: Boolean = false) {
-        if (appLifecycle.isPaused && !ignorePaused) {
-            return
-        }
-
+    suspend fun save() {
         mutex.locked {
             val file = storageFileManager.currentFile
             if (file != null) {
                 saveFile(file)
             }
-        }
-    }
-
-    suspend fun saveLastFileSafe() {
-        runCatchingAsync {
-            val lastFile = storageFileManager.loadLastFile() ?: return
-            saveFile(lastFile)
         }
     }
 
@@ -83,7 +70,7 @@ internal class DatabaseSnapshotSaver(
         }
     }
 
-    private suspend fun saveFile(file: StorageFile) {
+    suspend fun saveFile(file: StorageFile) {
         val needToSave = needToSave(file)
         if (needToSave !is NeedToSave.Yes) {
             return

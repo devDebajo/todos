@@ -7,10 +7,7 @@ data class PinState(
     val pin: String = "",
     val biometricAvailable: Boolean = false,
     val isError: Boolean = false,
-    val savingLastFile: Boolean = false,
 ) {
-    val showBlockingLoader: Boolean = savingLastFile
-
     val actionType: ActionType = when {
         pin.isNotEmpty() -> ActionType.Backspace
         biometricAvailable -> ActionType.Biometric

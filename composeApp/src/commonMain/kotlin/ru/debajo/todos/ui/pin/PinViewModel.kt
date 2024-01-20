@@ -10,7 +10,6 @@ import ru.debajo.todos.auth.AuthType
 import ru.debajo.todos.auth.Pin
 import ru.debajo.todos.auth.PinHash
 import ru.debajo.todos.common.BaseNewsLessViewModel
-import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.security.BiometricDelegate
 import ru.debajo.todos.security.HashUtils
 import ru.debajo.todos.security.hashPin
@@ -21,7 +20,6 @@ internal class PinViewModel(
     private val biometricDelegate: BiometricDelegate,
     private val securityManager: AppSecurityManager,
     private val navigatorMediator: NavigatorMediator,
-    private val databaseSnapshotSaver: DatabaseSnapshotSaver,
 ) : BaseNewsLessViewModel<PinState>(PinState()) {
 
     override fun onLaunch() {
@@ -42,9 +40,6 @@ internal class PinViewModel(
                 }
 
                 if (used) {
-                    withLastFileLoading {
-                        databaseSnapshotSaver.saveLastFileSafe()
-                    }
                     navigatorMediator.replaceAll(AppScreen.SelectFile(true))
                 }
             }
@@ -61,14 +56,11 @@ internal class PinViewModel(
         if (newPin.length == PinSize) {
             screenModelScope.launch(Default) {
                 val pin = Pin(state.value.pin)
-                withLastFileLoading {
-                    val pinHash = HashUtils.hashPin(pin)
-                    if (securityManager.offer(pinHash)) {
-                        databaseSnapshotSaver.saveLastFileSafe()
-                        navigatorMediator.replaceAll(AppScreen.SelectFile(true))
-                    } else {
-                        updateState { copy(pin = "", isError = true) }
-                    }
+                val pinHash = HashUtils.hashPin(pin)
+                if (securityManager.offer(pinHash)) {
+                    navigatorMediator.replaceAll(AppScreen.SelectFile(true))
+                } else {
+                    updateState { copy(pin = "", isError = true) }
                 }
             }
         }
@@ -76,14 +68,5 @@ internal class PinViewModel(
 
     fun backspace() {
         updateState { copy(pin = pin.dropLast(1), isError = false) }
-    }
-
-    private suspend fun withLastFileLoading(block: suspend () -> Unit) {
-        updateState { copy(savingLastFile = true) }
-        try {
-            block()
-        } finally {
-            updateState { copy(savingLastFile = false) }
-        }
     }
 }

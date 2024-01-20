@@ -1,71 +1,40 @@
 package ru.debajo.todos.data.db.dao
 
-import app.cash.sqldelight.coroutines.asFlow
-import app.cash.sqldelight.coroutines.mapToList
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.withContext
-import ru.debajo.todos.db.DbTodoGroupToItemLink
-import ru.debajo.todos.db.DbTodoGroupToItemLinkQueries
-import ru.debajo.todos.di.AsyncProvider
+import ru.debajo.todos.common.UUID
+import ru.debajo.todos.data.db.FileSession
+import ru.debajo.todos.data.db.model.DbTodoGroupToItemLink
 
-class DbTodoGroupToItemLinkDao(
-    private val queriesProvider: AsyncProvider<DbTodoGroupToItemLinkQueries>,
-) {
+class DbTodoGroupToItemLinkDao(fileSession: FileSession) {
+
+    private val table: InMemoryTable<DbTodoGroupToItemLink> by fileSession::dbTodoGroupToItemLinkTable
+
     suspend fun save(link: DbTodoGroupToItemLink) {
-        withContext(Dispatchers.IO) {
-            val queries = queriesProvider.provide()
-            queries.transaction {
-                queries.deleteByTodoId(todoId = link.todoId)
-                queries.save(groupId = link.groupId, todoId = link.todoId)
-            }
-        }
+        table.insertOrReplace(link) { it.todoId.toString() }
     }
 
-    suspend fun deleteByGroup(groupId: String) {
-        withContext(Dispatchers.IO) {
-            queriesProvider.provide().deleteByGroupId(groupId = groupId)
-        }
+    suspend fun deleteByGroup(groupId: UUID) {
+        table.deleteBy { it.groupId == groupId }
     }
 
-    suspend fun deleteByTodoId(todoId: String) {
-        withContext(Dispatchers.IO) {
-            queriesProvider.provide().deleteByTodoId(todoId = todoId)
-        }
+    suspend fun deleteByTodoId(todoId: UUID) {
+        table.deleteBy { it.todoId == todoId }
     }
 
-    suspend fun deleteByTodoIds(todoIds: List<String>) {
-        withContext(Dispatchers.IO) {
-            queriesProvider.provide().deleteByTodoIds(todoIds)
-        }
+    suspend fun deleteByTodoIds(todoIds: List<UUID>) {
+        val todoIdsSet = todoIds.toSet()
+        table.deleteBy { it.todoId in todoIdsSet }
     }
 
-    suspend fun delete(groupId: String, todoId: String) {
-        withContext(Dispatchers.IO) {
-            queriesProvider.provide().delete(groupId = groupId, todoId = todoId)
-        }
+    suspend fun delete(groupId: UUID, todoId: UUID) {
+        table.deleteBy { it.groupId == groupId && it.todoId == todoId }
     }
 
-    suspend fun getByGroupId(groupId: String): List<DbTodoGroupToItemLink> {
-        return withContext(Dispatchers.IO) {
-            queriesProvider.provide().getByGroupId(groupId = groupId).executeAsList()
-        }
+    suspend fun getByGroupId(groupId: UUID): List<DbTodoGroupToItemLink> {
+        return table.filter { it.groupId == groupId }
     }
 
-    suspend fun getAll(): List<DbTodoGroupToItemLink> {
-        return withContext(Dispatchers.IO) {
-            queriesProvider.provide().getAll().executeAsList()
-        }
-    }
+    suspend fun getAll(): List<DbTodoGroupToItemLink> = table.getAll()
 
-    fun observe(): Flow<List<DbTodoGroupToItemLink>> {
-        return flow {
-            emitAll(
-                queriesProvider.provide().getAll().asFlow().mapToList(Dispatchers.IO)
-            )
-        }
-    }
+    fun observe(): Flow<List<DbTodoGroupToItemLink>> = table.observe()
 }

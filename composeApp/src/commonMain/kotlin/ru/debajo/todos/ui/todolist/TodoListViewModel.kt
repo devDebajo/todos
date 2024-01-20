@@ -7,10 +7,12 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import kotlinx.coroutines.launch
 import ru.debajo.todos.app.AppScreen
 import ru.debajo.todos.common.BaseViewModel
+import ru.debajo.todos.data.db.FileSessionManager
 import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.data.storage.StorageFileManager
 import ru.debajo.todos.data.storage.codec.FileCodecHelper
+import ru.debajo.todos.data.storage.model.StorageFile
 import ru.debajo.todos.domain.GroupId
 import ru.debajo.todos.domain.TodoGroup
 import ru.debajo.todos.domain.TodoItem
@@ -24,6 +26,7 @@ import ru.debajo.todos.ui.todolist.model.TodoListState
 
 @Stable
 internal class TodoListViewModel(
+    private val fileSessionManager: FileSessionManager,
     private val databaseSnapshotSaver: DatabaseSnapshotSaver,
     private val storageFileManager: StorageFileManager,
     private val fileCodecHelper: FileCodecHelper,
@@ -33,7 +36,14 @@ internal class TodoListViewModel(
     private val securedScreenManager: SecuredScreenManager,
 ) : BaseViewModel<TodoListState, TodoListNews>(TodoListState()) {
 
+    private val onCloseListener: (StorageFile) -> Unit = {
+        screenModelScope.launch {
+            navigatorMediator.replaceAll(AppScreen.SelectFile())
+        }
+    }
+
     override fun onLaunch() {
+        fileSessionManager.fileSession.addOnCloseListener(onCloseListener)
         screenModelScope.launch {
             var first = true
             todoItemUseCase.observeGroups().collect { groups ->
@@ -60,6 +70,11 @@ internal class TodoListViewModel(
                 copy(currentFileName = currentFile.nameWithExtension)
             }
         }
+    }
+
+    override fun onDispose() {
+        super.onDispose()
+        fileSessionManager.fileSession.removeOnCloseListener(onCloseListener)
     }
 
     fun saveCurrentTodo() {
@@ -121,7 +136,7 @@ internal class TodoListViewModel(
             copy(selectedGroupId = id)
         }
         screenModelScope.launch {
-            preferences.putString(LastGroupIdKey, id.id)
+            preferences.putString(LastGroupIdKey, id.id.toString())
         }
     }
 
@@ -297,9 +312,8 @@ internal class TodoListViewModel(
     fun closeFile() {
         updateState { copy(isBlockingLoading = true) }
         screenModelScope.launch {
-            databaseSnapshotSaver.save(ignorePaused = true)
-            storageFileManager.closeFile()
-            navigatorMediator.replaceAll(AppScreen.SelectFile())
+            databaseSnapshotSaver.save()
+            fileSessionManager.close()
         }
     }
 
@@ -307,7 +321,7 @@ internal class TodoListViewModel(
         val lastId = preferences.getString(LastGroupIdKey)
         for (index in groups.indices) {
             val group = groups[index]
-            if (group.id.id == lastId) {
+            if (group.id.id.toString() == lastId) {
                 return group.id to index
             }
         }

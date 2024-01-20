@@ -5,9 +5,9 @@ import kotlinx.coroutines.flow.combine
 import ru.debajo.todos.common.UUID
 import ru.debajo.todos.data.db.dao.DbTodoGroupDao
 import ru.debajo.todos.data.db.dao.DbTodoGroupToItemLinkDao
+import ru.debajo.todos.data.db.model.DbTodoGroup
+import ru.debajo.todos.data.db.model.DbTodoGroupToItemLink
 import ru.debajo.todos.data.storage.DatabaseChangeListener
-import ru.debajo.todos.db.DbTodoGroup
-import ru.debajo.todos.db.DbTodoGroupToItemLink
 import ru.debajo.todos.strings.R
 
 class TodoGroupRepository(
@@ -27,7 +27,7 @@ class TodoGroupRepository(
     }
 
     suspend fun createGroup(name: String): TodoGroup {
-        val id = UUID.randomUUID().toString()
+        val id = UUID.randomUUID()
         dbTodoGroupDao.save(id, name)
         databaseChangeListener.onUpdate()
         return TodoGroup(
