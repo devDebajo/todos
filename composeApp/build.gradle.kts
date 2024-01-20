@@ -7,7 +7,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.buildConfig)
     alias(libs.plugins.kotlinx.serialization)
-    alias(libs.plugins.sqlDelight)
 }
 
 kotlin {
@@ -51,7 +50,6 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
             implementation(libs.koin.core)
-            implementation(libs.sqlDelight.coroutines)
         }
 
         androidMain.dependencies {
@@ -60,7 +58,6 @@ kotlin {
             implementation(libs.androidx.activityCompose)
             implementation(libs.compose.uitooling)
             implementation(libs.kotlinx.coroutines.android)
-            implementation(libs.sqlDelight.driver.android)
             implementation(libs.androidx.biometric)
         }
 
@@ -68,13 +65,10 @@ kotlin {
             implementation(project(":java-utils"))
             implementation(compose.desktop.common)
             implementation(compose.desktop.currentOs)
-            implementation(libs.sqlDelight.driver.sqlite)
             implementation(libs.kotlinx.coroutines.jvm)
         }
 
-        iosMain.dependencies {
-            implementation(libs.sqlDelight.driver.native)
-        }
+        iosMain.dependencies {}
     }
 }
 
@@ -135,14 +129,6 @@ buildConfig {
     buildConfigField("Int", "VERSION_NUMBER", properties.getProperty("versionNumber"))
     buildConfigField("String", "DEVELOPER_NAME", "\"${properties.getProperty("developerName")}\"")
     buildConfigField("String", "DEVELOPER_EMAIL", "\"${properties.getProperty("developerEmail")}\"")
-}
-
-sqldelight {
-    databases {
-        create("TodosDatabase") {
-            packageName.set("ru.debajo.todos.db")
-        }
-    }
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
