@@ -9,21 +9,15 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
-import io.github.aakira.napier.DebugAntilog
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
-import ru.debajo.todos.app.AppLifecycle
-import ru.debajo.todos.app.AppLifecycleMutable
 import ru.debajo.todos.app.AppScreen
 import ru.debajo.todos.app.CommonApplication
-import ru.debajo.todos.common.isDebug
 import ru.debajo.todos.data.db.FileSession
-import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
 import ru.debajo.todos.data.storage.StorageFileManager
 import ru.debajo.todos.di.ActivityResultLaunchersHolder
 import ru.debajo.todos.di.AndroidModule
@@ -36,12 +30,12 @@ import ru.debajo.todos.ui.security.SecuredScreenManagerImpl
 
 class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob()) {
 
+    private val commonApplication: CommonApplication by inject()
+
     override fun onCreate() {
         super.onCreate()
         initDi()
-        initLog()
-        startProcess()
-        CommonApplication.onCreate()
+        commonApplication.onCreate()
         initForeground()
     }
 
@@ -56,7 +50,10 @@ class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob
 
     override fun onTerminate() {
         super.onTerminate()
-        cancel()
+        launch {
+            commonApplication.onTerminate()
+            cancel()
+        }
     }
 
     private fun initDi() {
@@ -65,32 +62,21 @@ class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob
                 module {
                     single<Context> { this@AndroidApp }
                     single<CoroutineScope> { this@AndroidApp }
+                    single { CommonApplication() }
                 },
                 AndroidModule,
                 CommonModule
             )
         }
     }
-
-    private fun initLog() {
-        if (isDebug) {
-            Napier.base(DebugAntilog())
-        }
-    }
-
-    private fun startProcess() {
-        val scope = getFromDi<CoroutineScope>()
-        val databaseSnapshotWorker = getFromDi<DatabaseSnapshotWorker>()
-        scope.launch { databaseSnapshotWorker.doWork() }
-    }
 }
 
 class AppActivity : FragmentActivity() {
 
+    private val commonApplication: CommonApplication by inject()
     private val activityResultLaunchers: ActivityResultLaunchers = ActivityResultLaunchers(this)
     private val storageFileManager: StorageFileManager by inject()
     private val navigatorMediator: NavigatorMediator by inject()
-    private val appLifecycleMutable: AppLifecycleMutable by inject()
     private val securedScreenManagerImpl: SecuredScreenManagerImpl by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -102,7 +88,7 @@ class AppActivity : FragmentActivity() {
             CompositionLocalProvider(
                 LocalNavigatorMediator provides remember { navigatorMediator }
             ) {
-                CommonApplication.Content()
+                commonApplication.Content()
             }
         }
     }
@@ -114,12 +100,12 @@ class AppActivity : FragmentActivity() {
 
     override fun onPause() {
         super.onPause()
-        appLifecycleMutable.updateState(AppLifecycle.State.Paused)
+        commonApplication.onPause()
     }
 
     override fun onResume() {
         super.onResume()
-        appLifecycleMutable.updateState(AppLifecycle.State.Resumed)
+        commonApplication.onResume()
     }
 
     private fun tryToExtractUri(intent: Intent) {

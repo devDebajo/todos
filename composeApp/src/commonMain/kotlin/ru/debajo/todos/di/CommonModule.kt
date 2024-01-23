@@ -4,10 +4,8 @@ import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.bind
 import org.koin.dsl.module
-import ru.debajo.todos.app.AppLifecycle
-import ru.debajo.todos.app.AppLifecycleMutable
+import ru.debajo.todos.app.CommonApplication
 import ru.debajo.todos.auth.AppSecurityManager
 import ru.debajo.todos.common.isDebug
 import ru.debajo.todos.data.db.FileSession
@@ -38,6 +36,7 @@ import ru.debajo.todos.ui.splash.SplashViewModel
 import ru.debajo.todos.ui.todolist.TodoListViewModel
 
 val CommonModule: Module = module {
+    single { CommonApplication() }
     single {
         Json {
             isLenient = true
@@ -79,6 +78,4 @@ val CommonModule: Module = module {
     factoryOf(::TodoGroupRepository)
     factoryOf(::TodoItemRepository)
     factoryOf(::TodoItemUseCase)
-
-    single { AppLifecycleMutable() }.bind<AppLifecycle>()
 }
