@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
-        android:name=".AndroidApp"
+        android:name=".app.AndroidApp"
         android:icon="@mipmap/ic_launcher"
         android:label="TODOs"
         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
+
         <activity
-            android:name=".AppActivity"
+            android:name=".app.AppActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:exported="true"
             android:launchMode="singleInstance"
@@ -61,6 +66,10 @@
                 <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\..*\\.*" />
             </intent-filter>
         </activity>
-    </application>
 
+        <service
+            android:name=".app.FileSessionService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+    </application>
 </manifest>

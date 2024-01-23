@@ -1,4 +1,4 @@
-package ru.debajo.todos
+package ru.debajo.todos.app
 
 import android.net.Uri
 import androidx.activity.result.ActivityResultLauncher

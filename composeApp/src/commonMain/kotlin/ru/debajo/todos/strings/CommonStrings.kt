@@ -1,6 +1,11 @@
 package ru.debajo.todos.strings
 
 interface CommonStrings {
+    val fileSessionNotificationChannelName: String
+    val fileSessionNotificationChannelDescription: String
+    val fileSessionNotificationMessage: String
+    val fileSessionNotificationClose: String
+
     val appName: String
 
     val aboutTitle: String

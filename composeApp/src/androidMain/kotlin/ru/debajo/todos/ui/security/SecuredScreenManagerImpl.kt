@@ -4,7 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import android.view.Window
 import android.view.WindowManager
-import ru.debajo.todos.ActivityResultLaunchers
+import ru.debajo.todos.app.ActivityResultLaunchers
 
 internal class SecuredScreenManagerImpl(
     private val activityResultLaunchersProvider: () -> ActivityResultLaunchers,

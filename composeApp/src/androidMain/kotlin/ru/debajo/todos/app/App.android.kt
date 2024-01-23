@@ -1,12 +1,14 @@
-package ru.debajo.todos
+package ru.debajo.todos.app
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
@@ -15,8 +17,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
-import ru.debajo.todos.app.AppScreen
-import ru.debajo.todos.app.CommonApplication
 import ru.debajo.todos.data.db.FileSession
 import ru.debajo.todos.data.storage.StorageFileManager
 import ru.debajo.todos.di.ActivityResultLaunchersHolder
@@ -24,11 +24,11 @@ import ru.debajo.todos.di.AndroidModule
 import ru.debajo.todos.di.CommonModule
 import ru.debajo.todos.di.getFromDi
 import ru.debajo.todos.di.inject
-import ru.debajo.todos.ui.LocalNavigatorMediator
 import ru.debajo.todos.ui.NavigatorMediator
 import ru.debajo.todos.ui.security.SecuredScreenManagerImpl
+import ru.debajo.todos.ui.theme.AppTheme
 
-class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob()) {
+internal class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob()) {
 
     private val commonApplication: CommonApplication by inject()
 
@@ -39,12 +39,19 @@ class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob
         initForeground()
     }
 
+
     private fun initForeground() {
+        val handler = Handler(Looper.getMainLooper())
         val fileSession = getFromDi<FileSession>()
         fileSession.addOnOpenListener {
-            // TODO start foregroundService
+            handler.post { FileSessionService.show(this) }
         }.addOnCloseListener {
-            // TODO stop foregroundService
+            handler.post { FileSessionService.stop(this) }
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(AppLocalReceiver(), AppLocalReceiver.intentFilter(), RECEIVER_NOT_EXPORTED)
+        } else @SuppressLint("UnspecifiedRegisterReceiverFlag") {
+            registerReceiver(AppLocalReceiver(), AppLocalReceiver.intentFilter())
         }
     }
 
@@ -71,8 +78,9 @@ class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob
     }
 }
 
-class AppActivity : FragmentActivity() {
+internal class AppActivity : FragmentActivity() {
 
+    private val notificationManager: TodosNotificationManager by inject()
     private val commonApplication: CommonApplication by inject()
     private val activityResultLaunchers: ActivityResultLaunchers = ActivityResultLaunchers(this)
     private val storageFileManager: StorageFileManager by inject()
@@ -85,9 +93,8 @@ class AppActivity : FragmentActivity() {
         getFromDi<ActivityResultLaunchersHolder>().activityResultLaunchers = activityResultLaunchers
         tryToExtractUri(intent)
         setContent {
-            CompositionLocalProvider(
-                LocalNavigatorMediator provides remember { navigatorMediator }
-            ) {
+            AppTheme {
+                notificationManager.RequestPermission()
                 commonApplication.Content()
             }
         }
@@ -115,5 +122,9 @@ class AppActivity : FragmentActivity() {
                 navigatorMediator.navigate(AppScreen.SelectFile())
             }
         }
+    }
+
+    companion object {
+        fun createIntent(context: Context): Intent = Intent(context, AppActivity::class.java)
     }
 }

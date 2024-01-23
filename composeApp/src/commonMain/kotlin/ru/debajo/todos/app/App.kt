@@ -24,7 +24,6 @@ import ru.debajo.todos.di.inject
 import ru.debajo.todos.ui.LocalNavigatorMediator
 import ru.debajo.todos.ui.NavigatorMediator
 import ru.debajo.todos.ui.security.SecuredScreenManager
-import ru.debajo.todos.ui.theme.AppTheme
 
 // TODO https://github.com/jordond/materialkolor
 internal class CommonApplication {
@@ -55,27 +54,26 @@ internal class CommonApplication {
         CompositionLocalProvider(
             LocalNavigatorMediator provides remember { navigatorMediator }
         ) {
-            AppTheme {
-                val securedScreenManager = remember { getFromDi<SecuredScreenManager>() }
-                val mediator = LocalNavigatorMediator.current
-                Navigator(AppScreen.Splash) {
-                    val navigator = LocalNavigator.current
-                    LaunchedEffect(mediator, navigator) {
-                        mediator.observeNavigate { navigate ->
-                            securedScreenManager.setScreenSecured(navigate.screen.securedByDefault)
-                            if (navigate.replaceAll) {
-                                navigator?.replaceAll(navigate.screen)
-                            } else {
-                                navigator?.push(navigate.screen)
-                            }
+            val securedScreenManager = remember { getFromDi<SecuredScreenManager>() }
+            val mediator = LocalNavigatorMediator.current
+            Navigator(AppScreen.Splash) {
+                val navigator = LocalNavigator.current
+                LaunchedEffect(mediator, navigator) {
+                    mediator.observeNavigate { navigate ->
+                        securedScreenManager.setScreenSecured(navigate.screen.securedByDefault)
+                        if (navigate.replaceAll) {
+                            navigator?.replaceAll(navigate.screen)
+                        } else {
+                            navigator?.push(navigate.screen)
                         }
                     }
-
-                    CurrentScreen()
                 }
 
-                BlockingLoaderDialog(terminating.value)
+                CurrentScreen()
             }
+
+            BlockingLoaderDialog(terminating.value)
+
         }
     }
 

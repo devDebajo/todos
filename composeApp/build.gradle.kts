@@ -59,6 +59,7 @@ kotlin {
             implementation(libs.compose.uitooling)
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.androidx.biometric)
+            implementation(libs.accompanist.permissions)
         }
 
         jvmMain.dependencies {

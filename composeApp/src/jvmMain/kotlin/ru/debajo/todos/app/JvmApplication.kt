@@ -15,6 +15,7 @@ import ru.debajo.todos.di.CommonModule
 import ru.debajo.todos.di.JvmModule
 import ru.debajo.todos.di.inject
 import ru.debajo.todos.strings.R
+import ru.debajo.todos.ui.theme.AppTheme
 
 internal class JvmApplication : CoroutineScope by CoroutineScope(SupervisorJob()) {
 
@@ -33,7 +34,9 @@ internal class JvmApplication : CoroutineScope by CoroutineScope(SupervisorJob()
             ) {
                 window.minimumSize = remember { Dimension(350, 600) }
                 LifecycleListener()
-                commonApplication.Content()
+                AppTheme {
+                    commonApplication.Content()
+                }
             }
         }
     }

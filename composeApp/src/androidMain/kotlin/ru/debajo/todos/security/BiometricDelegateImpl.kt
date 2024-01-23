@@ -16,7 +16,7 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 import kotlinx.coroutines.suspendCancellableCoroutine
-import ru.debajo.todos.ActivityResultLaunchers
+import ru.debajo.todos.app.ActivityResultLaunchers
 import ru.debajo.todos.common.runCatchingAsync
 import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.strings.R
