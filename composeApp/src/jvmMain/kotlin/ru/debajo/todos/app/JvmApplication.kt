@@ -1,6 +1,7 @@
 package ru.debajo.todos.app
 
 import KeyEventHandler
+import SaveDetector
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -8,9 +9,12 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import java.awt.Dimension
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.di.CommonModule
 import ru.debajo.todos.di.JvmModule
 import ru.debajo.todos.di.inject
@@ -19,6 +23,7 @@ import ru.debajo.todos.ui.theme.AppTheme
 
 internal class JvmApplication : CoroutineScope by CoroutineScope(SupervisorJob()) {
 
+    private val databaseSnapshotSaver: DatabaseSnapshotSaver by inject()
     private val commonApplication: CommonApplication by inject()
     private val keyEventHandler: KeyEventHandler by inject()
     private val quitHelper: QuitHelper by inject()
@@ -45,6 +50,7 @@ internal class JvmApplication : CoroutineScope by CoroutineScope(SupervisorJob()
         initDi()
         commonApplication.onCreate()
         quitHelper.init()
+        initSaveHotKey()
     }
 
     private fun initDi() {
@@ -57,5 +63,13 @@ internal class JvmApplication : CoroutineScope by CoroutineScope(SupervisorJob()
                 CommonModule
             )
         }
+    }
+
+    private fun initSaveHotKey() {
+        var job: Job? = null
+        keyEventHandler.register(SaveDetector {
+            job?.cancel()
+            job = launch { databaseSnapshotSaver.save() }
+        })
     }
 }
