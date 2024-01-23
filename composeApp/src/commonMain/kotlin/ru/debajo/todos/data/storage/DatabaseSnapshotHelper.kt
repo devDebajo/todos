@@ -37,7 +37,7 @@ class DatabaseSnapshotHelper(
         if (path.isEmpty()) {
             error("Path should not be empty")
         }
-        fileSessionManager.open(
+        fileSessionManager.fill(
             path = path,
             groups = snapshot.snapshot.groups.map { it.convert() },
             links = snapshot.snapshot.links.map { it.convert() },

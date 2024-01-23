@@ -7,14 +7,12 @@ import ru.debajo.todos.data.db.dao.DbTodoGroupDao
 import ru.debajo.todos.data.db.dao.DbTodoGroupToItemLinkDao
 import ru.debajo.todos.data.db.model.DbTodoGroup
 import ru.debajo.todos.data.db.model.DbTodoGroupToItemLink
-import ru.debajo.todos.data.storage.DatabaseChangeListener
 import ru.debajo.todos.strings.R
 
 class TodoGroupRepository(
     private val dbTodoGroupDao: DbTodoGroupDao,
     private val dbTodoGroupToItemLinkDao: DbTodoGroupToItemLinkDao,
     private val todoItemRepository: TodoItemRepository,
-    private val databaseChangeListener: DatabaseChangeListener,
 ) {
     fun observe(): Flow<List<TodoGroup>> {
         return combine(
@@ -29,7 +27,6 @@ class TodoGroupRepository(
     suspend fun createGroup(name: String): TodoGroup {
         val id = UUID.randomUUID()
         dbTodoGroupDao.save(id, name)
-        databaseChangeListener.onUpdate()
         return TodoGroup(
             id = GroupId(id),
             name = name,
@@ -46,27 +43,22 @@ class TodoGroupRepository(
             todoItemRepository.delete(links)
         }
         dbTodoGroupToItemLinkDao.deleteByGroup(id.id)
-        databaseChangeListener.onUpdate()
     }
 
     suspend fun renameGroup(groupId: GroupId, name: String) {
         dbTodoGroupDao.rename(groupId.id, name)
-        databaseChangeListener.onUpdate()
     }
 
     suspend fun link(groupId: GroupId, todoId: TodoId) {
         dbTodoGroupToItemLinkDao.save(DbTodoGroupToItemLink(groupId.id, todoId.id))
-        databaseChangeListener.onUpdate()
     }
 
     suspend fun moveLeft(groupId: GroupId) {
         dbTodoGroupDao.updateOrder(groupId.id, moveRight = false)
-        databaseChangeListener.onUpdate()
     }
 
     suspend fun moveRight(groupId: GroupId) {
         dbTodoGroupDao.updateOrder(groupId.id, moveRight = true)
-        databaseChangeListener.onUpdate()
     }
 
     private fun prepare(

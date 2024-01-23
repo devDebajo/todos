@@ -273,7 +273,7 @@ private fun GroupsSpace(
     ) {
         items(
             count = state.groups.size,
-            key = { state.groups[it].id.id },
+            key = { state.groups[it].id.id.toString() },
             itemContent = { index ->
                 val group = state.groups[index]
                 FilterChip(
@@ -336,7 +336,7 @@ private fun TodosList(
         content = {
             items(
                 count = state.actual.size,
-                key = { state.actual[it].id.id },
+                key = { state.actual[it].id.id.toString() },
                 contentType = { "todo" },
                 itemContent = { index ->
                     DismissableTodoCard(
@@ -355,7 +355,7 @@ private fun TodosList(
 
             items(
                 count = state.done.size,
-                key = { state.done[it].id.id },
+                key = { state.done[it].id.id.toString() },
                 contentType = { "todo" },
                 itemContent = { index ->
                     DismissableTodoCard(

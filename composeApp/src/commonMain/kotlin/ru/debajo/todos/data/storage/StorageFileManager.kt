@@ -49,6 +49,7 @@ class StorageFileManager(
             return false
         }
 
+        fileSession.open(file)
         saveLastFile(file)
         return true
     }

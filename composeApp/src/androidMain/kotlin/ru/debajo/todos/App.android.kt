@@ -17,10 +17,10 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
-import ru.debajo.todos.app.App
 import ru.debajo.todos.app.AppLifecycle
 import ru.debajo.todos.app.AppLifecycleMutable
 import ru.debajo.todos.app.AppScreen
+import ru.debajo.todos.app.CommonApplication
 import ru.debajo.todos.common.isDebug
 import ru.debajo.todos.data.db.FileSession
 import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
@@ -41,6 +41,7 @@ class AndroidApp : Application(), CoroutineScope by CoroutineScope(SupervisorJob
         initDi()
         initLog()
         startProcess()
+        CommonApplication.onCreate()
         initForeground()
     }
 
@@ -101,7 +102,7 @@ class AppActivity : FragmentActivity() {
             CompositionLocalProvider(
                 LocalNavigatorMediator provides remember { navigatorMediator }
             ) {
-                App()
+                CommonApplication.Content()
             }
         }
     }

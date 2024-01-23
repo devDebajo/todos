@@ -15,7 +15,6 @@ import ru.debajo.todos.data.db.FileSessionManager
 import ru.debajo.todos.data.db.dao.DbTodoGroupDao
 import ru.debajo.todos.data.db.dao.DbTodoGroupToItemLinkDao
 import ru.debajo.todos.data.db.dao.DbTodoItemDao
-import ru.debajo.todos.data.storage.DatabaseChangeListener
 import ru.debajo.todos.data.storage.DatabaseSnapshotHelper
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
@@ -47,7 +46,7 @@ val CommonModule: Module = module {
         }
     }
     factoryOf(::DatabaseSnapshotHelper)
-    singleOf(::DatabaseSnapshotSaver).bind<DatabaseChangeListener>()
+    singleOf(::DatabaseSnapshotSaver)
     singleOf(::DatabaseSnapshotWorker)
     singleOf(::StorageFileManager)
     factoryOf(::FilePinStorage)
@@ -72,10 +71,7 @@ val CommonModule: Module = module {
     singleOf(::DbTodoGroupDao)
     singleOf(::DbTodoGroupToItemLinkDao)
     singleOf(::DbTodoItemDao)
-    single {
-        val databaseChangeListener: DatabaseChangeListener = get()
-        FileSession().addOnUpdateListener { databaseChangeListener.onUpdate() }
-    }
+    singleOf(::FileSession)
     singleOf(::FileSessionManager)
 
     singleOf(::AppSecurityManager)

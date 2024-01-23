@@ -7,12 +7,10 @@ import ru.debajo.todos.common.UUID
 import ru.debajo.todos.data.db.dao.DbTodoGroupToItemLinkDao
 import ru.debajo.todos.data.db.dao.DbTodoItemDao
 import ru.debajo.todos.data.db.model.DbTodoItem
-import ru.debajo.todos.data.storage.DatabaseChangeListener
 
 class TodoItemRepository(
     private val dbTodoItemDao: DbTodoItemDao,
     private val dbTodoGroupToItemLinkDao: DbTodoGroupToItemLinkDao,
-    private val databaseChangeListener: DatabaseChangeListener,
 ) {
 
     fun observe(): Flow<List<TodoItem>> {
@@ -24,7 +22,6 @@ class TodoItemRepository(
     suspend fun create(text: String): TodoItem {
         val dbItem = createDbTodoItem(text = text)
         dbTodoItemDao.save(dbItem)
-        databaseChangeListener.onUpdate()
         return dbItem.toDomain()
     }
 
@@ -35,20 +32,17 @@ class TodoItemRepository(
         ) ?: createDbTodoItem(id = id.id, text = text)
 
         dbTodoItemDao.save(dbItem)
-        databaseChangeListener.onUpdate()
         return dbItem.toDomain()
     }
 
     suspend fun delete(id: TodoId) {
         dbTodoItemDao.delete(id.id)
         dbTodoGroupToItemLinkDao.deleteByTodoId(id.id)
-        databaseChangeListener.onUpdate()
     }
 
     suspend fun delete(ids: List<TodoId>) {
         dbTodoItemDao.delete(ids.map { it.id })
         dbTodoGroupToItemLinkDao.deleteByTodoIds(ids.map { it.id })
-        databaseChangeListener.onUpdate()
     }
 
     suspend fun updateDone(id: TodoId, done: Boolean) {
@@ -59,7 +53,6 @@ class TodoItemRepository(
                 updateTimestamp = Clock.System.now(),
             )
         )
-        databaseChangeListener.onUpdate()
     }
 
     private fun createDbTodoItem(

@@ -24,7 +24,7 @@ internal class DatabaseSnapshotSaver(
     private val filePinStorage: FilePinStorage,
     private val fileCodecHelper: FileCodecHelper,
     private val securedPreferences: SecuredPreferences,
-) : DatabaseChangeListener {
+) {
 
     private val mutex: Mutex = Mutex()
     private val onUpdateMutex: Mutex = Mutex()
@@ -105,7 +105,7 @@ internal class DatabaseSnapshotSaver(
         }
     }
 
-    override suspend fun onUpdate() {
+    suspend fun onUpdate() {
         onUpdateMutex.locked {
             val now = Clock.System.now().toEpochMilliseconds()
             val file = storageFileManager.awaitCurrentFile()

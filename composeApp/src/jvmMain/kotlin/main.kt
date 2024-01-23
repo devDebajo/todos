@@ -17,9 +17,9 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
-import ru.debajo.todos.app.App
 import ru.debajo.todos.app.AppLifecycle
 import ru.debajo.todos.app.AppLifecycleMutable
+import ru.debajo.todos.app.CommonApplication
 import ru.debajo.todos.common.isDebug
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.data.storage.DatabaseSnapshotWorker
@@ -34,7 +34,7 @@ fun main() {
     initDi()
     initLog()
     val savingJob = startProcess()
-
+    CommonApplication.onCreate()
     val navigatorMediator = getFromDi<NavigatorMediator>()
     val databaseSnapshotSaver = getFromDi<DatabaseSnapshotSaver>()
     val scope = getFromDi<CoroutineScope>()
@@ -46,7 +46,7 @@ fun main() {
             onCloseRequest = {
                 savingJob.cancel()
                 scope.launch {
-                    databaseSnapshotSaver.save(ignorePaused = true)
+                    databaseSnapshotSaver.save()
                     exitApplication()
                 }
             },
@@ -57,7 +57,7 @@ fun main() {
                 LocalNavigatorMediator provides remember { navigatorMediator }
             ) {
                 LifecycleListener()
-                App()
+                CommonApplication.Content()
             }
         }
     }
