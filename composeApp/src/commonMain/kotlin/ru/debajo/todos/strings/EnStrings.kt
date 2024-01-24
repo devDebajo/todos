@@ -1,11 +1,13 @@
 package ru.debajo.todos.strings
 
+import ru.debajo.todos.buildconfig.BuildConfig
+
 object EnStrings : CommonStrings {
     override val fileSessionNotificationChannelName: String = "Opened file"
     override val fileSessionNotificationChannelDescription: String = "Notification for opened file session"
     override val fileSessionNotificationMessage: String = "Opened file: %s"
     override val fileSessionNotificationClose: String = "Close file"
-    override val appName: String = "TODOs"
+    override val appName: String = BuildConfig.APP_NAME
     override val aboutTitle: String = "About $appName"
     override val aboutAppVersion: String = "Version: %s (%s)"
     override val aboutAppDeveloper: String = "Developer: %s"

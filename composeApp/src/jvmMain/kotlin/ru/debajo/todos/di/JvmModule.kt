@@ -18,8 +18,19 @@ import ru.debajo.todos.ui.security.SecuredScreenManagerImpl
 internal val JvmModule: Module = module {
     singleOf(::QuitHelper)
     factory<FileSelector> { FileSelectorImpl() }
-    single<Preferences> { FilePreferencesImpl(get(), File("todo_prefs")) }
+    single<Preferences> { FilePreferencesImpl(get(), getPrefsPath()) }
     singleOf(::KeyEventHandler)
     factory<BiometricDelegate> { BiometricDelegateImpl }
     factory<SecuredScreenManager> { SecuredScreenManagerImpl }
 }
+
+private val appDirectory: File by lazy {
+    File(System.getProperty("user.home") + File.separator + ".todos")
+        .also {
+            if (!it.exists()) {
+                it.mkdirs()
+            }
+        }
+}
+
+private fun getPrefsPath(): File = File(appDirectory, "todo_prefs")

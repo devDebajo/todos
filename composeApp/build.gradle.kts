@@ -112,11 +112,11 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "ru.debajo.todos.desktopApp"
 
             val properties = Properties()
             properties.load(rootProject.file("project.properties").inputStream())
             packageVersion = properties.getProperty("packageVersion")
+            packageName = properties.getProperty("appName")
         }
     }
 }
@@ -130,6 +130,7 @@ buildConfig {
     buildConfigField("Int", "VERSION_NUMBER", properties.getProperty("versionNumber"))
     buildConfigField("String", "DEVELOPER_NAME", "\"${properties.getProperty("developerName")}\"")
     buildConfigField("String", "DEVELOPER_EMAIL", "\"${properties.getProperty("developerEmail")}\"")
+    buildConfigField("String", "APP_NAME", "\"${properties.getProperty("appName")}\"")
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
