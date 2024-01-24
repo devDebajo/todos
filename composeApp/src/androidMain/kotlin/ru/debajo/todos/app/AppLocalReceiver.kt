@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import ru.debajo.todos.auth.AppSecurityManager
 import ru.debajo.todos.data.db.FileSession
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.di.inject
@@ -16,11 +17,13 @@ internal class AppLocalReceiver : BroadcastReceiver() {
     private val databaseSnapshotSaver: DatabaseSnapshotSaver by inject()
     private val fileSession: FileSession by inject()
     private val coroutineScope: CoroutineScope by inject()
+    private val securityManager: AppSecurityManager by inject()
 
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
             ACTION_CLOSE_FILE -> coroutineScope.launch {
                 databaseSnapshotSaver.save()
+                securityManager.logout()
                 fileSession.close()
             }
         }
