@@ -92,7 +92,7 @@ interface CommonStrings {
     val moveFolderLeft: String
     val moveFolderRight: String
     val todoCreatedAt: String
-    val todoEditedAt: String
+    val editedAt: String
 
     val biometricTitle: String
 }

@@ -10,13 +10,14 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Instant
 import ru.debajo.todos.app.AppScreen
 import ru.debajo.todos.auth.Pin
 import ru.debajo.todos.auth.PinHash
 import ru.debajo.todos.common.BaseViewModel
+import ru.debajo.todos.common.errorToNapier
 import ru.debajo.todos.common.limit
 import ru.debajo.todos.common.runCatchingAsync
-import ru.debajo.todos.common.toNapier
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.data.storage.FilePinStorage
 import ru.debajo.todos.data.storage.FileSelector
@@ -438,16 +439,14 @@ internal class FileConfigViewModel(
             val successFiles = mutableListOf<UiStorageFile>()
 
             for (domainFile in this@convert) {
-                val encrypted = runCatchingAsync { fileCodecHelper.isEncrypted(domainFile) }
-                    .toNapier("isEncrypted error")
-                    .getOrNull()
-
-                if (encrypted != null) {
+                val fileMeta = domainFile.getFileMeta()
+                if (fileMeta != null) {
                     successFiles += UiStorageFile(
                         name = domainFile.name,
                         extension = domainFile.extension,
                         absolutePath = domainFile.absolutePath,
-                        encrypted = encrypted
+                        encrypted = fileMeta.encrypted,
+                        edited = fileMeta.edited,
                     )
                 } else {
                     invalidFiles.add(domainFile)
@@ -460,6 +459,26 @@ internal class FileConfigViewModel(
             )
         }
     }
+
+    private suspend fun StorageFile.getFileMeta(): UiFileMeta? {
+        val encrypted = runCatchingAsync { fileCodecHelper.isEncrypted(this) }
+            .errorToNapier("isEncrypted error")
+            .getOrNull() ?: return null
+
+        val edited = runCatchingAsync {
+            if (encrypted) {
+                fileCodecHelper.getTimestamp(this, filePinStorage.get(this))
+            } else {
+                fileCodecHelper.getTimestamp(this, null)
+            }
+        }
+            .mapCatching { Instant.fromEpochMilliseconds(it) }
+            .errorToNapier("getTimestamp error")
+            .getOrNull() ?: return null
+        return UiFileMeta(encrypted, edited)
+    }
+
+    private class UiFileMeta(val encrypted: Boolean, val edited: Instant)
 
     private suspend fun removeFromList(files: List<StorageFile>) {
         for (file in files) {

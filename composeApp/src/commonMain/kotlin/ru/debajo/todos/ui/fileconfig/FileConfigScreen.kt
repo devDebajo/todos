@@ -303,6 +303,13 @@ private fun FileRender(
                 text = file.nameWithExtension
             )
             Text(
+                text = R.strings.editedAt.formatKmp(file.editedFormatted),
+                fontSize = 10.sp,
+                lineHeight = 14.sp,
+                color = MaterialTheme.colorScheme.secondary,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
                 text = file.absolutePath,
                 fontSize = 10.sp,
                 lineHeight = 14.sp,

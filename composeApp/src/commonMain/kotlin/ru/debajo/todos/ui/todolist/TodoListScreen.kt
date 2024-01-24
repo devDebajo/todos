@@ -491,7 +491,7 @@ private fun formatDate(item: TodoItem): String {
         if (item.createTimestamp == item.updateTimestamp) {
             R.strings.todoCreatedAt.formatKmp(item.createTimestamp.formatDateTime())
         } else {
-            R.strings.todoEditedAt.formatKmp(item.updateTimestamp.formatDateTime())
+            R.strings.editedAt.formatKmp(item.updateTimestamp.formatDateTime())
         }
     }
 }

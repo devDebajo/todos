@@ -5,12 +5,20 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
-// format yyyy-MM-dd HH:mm
+// format HH:mm dd-MM-yyyy
 fun Instant.formatDateTime(): String {
     val localDateTime: LocalDateTime = toLocalDateTime(TimeZone.currentSystemDefault())
-    val date = "${localDateTime.year}-${localDateTime.monthNumber.toStringMin2Signs()}-${localDateTime.dayOfMonth.toStringMin2Signs()}"
+    val date = "${localDateTime.dayOfMonth.toStringMin2Signs()}-${localDateTime.monthNumber.toStringMin2Signs()}-${localDateTime.year}"
     val time = "${localDateTime.hour.toStringMin2Signs()}:${localDateTime.minute.toStringMin2Signs()}"
-    return "$date $time"
+    return "$time $date"
+}
+
+// format HH:mm:ss dd-MM-yyyy
+fun Instant.formatDateTimeWithSeconds(): String {
+    val localDateTime: LocalDateTime = toLocalDateTime(TimeZone.currentSystemDefault())
+    val date = "${localDateTime.dayOfMonth.toStringMin2Signs()}-${localDateTime.monthNumber.toStringMin2Signs()}-${localDateTime.year}"
+    val time = "${localDateTime.hour.toStringMin2Signs()}:${localDateTime.minute.toStringMin2Signs()}:${localDateTime.second.toStringMin2Signs()}"
+    return "$time $date"
 }
 
 private fun Int.toStringMin2Signs(): String {

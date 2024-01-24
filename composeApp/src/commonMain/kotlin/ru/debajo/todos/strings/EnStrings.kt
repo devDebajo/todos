@@ -76,7 +76,7 @@ object EnStrings : CommonStrings {
     override val moveFolderDown: String = "Move down"
     override val moveFolderLeft: String = "Move left"
     override val moveFolderRight: String = "Move right"
-    override val todoCreatedAt: String = "Created %s"
-    override val todoEditedAt: String = "Edited %s"
+    override val todoCreatedAt: String = "Created: %s"
+    override val editedAt: String = "Edited: %s"
     override val biometricTitle: String = "Login in $appName"
 }
