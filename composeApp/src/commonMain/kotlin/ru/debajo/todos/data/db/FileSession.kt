@@ -34,6 +34,17 @@ class FileSession {
     val dbTodoItemTable: InMemoryTable<DbTodoItem>
         get() = requireNotNull(dbTodoItemTableInternal)
 
+    private var notifyUpdate: Boolean = true
+
+    suspend fun disableNotifyUpdate(block: suspend () -> Unit) {
+        notifyUpdate = false
+        try {
+            block()
+        } finally {
+            notifyUpdate = true
+        }
+    }
+
     suspend fun awaitOpened(): StorageFile {
         return currentFileFlow.filterNotNull().first()
     }
@@ -90,7 +101,9 @@ class FileSession {
     }
 
     private suspend fun onUpdate() {
-        onUpdateListeners.forEach { it.invoke() }
+        if (notifyUpdate) {
+            onUpdateListeners.forEach { it.invoke() }
+        }
     }
 
     private suspend fun onOpen(file: StorageFile) {

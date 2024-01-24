@@ -39,9 +39,6 @@ import ru.debajo.todos.ui.todolist.model.TodoListState
 
 private const val LeftPaneWeight: Float = 0.25f
 
-// файл открыл закрыл - он почему то сохраняется
-// показывать время изменения файла в списке
-
 @Composable
 internal fun HorizontalTodoListScreen(viewModel: TodoListViewModel) {
     val state by viewModel.state.collectAsState()

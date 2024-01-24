@@ -16,9 +16,11 @@ class FileSessionManager(
         if (fileSession.currentFile?.absolutePath != path) {
             throw IllegalStateException("File not opened or different")
         }
-        fileSession.dbTodoGroupTable.updateRaw { groups.toList() }
-        fileSession.dbTodoGroupToItemLinkTable.updateRaw { links.toList() }
-        fileSession.dbTodoItemTable.updateRaw { items.toList() }
+        fileSession.disableNotifyUpdate {
+            fileSession.dbTodoGroupTable.updateRaw { groups.toList() }
+            fileSession.dbTodoGroupToItemLinkTable.updateRaw { links.toList() }
+            fileSession.dbTodoItemTable.updateRaw { items.toList() }
+        }
     }
 
     suspend fun close() {
