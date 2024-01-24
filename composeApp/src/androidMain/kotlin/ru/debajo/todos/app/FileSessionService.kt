@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.debajo.todos.R
+import ru.debajo.todos.auth.AppSecurityManager
 import ru.debajo.todos.common.formatKmp
 import ru.debajo.todos.data.db.FileSession
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
@@ -29,6 +30,7 @@ internal class FileSessionService : Service(), CoroutineScope by CoroutineScope(
     private val notificationManager: TodosNotificationManager by inject()
     private val appUiLifecycle: AppUiLifecycle by inject()
     private val databaseSnapshotSaver: DatabaseSnapshotSaver by inject()
+    private val securityManager: AppSecurityManager by inject()
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -53,6 +55,7 @@ internal class FileSessionService : Service(), CoroutineScope by CoroutineScope(
                     }
                     withContext(IO) {
                         databaseSnapshotSaver.save()
+                        securityManager.logout()
                         fileSession.close()
                     }
                 } else {

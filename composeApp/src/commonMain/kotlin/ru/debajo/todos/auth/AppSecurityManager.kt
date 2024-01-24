@@ -69,6 +69,10 @@ class AppSecurityManager(
         }
     }
 
+    fun logout() {
+        currentHash.value = null
+    }
+
     suspend fun configureWeakAuthType() {
         saveAuthType(AuthType.Weak)
         currentHash.value = WEAK_PIN_HASH
