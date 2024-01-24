@@ -4,6 +4,7 @@ object RuStrings : CommonStrings {
     override val fileSessionNotificationChannelName: String = "Открытый файл"
     override val fileSessionNotificationChannelDescription: String = "Уведомление для поддержания открытого файла"
     override val fileSessionNotificationMessage: String = "Открыт файл: %s"
+    override val fileSessionNotificationAutoClose: String = "Закроется через %s сек."
     override val fileSessionNotificationClose: String = "Закрыть файл"
     override val appName: String by EnStrings::appName
     override val aboutTitle: String = "О приложении $appName"

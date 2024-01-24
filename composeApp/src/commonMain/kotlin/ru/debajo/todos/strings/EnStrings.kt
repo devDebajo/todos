@@ -6,6 +6,7 @@ object EnStrings : CommonStrings {
     override val fileSessionNotificationChannelName: String = "Opened file"
     override val fileSessionNotificationChannelDescription: String = "Notification for opened file session"
     override val fileSessionNotificationMessage: String = "Opened file: %s"
+    override val fileSessionNotificationAutoClose: String = "Will close in %s sec."
     override val fileSessionNotificationClose: String = "Close file"
     override val appName: String = BuildConfig.APP_NAME
     override val aboutTitle: String = "About $appName"

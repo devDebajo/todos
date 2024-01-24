@@ -7,6 +7,7 @@ import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import ru.debajo.todos.app.AppUiLifecycle
 import ru.debajo.todos.app.TodosNotificationManager
 import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.data.preferences.SharedPreferencesImpl
@@ -25,6 +26,7 @@ internal val AndroidModule: Module = module {
     }
     single { get<Context>().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
     singleOf(::TodosNotificationManager)
+    singleOf(::AppUiLifecycle)
     single<ContentResolver> { get<Context>().contentResolver }
     singleOf(::ActivityResultLaunchersHolder)
     factory<FileSelector> {

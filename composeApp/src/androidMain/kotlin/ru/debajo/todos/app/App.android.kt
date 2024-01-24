@@ -39,7 +39,6 @@ internal class AndroidApp : Application(), CoroutineScope by CoroutineScope(Supe
         initForeground()
     }
 
-
     private fun initForeground() {
         val handler = Handler(Looper.getMainLooper())
         val fileSession = getFromDi<FileSession>()
@@ -86,9 +85,11 @@ internal class AppActivity : FragmentActivity() {
     private val storageFileManager: StorageFileManager by inject()
     private val navigatorMediator: NavigatorMediator by inject()
     private val securedScreenManagerImpl: SecuredScreenManagerImpl by inject()
+    private val appUiLifecycle: AppUiLifecycle by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        appUiLifecycle.onCreate()
         securedScreenManagerImpl.onCreate()
         getFromDi<ActivityResultLaunchersHolder>().activityResultLaunchers = activityResultLaunchers
         tryToExtractUri(intent)
@@ -113,6 +114,13 @@ internal class AppActivity : FragmentActivity() {
     override fun onResume() {
         super.onResume()
         commonApplication.onResume()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (isFinishing) {
+            appUiLifecycle.onDestroy()
+        }
     }
 
     private fun tryToExtractUri(intent: Intent) {
