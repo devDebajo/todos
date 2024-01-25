@@ -117,6 +117,18 @@ compose.desktop {
             properties.load(rootProject.file("project.properties").inputStream())
             packageVersion = properties.getProperty("packageVersion")
             packageName = properties.getProperty("appName")
+
+            macOS {
+                iconFile = project.file("src/commonMain/resources/logo.icns")
+            }
+
+            windows {
+                iconFile = project.file("src/commonMain/resources/logo.ico")
+            }
+
+            linux {
+                iconFile = project.file("src/commonMain/resources/logo.png")
+            }
         }
     }
 }
