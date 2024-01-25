@@ -1,7 +1,7 @@
 package ru.debajo.todos.app
 
+import HotkeyDetector
 import KeyEventHandler
-import SaveDetector
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Text
@@ -15,13 +15,10 @@ import androidx.compose.ui.window.rememberWindowState
 import io.github.aakira.napier.Napier
 import java.awt.Dimension
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import ru.debajo.todos.common.isDebug
-import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.di.CommonModule
 import ru.debajo.todos.di.JvmModule
 import ru.debajo.todos.di.inject
@@ -30,11 +27,11 @@ import ru.debajo.todos.ui.theme.AppTheme
 
 internal class JvmApplication : CoroutineScope by CoroutineScope(SupervisorJob()) {
 
-    private val databaseSnapshotSaver: DatabaseSnapshotSaver by inject()
     private val commonApplication: CommonApplication by inject()
     private val keyEventHandler: KeyEventHandler by inject()
     private val quitHelper: QuitHelper by inject()
     private val logger: ComposeAntilog by lazy { ComposeAntilog() }
+    private val hotkeyDetector: HotkeyDetector by inject()
 
     fun run() {
         onCreate()
@@ -83,7 +80,7 @@ internal class JvmApplication : CoroutineScope by CoroutineScope(SupervisorJob()
         initLog()
         commonApplication.onCreate()
         quitHelper.init()
-        initSaveHotKey()
+        keyEventHandler.register(hotkeyDetector)
     }
 
     private fun initLog() {
@@ -102,14 +99,6 @@ internal class JvmApplication : CoroutineScope by CoroutineScope(SupervisorJob()
                 CommonModule
             )
         }
-    }
-
-    private fun initSaveHotKey() {
-        var job: Job? = null
-        keyEventHandler.register(SaveDetector {
-            job?.cancel()
-            job = launch { databaseSnapshotSaver.save() }
-        })
     }
 }
 

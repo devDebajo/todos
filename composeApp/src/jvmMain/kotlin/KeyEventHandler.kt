@@ -3,8 +3,14 @@ import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 import ru.debajo.todos.app.OS
 import ru.debajo.todos.app.currentOS
+import ru.debajo.todos.ui.todolist.HotkeyListener
 
 class KeyEventHandler {
     private val listeners: MutableSet<Listener> = mutableSetOf()
@@ -26,7 +32,12 @@ class KeyEventHandler {
     }
 }
 
-class SaveDetector(private val callback: () -> Unit) : KeyEventHandler.Listener {
+class HotkeyDetector(
+    private val scope: CoroutineScope,
+) : KeyEventHandler.Listener, HotkeyListener {
+
+    private val mutableHotkeys: MutableSharedFlow<HotkeyListener.Hotkey> = MutableSharedFlow()
+    override val hotkeys: Flow<HotkeyListener.Hotkey> = mutableHotkeys.asSharedFlow()
 
     private var cmdPressed: Boolean = false
 
@@ -39,9 +50,21 @@ class SaveDetector(private val callback: () -> Unit) : KeyEventHandler.Listener 
             cmdPressed = false
         }
 
-        if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key.keyCode == Key.S.keyCode && cmdPressed) {
-            callback()
-            return true
+        if (cmdPressed && keyEvent.type == KeyEventType.KeyDown) {
+            if (keyEvent.key.keyCode == Key.S.keyCode) {
+                scope.launch { mutableHotkeys.emit(HotkeyListener.Hotkey.CmdS) }
+                return true
+            }
+
+            if (keyEvent.key.keyCode == Key.Enter.keyCode) {
+                scope.launch { mutableHotkeys.emit(HotkeyListener.Hotkey.CmdEnter) }
+                return true
+            }
+
+            if (keyEvent.key.keyCode == Key.W.keyCode) {
+                scope.launch { mutableHotkeys.emit(HotkeyListener.Hotkey.CmdW) }
+                return true
+            }
         }
 
         return false

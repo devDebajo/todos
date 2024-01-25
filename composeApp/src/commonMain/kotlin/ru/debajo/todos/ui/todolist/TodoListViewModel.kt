@@ -34,6 +34,7 @@ internal class TodoListViewModel(
     private val preferences: Preferences,
     private val navigatorMediator: NavigatorMediator,
     private val securedScreenManager: SecuredScreenManager,
+    private val hotkeyListener: HotkeyListener,
 ) : BaseViewModel<TodoListState, TodoListNews>(TodoListState()) {
 
     private val onCloseListener: (StorageFile) -> Unit = {
@@ -70,6 +71,7 @@ internal class TodoListViewModel(
                 copy(currentFileName = currentFile.nameWithExtension)
             }
         }
+        listenHotkeys()
     }
 
     override fun onDispose() {
@@ -326,6 +328,18 @@ internal class TodoListViewModel(
             }
         }
         return groups.first().id to 0
+    }
+
+    private fun listenHotkeys() {
+        screenModelScope.launch {
+            hotkeyListener.hotkeys.collect { hotkey ->
+                when (hotkey) {
+                    HotkeyListener.Hotkey.CmdS -> databaseSnapshotSaver.save()
+                    HotkeyListener.Hotkey.CmdEnter -> saveCurrentTodo()
+                    HotkeyListener.Hotkey.CmdW -> closeFile()
+                }
+            }
+        }
     }
 
     private companion object {

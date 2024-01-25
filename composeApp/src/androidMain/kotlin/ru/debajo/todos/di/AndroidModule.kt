@@ -17,6 +17,8 @@ import ru.debajo.todos.security.BiometricDelegate
 import ru.debajo.todos.security.BiometricDelegateImpl
 import ru.debajo.todos.ui.security.SecuredScreenManager
 import ru.debajo.todos.ui.security.SecuredScreenManagerImpl
+import ru.debajo.todos.ui.todolist.HotkeyListener
+import ru.debajo.todos.ui.todolist.HotkeyListenerImpl
 
 internal val AndroidModule: Module = module {
     single<Preferences> {
@@ -29,6 +31,7 @@ internal val AndroidModule: Module = module {
     singleOf(::AppUiLifecycle)
     single<ContentResolver> { get<Context>().contentResolver }
     singleOf(::ActivityResultLaunchersHolder)
+    factory<HotkeyListener> { HotkeyListenerImpl }
     factory<FileSelector> {
         val activityResultLaunchersHolder = get<ActivityResultLaunchersHolder>()
         FileSelectorImpl(
