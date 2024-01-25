@@ -1,5 +1,9 @@
 import ru.debajo.todos.app.JvmApplication
 
-fun main() {
+internal var mainIsDebug: Boolean = false
+    private set
+
+fun main(args: Array<String>) {
+    mainIsDebug = args.any { it == "-d" }
     JvmApplication().run()
 }

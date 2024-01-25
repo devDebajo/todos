@@ -121,6 +121,12 @@ compose.desktop {
     }
 }
 
+project.afterEvaluate {
+    tasks.named<JavaExec>("run").configure {
+        args = listOf("-d")
+    }
+}
+
 buildConfig {
     packageName = "ru.debajo.todos.buildconfig"
 
