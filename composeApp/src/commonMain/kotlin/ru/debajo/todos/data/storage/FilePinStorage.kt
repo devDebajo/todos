@@ -1,5 +1,6 @@
 package ru.debajo.todos.data.storage
 
+import ru.debajo.todos.auth.AppSecurityManager
 import ru.debajo.todos.auth.PinHash
 import ru.debajo.todos.data.storage.codec.FileCodecHelper
 import ru.debajo.todos.data.storage.model.StorageFile
@@ -7,10 +8,15 @@ import ru.debajo.todos.security.HashUtils
 import ru.debajo.todos.security.SecuredPreferences
 
 class FilePinStorage(
+    private val appSecurityManager: AppSecurityManager,
     private val securedPreferences: SecuredPreferences,
     private val fileCodecHelper: FileCodecHelper,
 ) {
     suspend fun get(file: StorageFile): PinHash? {
+        if (!appSecurityManager.getAuthType().secured) {
+            return null
+        }
+
         if (!fileCodecHelper.isEncrypted(file)) {
             return null
         }
@@ -19,6 +25,10 @@ class FilePinStorage(
     }
 
     suspend fun save(file: StorageFile, hash: PinHash) {
+        if (!appSecurityManager.getAuthType().secured) {
+            return
+        }
+
         if (!fileCodecHelper.isEncrypted(file)) {
             remove(file)
         } else {
