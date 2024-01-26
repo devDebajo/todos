@@ -70,7 +70,7 @@ internal class DatabaseSnapshotSaver(
         }
     }
 
-    suspend fun saveFile(file: StorageFile) {
+    private suspend fun saveFile(file: StorageFile) {
         val needToSave = needToSave(file)
         if (needToSave !is NeedToSave.Yes) {
             return

@@ -7,10 +7,20 @@ import ru.debajo.todos.data.storage.model.StorageSnapshot
 import ru.debajo.todos.data.storage.model.StorageSnapshotWithMeta
 import ru.debajo.todos.security.AesHelper
 import ru.debajo.todos.security.Base64Utils
+import ru.debajo.todos.security.EncryptionUnit
 import ru.debajo.todos.security.decryptString
 import ru.debajo.todos.security.decryptStringAsync
 import ru.debajo.todos.security.encryptStringAsync
 
+/**
+ * Tokens:
+ * 0 TDS01
+ * 1 Encrypted flag <1|0>
+ * 2 Edit timestamp in UTC (encrypted or raw Long) in base64
+ * 3 IV (comma separated, or empty line if not encrypted)
+ * 4 Salt (or empty line if not encrypted)
+ * 5 File content. Encrypted Json or raw Json in base64
+ */
 class StorageFileCodec01(
     private val json: Json,
     private val tokensProvider: TokensProvider,
@@ -27,10 +37,10 @@ class StorageFileCodec01(
     }
 
     override suspend fun decode(file: StorageFile, pinHash: PinHash?): StorageSnapshotWithMeta {
-        val tokens = tokensProvider(file).drop(1).take(3).toList()
+        val tokens = tokensProvider(file).drop(1).take(5).toList()
         val encrypted = tokens[0].toEncryptedFlagStrict()
         val timestamp = tokens[1].toTimestamp(encrypted, pinHash)
-        val rawContent = tokens[2]
+        val rawContent = tokens[4]
         val snapshotJson = if (encrypted) {
             AesHelper.decryptStringAsync(pinHash!!.pinHash, rawContent)
         } else {
@@ -41,10 +51,13 @@ class StorageFileCodec01(
             snapshot = snapshot,
             absolutePath = file.absolutePath,
             editTimestampUtc = timestamp,
-            encrypted = encrypted,
+            encryptionUnit = if (encrypted) {
+                EncryptionUnit(tokens[2].toIv(), tokens[3])
+            } else {
+                null
+            }
         )
     }
-
 
     override suspend fun encode(snapshot: StorageSnapshotWithMeta, file: StorageFile, pinHash: PinHash?): StorageFileExternalContent {
         if (snapshot.encrypted) {
@@ -61,6 +74,8 @@ class StorageFileCodec01(
                 Base64Utils.encodeString(snapshot.editTimestampUtc.toString())
             }
         )
+        stringBuilder.appendLine(snapshot.encryptionUnit?.iv?.joinToString(separator = ",") { it.toString() }.orEmpty())
+        stringBuilder.appendLine(snapshot.encryptionUnit?.salt.orEmpty())
         stringBuilder.appendLine(
             if (snapshot.encrypted) {
                 AesHelper.encryptStringAsync(pinHash!!.pinHash, rawData)
@@ -69,6 +84,13 @@ class StorageFileCodec01(
             }
         )
         return stringBuilder.toString()
+    }
+
+    private fun StorageFileToken.toIv(): ByteArray {
+        if (isEmpty()) {
+            return ByteArray(0)
+        }
+        return split(",").map { it.toByte() }.toByteArray()
     }
 
     private fun StorageFileToken.toEncryptedFlagStrict(): Boolean {
