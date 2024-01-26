@@ -320,7 +320,12 @@ internal class FileConfigViewModel(
             if (storageFileManager.isSelectLastFile()) {
                 val lastFile = storageFileManager.loadLastFile()
                 if (lastFile != null && storageFileManager.selectFileFromList(lastFile)) {
-                    navigatorMediator.replaceAll(AppScreen.List)
+                    // TODO унифицировать
+                    if (databaseSnapshotSaver.load()) {
+                        navigatorMediator.replaceAll(AppScreen.List)
+                    } else {
+                        sendNews(FileConfigNews.Toast(R.strings.someErrorWithFile))
+                    }
                 }
             }
         }

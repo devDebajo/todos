@@ -311,6 +311,7 @@ internal class TodoListViewModel(
         }
     }
 
+    // TODO унифицировать
     fun closeFile() {
         updateState { copy(isBlockingLoading = true) }
         screenModelScope.launch {
