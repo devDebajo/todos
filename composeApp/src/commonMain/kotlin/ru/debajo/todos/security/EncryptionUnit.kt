@@ -19,4 +19,12 @@ data class EncryptionUnit(
         result = 31 * result + salt.hashCode()
         return result
     }
+
+    companion object {
+        fun generateNew(): EncryptionUnit = EncryptionUnit(iv = randomIV(), salt = randomSalt())
+    }
 }
+
+expect fun randomSalt(): String
+
+expect fun randomIV(): ByteArray

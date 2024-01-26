@@ -1,6 +1,7 @@
 package ru.debajo.todos.java.utils
 
 import java.nio.charset.Charset
+import java.security.SecureRandom
 import java.util.concurrent.ConcurrentHashMap
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
@@ -11,6 +12,8 @@ import javax.crypto.spec.SecretKeySpec
 
 object JvmAesHelper {
 
+    private const val blockSize: Int = 16
+    private val secureRandom: SecureRandom by lazy { SecureRandom() }
     private val keyCache: ConcurrentHashMap<String, SecretKey> = ConcurrentHashMap()
 
     fun encryptBytes(secret: String, rawBytes: ByteArray): ByteArray {
@@ -25,6 +28,20 @@ object JvmAesHelper {
         val cipher = createCipher()
         cipher.init(Cipher.DECRYPT_MODE, secretKey, IV)
         return cipher.doFinal(encryptedBytes)
+    }
+
+    fun generateIV(blockSize: Int = this.blockSize): ByteArray {
+        val result = ByteArray(blockSize)
+        secureRandom.nextBytes(result)
+        return result
+    }
+
+    fun generateSalt(size: Int = 30): String {
+        val builder = StringBuilder()
+        repeat(size) {
+            builder.append(secureRandom.nextInt('0'.code, 'z'.code).toChar())
+        }
+        return builder.toString()
     }
 
     private fun createKey(secret: String): SecretKey {

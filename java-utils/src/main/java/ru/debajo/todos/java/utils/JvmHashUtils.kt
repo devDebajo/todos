@@ -1,7 +1,6 @@
 package ru.debajo.todos.java.utils
 
 import java.security.MessageDigest
-import java.security.SecureRandom
 
 // https://www.baeldung.com/sha-256-hashing-java
 object JvmHashUtils {
@@ -13,7 +12,6 @@ object JvmHashUtils {
     }
 
     private fun bytesToHex(hash: ByteArray): String {
-        SecureRandom.getInstance()
         val hexString = StringBuilder(2 * hash.size)
         for (i in hash.indices) {
             val hex = Integer.toHexString(0xff and hash[i].toInt())
