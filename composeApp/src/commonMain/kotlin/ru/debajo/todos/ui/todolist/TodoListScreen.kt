@@ -1,5 +1,6 @@
 package ru.debajo.todos.ui.todolist
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -319,6 +320,7 @@ private fun TodosListWithPlaceholder(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun TodosList(
     modifier: Modifier = Modifier,
@@ -342,7 +344,7 @@ private fun TodosList(
                 itemContent = { index ->
                     DismissableTodoCard(
                         item = state.actual[index],
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().animateItemPlacement(),
                         onContextClick = onContextClick
                     )
                 }
@@ -350,7 +352,10 @@ private fun TodosList(
 
             if (state.done.isNotEmpty()) {
                 item {
-                    Text(text = R.strings.doneDivider)
+                    Text(
+                        modifier = Modifier.fillMaxWidth().animateItemPlacement(),
+                        text = R.strings.doneDivider
+                    )
                 }
             }
 
@@ -362,7 +367,7 @@ private fun TodosList(
                     DismissableTodoCard(
                         item = state.done[index],
                         onContextClick = onContextClick,
-                        modifier = Modifier.fillMaxWidth().alpha(0.5f),
+                        modifier = Modifier.fillMaxWidth().alpha(0.5f).animateItemPlacement(),
                     )
                 }
             )

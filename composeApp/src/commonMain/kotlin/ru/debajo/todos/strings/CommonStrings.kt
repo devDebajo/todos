@@ -4,6 +4,7 @@ interface CommonStrings {
     val fileSessionNotificationChannelName: String
     val fileSessionNotificationChannelDescription: String
     val fileSessionNotificationMessage: String
+    val fileSessionNotificationChanged: String
     val fileSessionNotificationAutoClose: String
     val fileSessionNotificationClose: String
 

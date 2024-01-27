@@ -1,6 +1,8 @@
 package ru.debajo.todos.data.db
 
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import ru.debajo.todos.data.db.dao.InMemoryTable
@@ -16,6 +18,8 @@ class FileSession {
     private val onCloseListeners: MutableSet<suspend (StorageFile) -> Unit> = mutableSetOf()
 
     private val currentFileFlow: MutableStateFlow<StorageFile?> = MutableStateFlow(null)
+    private val currentFileEdited: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val edited: StateFlow<Boolean> = currentFileEdited.asStateFlow()
 
     val isOpened: Boolean
         inline get() = currentFile != null
@@ -65,6 +69,7 @@ class FileSession {
     suspend fun close() {
         val file = currentFile
 
+        currentFileEdited.value = false
         currentFileFlow.value = null
         dbTodoGroupTableInternal = null
         dbTodoGroupToItemLinkTableInternal = null
@@ -102,6 +107,7 @@ class FileSession {
 
     private suspend fun onUpdate() {
         if (notifyUpdate) {
+            currentFileEdited.value = true
             onUpdateListeners.forEach { it.invoke() }
         }
     }

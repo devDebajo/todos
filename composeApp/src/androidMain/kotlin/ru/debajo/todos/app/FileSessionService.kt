@@ -37,8 +37,9 @@ internal class FileSessionService : Service(), CoroutineScope by CoroutineScope(
     override fun onCreate() {
         super.onCreate()
         notificationManager.ensureChannelCreated(TodosNotificationChannel.FileSession)
-        startForeground(buildNotification())
+        startForeground(buildNotification(edited = false))
         listenUi()
+        listenFileSession()
     }
 
     override fun onDestroy() {
@@ -51,7 +52,7 @@ internal class FileSessionService : Service(), CoroutineScope by CoroutineScope(
             appUiLifecycle.hasUi.collectLatest { hasUi ->
                 if (!hasUi) {
                     ticker(NOTIFICATION_ALIVE_WITHOUT_UI_SEC) {
-                        notificationManager.notify(NOTIFICATION_ID, buildNotification(it))
+                        notificationManager.notify(NOTIFICATION_ID, buildNotification(fileSession.edited.value, it))
                     }
                     withContext(IO) {
                         databaseSnapshotSaver.save()
@@ -59,8 +60,16 @@ internal class FileSessionService : Service(), CoroutineScope by CoroutineScope(
                         fileSession.close()
                     }
                 } else {
-                    notificationManager.notify(NOTIFICATION_ID, buildNotification())
+                    notificationManager.notify(NOTIFICATION_ID, buildNotification(fileSession.edited.value))
                 }
+            }
+        }
+    }
+
+    private fun listenFileSession() {
+        launch {
+            fileSession.edited.collect { edited ->
+                notificationManager.notify(NOTIFICATION_ID, buildNotification(edited))
             }
         }
     }
@@ -76,10 +85,14 @@ internal class FileSessionService : Service(), CoroutineScope by CoroutineScope(
         }
     }
 
-    private fun buildNotification(leftSeconds: Int? = null): Notification {
+    private fun buildNotification(edited: Boolean, leftSeconds: Int? = null): Notification {
+        var title = CommonR.strings.fileSessionNotificationMessage.formatKmp(fileSession.currentFile?.nameWithExtension.toString())
+        if (edited) {
+            title += CommonR.strings.fileSessionNotificationChanged
+        }
         val builder = notificationManager.newNotificationBuilder(TodosNotificationChannel.FileSession)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle(CommonR.strings.fileSessionNotificationMessage.formatKmp(fileSession.currentFile?.nameWithExtension.toString()))
+            .setContentTitle(title)
 
         if (leftSeconds != null) {
             builder.setContentText(CommonR.strings.fileSessionNotificationAutoClose.formatKmp(leftSeconds.toString()))
