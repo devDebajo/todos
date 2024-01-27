@@ -1,6 +1,7 @@
 package ru.debajo.todos.domain
 
 import kotlinx.coroutines.flow.Flow
+import ru.debajo.todos.common.UUID
 
 class TodoItemUseCase(
     private val todoItemRepository: TodoItemRepository,
@@ -13,11 +14,11 @@ class TodoItemUseCase(
     }
 
     suspend fun createTodo(text: String, groupId: GroupId): TodoItem {
-        val todo = todoItemRepository.create(text)
+        val id = UUID.randomUUID()
         if (!groupId.isSyntheticGroup()) {
-            todoGroupRepository.link(groupId, todo.id)
+            todoGroupRepository.link(groupId, TodoId(id))
         }
-        return todo
+        return todoItemRepository.create(id, text)
     }
 
     suspend fun updateDone(todoId: TodoId, done: Boolean) {

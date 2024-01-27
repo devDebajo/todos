@@ -19,8 +19,8 @@ class TodoItemRepository(
         }
     }
 
-    suspend fun create(text: String): TodoItem {
-        val dbItem = createDbTodoItem(text = text)
+    suspend fun create(id: UUID, text: String): TodoItem {
+        val dbItem = createDbTodoItem(id = id, text = text)
         dbTodoItemDao.save(dbItem)
         return dbItem.toDomain()
     }
@@ -55,10 +55,7 @@ class TodoItemRepository(
         )
     }
 
-    private fun createDbTodoItem(
-        id: UUID = UUID.randomUUID(),
-        text: String,
-    ): DbTodoItem {
+    private fun createDbTodoItem(id: UUID, text: String): DbTodoItem {
         val now = Clock.System.now()
         return DbTodoItem(
             id = id,
