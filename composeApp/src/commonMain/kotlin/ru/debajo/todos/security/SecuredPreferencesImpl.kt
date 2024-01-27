@@ -19,20 +19,20 @@ internal class SecuredPreferencesImpl(
     coroutineScope: CoroutineScope,
 ) : SecuredPreferences {
 
-    private val encryptionUnit: MutableStateFlow<Pair<ByteArray, String>?> = MutableStateFlow(null)
+    private val encryptionUnit: MutableStateFlow<Pair<IV, Salt>?> = MutableStateFlow(null)
 
     init {
         coroutineScope.launch(Default) {
             var iv = preferences.getString(IV_KEY)?.ivFromString()
             if (iv == null) {
-                iv = randomIV()
+                iv = generateIV()
                 preferences.putString(IV_KEY, iv.ivToString())
             }
 
-            var salt = preferences.getString(SALT_KEY)
+            var salt = preferences.getString(SALT_KEY)?.asSalt()
             if (salt == null) {
-                salt = randomSalt()
-                preferences.putString(SALT_KEY, salt)
+                salt = generateSalt()
+                preferences.putString(SALT_KEY, salt.salt)
             }
 
             encryptionUnit.value = iv to salt
@@ -95,7 +95,7 @@ internal class SecuredPreferencesImpl(
         }
     }
 
-    private suspend fun awaitEncryptionUnit(): Pair<ByteArray, String> {
+    private suspend fun awaitEncryptionUnit(): Pair<IV, Salt> {
         return encryptionUnit.filterNotNull().first()
     }
 

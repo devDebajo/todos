@@ -1,13 +1,17 @@
 package ru.debajo.todos.security
 
-expect fun randomSalt(): String
-
 expect fun randomIV(): ByteArray
 
-fun ByteArray.ivToString(): String {
-    return joinToString(separator = ",") { it.toString() }
+expect fun randomSalt(): String
+
+fun generateIV(): IV = IV(randomIV())
+
+fun generateSalt(): Salt = Salt(randomSalt())
+
+fun IV.ivToString(): String {
+    return bytes.joinToString(separator = ",") { it.toString() }
 }
 
-fun String.ivFromString(): ByteArray {
-    return split(",").map { it.toByte() }.toByteArray()
+fun String.ivFromString(): IV {
+    return IV(split(",").map { it.toByte() }.toByteArray())
 }

@@ -11,26 +11,26 @@ expect object AesHelper {
     fun decryptBytes(secret: String, encryptedBytes: ByteArray, iv: ByteArray, salt: String): ByteArray
 }
 
-suspend fun AesHelper.encryptStringAsync(secret: String, rawData: String, iv: ByteArray, salt: String): String {
+suspend fun AesHelper.encryptStringAsync(secret: String, rawData: String, iv: IV, salt: Salt): String {
     return withContext(Default) {
         encryptString(secret, rawData, iv, salt)
     }
 }
 
-suspend fun AesHelper.decryptStringAsync(secret: String, encryptedData: String, iv: ByteArray, salt: String): String {
+suspend fun AesHelper.decryptStringAsync(secret: String, encryptedData: String, iv: IV, salt: Salt): String {
     return withContext(Default) {
         decryptString(secret, encryptedData, iv, salt)
     }
 }
 
-fun AesHelper.encryptString(secret: String, rawData: String, iv: ByteArray, salt: String): String {
+fun AesHelper.encryptString(secret: String, rawData: String, iv: IV, salt: Salt): String {
     val rawBytes = rawData.toByteArray()
-    val encryptedBytes = encryptBytes(secret, rawBytes, iv, salt)
+    val encryptedBytes = encryptBytes(secret, rawBytes, iv.bytes, salt.salt)
     return Base64Utils.encode(encryptedBytes)
 }
 
-fun AesHelper.decryptString(secret: String, encryptedData: String, iv: ByteArray, salt: String): String {
+fun AesHelper.decryptString(secret: String, encryptedData: String, iv: IV, salt: Salt): String {
     val encryptedBytes = Base64Utils.decode(encryptedData)
-    val decryptedBytes = decryptBytes(secret, encryptedBytes, iv, salt)
+    val decryptedBytes = decryptBytes(secret, encryptedBytes, iv.bytes, salt.salt)
     return decryptedBytes.createString()
 }

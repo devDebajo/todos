@@ -7,13 +7,16 @@ import ru.debajo.todos.data.storage.model.StorageSnapshot
 import ru.debajo.todos.data.storage.model.StorageSnapshotWithMeta
 import ru.debajo.todos.security.AesHelper
 import ru.debajo.todos.security.Base64Utils
+import ru.debajo.todos.security.IV
+import ru.debajo.todos.security.Salt
+import ru.debajo.todos.security.asSalt
 import ru.debajo.todos.security.decryptString
 import ru.debajo.todos.security.decryptStringAsync
 import ru.debajo.todos.security.encryptStringAsync
+import ru.debajo.todos.security.generateIV
+import ru.debajo.todos.security.generateSalt
 import ru.debajo.todos.security.ivFromString
 import ru.debajo.todos.security.ivToString
-import ru.debajo.todos.security.randomIV
-import ru.debajo.todos.security.randomSalt
 
 /**
  * Tokens:
@@ -37,7 +40,7 @@ class StorageFileCodec01(
         require(tokens.size == 2)
         val encrypted = tokens[0].toEncryptedFlagStrict()
         val iv = tokens[1].ivFromString()
-        val salt = tokens[2]
+        val salt = tokens[2].asSalt()
         return tokens[4].toTimestamp(encrypted, pinHash, iv, salt)
     }
 
@@ -45,7 +48,7 @@ class StorageFileCodec01(
         val tokens = tokensProvider(file).drop(1).take(5).toList()
         val encrypted = tokens[0].toEncryptedFlagStrict()
         val iv = tokens[1].ivFromString()
-        val salt = tokens[2]
+        val salt = tokens[2].asSalt()
         val timestamp = tokens[3].toTimestamp(encrypted, pinHash, iv, salt)
         val rawContent = tokens[4]
         val snapshotJson = if (encrypted) {
@@ -66,21 +69,21 @@ class StorageFileCodec01(
         if (snapshot.encrypted) {
             requireNotNull(pinHash)
         }
-        val iv: ByteArray
-        val salt: String
+        val iv: IV
+        val salt: Salt
         if (snapshot.encrypted) {
-            iv = randomIV()
-            salt = randomSalt()
+            iv = generateIV()
+            salt = generateSalt()
         } else {
-            iv = EmptyByteArray
-            salt = ""
+            iv = IV(EmptyByteArray)
+            salt = "".asSalt()
         }
         val rawData = json.encodeToString(StorageSnapshot.serializer(), snapshot.snapshot)
         val stringBuilder = StringBuilder()
         stringBuilder.appendLine(Tds01)
         stringBuilder.appendLine(if (snapshot.encrypted) "1" else "0")
         stringBuilder.appendLine(iv.ivToString())
-        stringBuilder.appendLine(salt)
+        stringBuilder.appendLine(salt.salt)
         stringBuilder.appendLine(
             if (snapshot.encrypted) {
                 AesHelper.encryptStringAsync(
@@ -114,8 +117,8 @@ class StorageFileCodec01(
     private fun StorageFileToken.toTimestamp(
         isEncrypted: Boolean,
         pinHash: PinHash?,
-        iv: ByteArray,
-        salt: String,
+        iv: IV,
+        salt: Salt,
     ): Long {
         return if (isEncrypted) {
             AesHelper.decryptString(pinHash!!.pinHash, this, iv, salt).toLong()
