@@ -1,6 +1,11 @@
 package ru.debajo.todos.security
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
@@ -11,20 +16,43 @@ internal class SecuredPreferencesImpl(
     private val secretProvider: suspend () -> String,
     private val preferences: Preferences,
     private val json: Json,
+    coroutineScope: CoroutineScope,
 ) : SecuredPreferences {
 
+    private val encryptionUnit: MutableStateFlow<Pair<ByteArray, String>?> = MutableStateFlow(null)
+
+    init {
+        coroutineScope.launch(Default) {
+            var iv = preferences.getString(IV_KEY)?.ivFromString()
+            if (iv == null) {
+                iv = randomIV()
+                preferences.putString(IV_KEY, iv.ivToString())
+            }
+
+            var salt = preferences.getString(SALT_KEY)
+            if (salt == null) {
+                salt = randomSalt()
+                preferences.putString(SALT_KEY, salt)
+            }
+
+            encryptionUnit.value = iv to salt
+        }
+    }
+
     override suspend fun putString(key: String, value: String) {
+        val (iv, salt) = awaitEncryptionUnit()
         val secret = secretProvider()
-        val encryptedKey = AesHelper.encryptStringAsync(secret, key)
-        val encryptedValue = AesHelper.encryptStringAsync(secret, value)
+        val encryptedKey = AesHelper.encryptStringAsync(secret, key, iv, salt)
+        val encryptedValue = AesHelper.encryptStringAsync(secret, value, iv, salt)
         preferences.putString(encryptedKey, encryptedValue)
     }
 
     override suspend fun getString(key: String): String? {
+        val (iv, salt) = awaitEncryptionUnit()
         val secret = secretProvider()
-        val encryptedKey = AesHelper.encryptStringAsync(secret, key)
+        val encryptedKey = AesHelper.encryptStringAsync(secret, key, iv, salt)
         val encryptedValue = preferences.getString(encryptedKey) ?: return null
-        return AesHelper.decryptStringAsync(secret, encryptedValue)
+        return AesHelper.decryptStringAsync(secret, encryptedValue, iv, salt)
     }
 
     override suspend fun putStringList(key: String, value: List<String>): Unit = putString(key, encodeStringList(value))
@@ -47,8 +75,9 @@ internal class SecuredPreferencesImpl(
     override suspend fun getBoolean(key: String): Boolean? = getString(key)?.toBooleanStrictOrNull()
 
     override suspend fun remove(key: String) {
+        val (iv, salt) = awaitEncryptionUnit()
         val secret = secretProvider()
-        val encryptedKey = AesHelper.encryptStringAsync(secret, key)
+        val encryptedKey = AesHelper.encryptStringAsync(secret, key, iv, salt)
         preferences.remove(encryptedKey)
     }
 
@@ -64,5 +93,14 @@ internal class SecuredPreferencesImpl(
                 this@SecuredPreferencesImpl.json.decodeFromString(ListSerializer(String.serializer()), json)
             }.getOrNull()
         }
+    }
+
+    private suspend fun awaitEncryptionUnit(): Pair<ByteArray, String> {
+        return encryptionUnit.filterNotNull().first()
+    }
+
+    private companion object {
+        const val IV_KEY: String = "spi"
+        const val SALT_KEY: String = "sps"
     }
 }

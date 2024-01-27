@@ -14,14 +14,14 @@ object JvmAesHelper {
     const val blockSize: Int = 16
     private val keyCache: ConcurrentHashMap<String, SecretKey> = ConcurrentHashMap()
 
-    fun encryptBytes(secret: String, rawBytes: ByteArray, iv: ByteArray = IV, salt: String = SALT): ByteArray {
+    fun encryptBytes(secret: String, rawBytes: ByteArray, iv: ByteArray, salt: String): ByteArray {
         val secretKey = createKey(secret, salt)
         val cipher = createCipher()
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, IvParameterSpec(iv))
         return cipher.doFinal(rawBytes)
     }
 
-    fun decryptBytes(secret: String, encryptedBytes: ByteArray, iv: ByteArray = IV, salt: String = SALT): ByteArray {
+    fun decryptBytes(secret: String, encryptedBytes: ByteArray, iv: ByteArray, salt: String): ByteArray {
         val secretKey = createKey(secret, salt)
         val cipher = createCipher()
         cipher.init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(iv))
@@ -37,7 +37,4 @@ object JvmAesHelper {
     }
 
     private fun createCipher(): Cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-
-    private val IV: ByteArray = byteArrayOf(-44, -1, -65, -68, 61, 67, -37, 94, 122, 24, -48, 77, 72, 116, 115, 6)
-    private const val SALT: String = "hjg4gh5j43fgfuiyfdsf564816723tghvghf65f678astgy43i25grjkh"
 }

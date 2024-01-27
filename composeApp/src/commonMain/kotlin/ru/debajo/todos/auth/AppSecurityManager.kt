@@ -11,6 +11,10 @@ import ru.debajo.todos.security.EncryptedPinHash
 import ru.debajo.todos.security.HashUtils
 import ru.debajo.todos.security.encryptStringAsync
 import ru.debajo.todos.security.hashPin
+import ru.debajo.todos.security.ivFromString
+import ru.debajo.todos.security.ivToString
+import ru.debajo.todos.security.randomIV
+import ru.debajo.todos.security.randomSalt
 
 class AppSecurityManager(
     private val preferences: Preferences,
@@ -119,13 +123,19 @@ class AppSecurityManager(
     }
 
     private suspend fun savePinHashHack(pinHash: PinHash) {
-        val encryptedHack = AesHelper.encryptStringAsync(pinHash.pinHash, PIN_HASH_HACK)
+        val iv = randomIV()
+        val salt = randomSalt()
+        val encryptedHack = AesHelper.encryptStringAsync(pinHash.pinHash, PIN_HASH_HACK, iv, salt)
         preferences.putString(PIN_HASH_HACK_KEY, encryptedHack)
+        preferences.putString(PIN_HASH_HACK_IV_KEY, iv.ivToString())
+        preferences.putString(PIN_HASH_HACK_SALT_KEY, salt)
     }
 
     private suspend fun isHashValid(pinHash: PinHash): Boolean {
         val encryptedHackFromPrefs = preferences.getString(PIN_HASH_HACK_KEY) ?: return false
-        val encryptedHack = AesHelper.encryptStringAsync(pinHash.pinHash, PIN_HASH_HACK)
+        val iv = preferences.getString(PIN_HASH_HACK_IV_KEY)?.ivFromString() ?: return false
+        val salt = preferences.getString(PIN_HASH_HACK_SALT_KEY) ?: return false
+        val encryptedHack = AesHelper.encryptStringAsync(pinHash.pinHash, PIN_HASH_HACK, iv, salt)
         return encryptedHackFromPrefs == encryptedHack
     }
 
@@ -143,6 +153,8 @@ class AppSecurityManager(
         const val PIN_HASH_HACK: String = "PIN_HASH_HACK" // do not change
         const val AUTH_TYPE_KEY: String = "at"
         const val PIN_HASH_HACK_KEY: String = "phh"
+        const val PIN_HASH_HACK_IV_KEY: String = "phhi"
+        const val PIN_HASH_HACK_SALT_KEY: String = "phhs"
         const val ENCRYPTED_HASH_KEY: String = "eh"
     }
 }

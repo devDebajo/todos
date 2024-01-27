@@ -59,12 +59,13 @@ val CommonModule: Module = module {
     factoryOf(::PinViewModel)
     factoryOf(::NewPinViewModel)
 
-    factory<SecuredPreferences> {
+    single<SecuredPreferences> {
         val securityManager = get<AppSecurityManager>()
         SecuredPreferencesImpl(
             secretProvider = { securityManager.awaitCurrentPinHash().pinHash },
             preferences = get(),
-            json = get()
+            json = get(),
+            coroutineScope = get(),
         )
     }
     singleOf(::DbTodoGroupDao)
