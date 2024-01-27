@@ -25,6 +25,7 @@ import ru.debajo.todos.data.storage.createFileHelper
 import ru.debajo.todos.domain.TodoGroupRepository
 import ru.debajo.todos.domain.TodoItemRepository
 import ru.debajo.todos.domain.TodoItemUseCase
+import ru.debajo.todos.security.PinHasher
 import ru.debajo.todos.security.SecuredPreferences
 import ru.debajo.todos.security.SecuredPreferencesImpl
 import ru.debajo.todos.ui.NavigatorMediator
@@ -58,6 +59,7 @@ val CommonModule: Module = module {
     factoryOf(::SplashViewModel)
     factoryOf(::PinViewModel)
     factoryOf(::NewPinViewModel)
+    singleOf(::PinHasher)
 
     single<SecuredPreferences> {
         val securityManager = get<AppSecurityManager>()

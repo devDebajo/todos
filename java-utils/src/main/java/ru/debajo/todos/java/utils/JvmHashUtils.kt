@@ -6,7 +6,13 @@ import java.security.MessageDigest
 object JvmHashUtils {
     fun getHash(input: String): String {
         val messageDigest = MessageDigest.getInstance("SHA-256")
-        messageDigest.update(SALT.toByteArrayJvm())
+        val digest = messageDigest.digest(input.toByteArrayJvm())
+        return bytesToHex(digest)
+    }
+
+    fun getHash(input: String, salt: String): String {
+        val messageDigest = MessageDigest.getInstance("SHA-256")
+        messageDigest.update(salt.toByteArrayJvm())
         val digest = messageDigest.digest(input.toByteArrayJvm())
         return bytesToHex(digest)
     }
@@ -22,6 +28,4 @@ object JvmHashUtils {
         }
         return hexString.toString()
     }
-
-    private const val SALT: String = "hfdjhkj345hjkg534jhkgryfdrt78sa5678dsatfg3jhgdsfagfiusgadjhygr3uy24t32768gtdsytfysa"
 }

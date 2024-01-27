@@ -24,8 +24,7 @@ import ru.debajo.todos.data.storage.FileSelector
 import ru.debajo.todos.data.storage.StorageFilesList
 import ru.debajo.todos.data.storage.codec.FileCodecHelper
 import ru.debajo.todos.data.storage.model.StorageFile
-import ru.debajo.todos.security.HashUtils
-import ru.debajo.todos.security.hashPin
+import ru.debajo.todos.security.PinHasher
 import ru.debajo.todos.strings.R
 import ru.debajo.todos.ui.NavigatorMediator
 
@@ -39,6 +38,7 @@ internal class FileConfigViewModel(
     private val databaseSnapshotSaver: DatabaseSnapshotSaver,
     private val filePinStorage: FilePinStorage,
     private val fileCodecHelper: FileCodecHelper,
+    private val pinHasher: PinHasher,
 ) : BaseViewModel<FileConfigState, FileConfigNews>(FileConfigState()) {
 
     override fun onLaunch() {
@@ -160,7 +160,7 @@ internal class FileConfigViewModel(
 
         val pin = Pin(createEncryptedFileDialogState.pin1.text)
         screenModelScope.launch(Dispatchers.IO) {
-            val pinHash = HashUtils.hashPin(pin)
+            val pinHash = pinHasher.hashPin(pin)
             val file = prepareEmptyFile(fileSelector.create(DefaultFileName), pinHash)
             if (file != null) {
                 withLoading {
@@ -216,7 +216,7 @@ internal class FileConfigViewModel(
         val pin = Pin(enterFilePinDialogState.pin.text)
         screenModelScope.launch(Default) {
             withLoading {
-                val pinHash = HashUtils.hashPin(pin)
+                val pinHash = pinHasher.hashPin(pin)
                 val domainFile = enterFilePinDialogState.file.toStorageFile()
                 if (fileCodecHelper.canDecryptFile(domainFile, pinHash)) {
                     updateState { copy(enterFilePinDialogState = null) }
@@ -384,18 +384,18 @@ internal class FileConfigViewModel(
                     when (changeFilePinState.mode) {
                         ChangeFilePinState.Mode.AddNew -> databaseSnapshotSaver.changePin(
                             file = domainFile,
-                            newPinHash = HashUtils.hashPin(Pin(changeFilePinState.pin2.text)),
+                            newPinHash = pinHasher.hashPin(Pin(changeFilePinState.pin2.text)),
                         )
 
                         ChangeFilePinState.Mode.Remove -> databaseSnapshotSaver.changePin(
                             file = domainFile,
-                            oldPinHash = HashUtils.hashPin(Pin(changeFilePinState.pin1.text)),
+                            oldPinHash = pinHasher.hashPin(Pin(changeFilePinState.pin1.text)),
                         )
 
                         ChangeFilePinState.Mode.Change -> databaseSnapshotSaver.changePin(
                             file = domainFile,
-                            oldPinHash = HashUtils.hashPin(Pin(changeFilePinState.pin1.text)),
-                            newPinHash = HashUtils.hashPin(Pin(changeFilePinState.pin2.text)),
+                            oldPinHash = pinHasher.hashPin(Pin(changeFilePinState.pin1.text)),
+                            newPinHash = pinHasher.hashPin(Pin(changeFilePinState.pin2.text)),
                         )
                     }
                     hideChangeFilePinDialog()
@@ -433,8 +433,8 @@ internal class FileConfigViewModel(
     private suspend fun ChangeFilePinState.validate(file: StorageFile): Boolean {
         return when (mode) {
             ChangeFilePinState.Mode.AddNew -> pin2.text == pin3.text
-            ChangeFilePinState.Mode.Remove -> fileCodecHelper.canDecryptFile(file, HashUtils.hashPin(Pin(pin1.text)))
-            ChangeFilePinState.Mode.Change -> pin2.text == pin3.text && fileCodecHelper.canDecryptFile(file, HashUtils.hashPin(Pin(pin1.text)))
+            ChangeFilePinState.Mode.Remove -> fileCodecHelper.canDecryptFile(file, pinHasher.hashPin(Pin(pin1.text)))
+            ChangeFilePinState.Mode.Change -> pin2.text == pin3.text && fileCodecHelper.canDecryptFile(file, pinHasher.hashPin(Pin(pin1.text)))
         }
     }
 

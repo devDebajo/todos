@@ -9,9 +9,8 @@ import ru.debajo.todos.auth.AppSecurityManager
 import ru.debajo.todos.auth.Pin
 import ru.debajo.todos.common.BaseNewsLessViewModel
 import ru.debajo.todos.security.BiometricDelegate
-import ru.debajo.todos.security.HashUtils
+import ru.debajo.todos.security.PinHasher
 import ru.debajo.todos.security.encryptPinHash
-import ru.debajo.todos.security.hashPin
 import ru.debajo.todos.ui.NavigatorMediator
 import ru.debajo.todos.ui.pin.PinSize
 
@@ -20,6 +19,7 @@ internal class NewPinViewModel(
     private val biometricDelegate: BiometricDelegate,
     private val securityManager: AppSecurityManager,
     private val navigatorMediator: NavigatorMediator,
+    private val pinHasher: PinHasher,
 ) : BaseNewsLessViewModel<NewPinState>(NewPinState()) {
 
     fun onButtonClick(symbol: Int) {
@@ -65,7 +65,7 @@ internal class NewPinViewModel(
         }
 
         val pin = Pin(state.pin1)
-        val pinHash = HashUtils.hashPin(pin)
+        val pinHash = pinHasher.hashPin(pin)
         securityManager.configurePinAuthType(pinHash)
         navigatorMediator.replaceAll(AppScreen.SelectFile())
     }
@@ -82,7 +82,7 @@ internal class NewPinViewModel(
         updateState { copy(biometricDialogVisible = false) }
         screenModelScope.launch {
             val pin = Pin(state.value.pin1)
-            val pinHash = HashUtils.hashPin(pin)
+            val pinHash = pinHasher.hashPin(pin)
             val encryptedPinHash = biometricDelegate.encryptPinHash(pinHash)
             if (encryptedPinHash == null) {
                 securityManager.configurePinAuthType(pinHash)
@@ -97,7 +97,7 @@ internal class NewPinViewModel(
         updateState { copy(biometricDialogVisible = false) }
         screenModelScope.launch {
             val pin = Pin(state.value.pin1)
-            securityManager.configurePinAuthType(HashUtils.hashPin(pin))
+            securityManager.configurePinAuthType(pinHasher.hashPin(pin))
             navigatorMediator.replaceAll(AppScreen.SelectFile())
         }
     }

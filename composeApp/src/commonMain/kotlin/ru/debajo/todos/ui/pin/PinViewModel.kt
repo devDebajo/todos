@@ -11,8 +11,7 @@ import ru.debajo.todos.auth.Pin
 import ru.debajo.todos.auth.PinHash
 import ru.debajo.todos.common.BaseNewsLessViewModel
 import ru.debajo.todos.security.BiometricDelegate
-import ru.debajo.todos.security.HashUtils
-import ru.debajo.todos.security.hashPin
+import ru.debajo.todos.security.PinHasher
 import ru.debajo.todos.ui.NavigatorMediator
 
 @Stable
@@ -20,6 +19,7 @@ internal class PinViewModel(
     private val biometricDelegate: BiometricDelegate,
     private val securityManager: AppSecurityManager,
     private val navigatorMediator: NavigatorMediator,
+    private val pinHasher: PinHasher,
 ) : BaseNewsLessViewModel<PinState>(PinState()) {
 
     override fun onLaunch() {
@@ -56,7 +56,7 @@ internal class PinViewModel(
         if (newPin.length == PinSize) {
             screenModelScope.launch(Default) {
                 val pin = Pin(state.value.pin)
-                val pinHash = HashUtils.hashPin(pin)
+                val pinHash = pinHasher.hashPin(pin)
                 if (securityManager.offer(pinHash)) {
                     navigatorMediator.replaceAll(AppScreen.SelectFile(true))
                 } else {

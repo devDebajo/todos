@@ -8,12 +8,10 @@ import kotlinx.coroutines.launch
 import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.security.AesHelper
 import ru.debajo.todos.security.EncryptedPinHash
-import ru.debajo.todos.security.HashUtils
 import ru.debajo.todos.security.asSalt
 import ru.debajo.todos.security.encryptStringAsync
 import ru.debajo.todos.security.generateIV
 import ru.debajo.todos.security.generateSalt
-import ru.debajo.todos.security.hashPin
 import ru.debajo.todos.security.ivFromString
 import ru.debajo.todos.security.ivToString
 
@@ -149,8 +147,7 @@ class AppSecurityManager(
     }
 
     private companion object {
-        val WEAK_PIN: Pin = Pin("weak_pin")
-        val WEAK_PIN_HASH: PinHash = HashUtils.hashPin(WEAK_PIN)
+        val WEAK_PIN_HASH: PinHash = PinHash("weak_pin_hash_stub")
         const val PIN_HASH_HACK: String = "PIN_HASH_HACK" // do not change
         const val AUTH_TYPE_KEY: String = "at"
         const val PIN_HASH_HACK_KEY: String = "phh"
