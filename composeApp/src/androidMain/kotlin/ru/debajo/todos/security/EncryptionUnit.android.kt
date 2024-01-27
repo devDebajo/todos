@@ -1,7 +1,7 @@
 package ru.debajo.todos.security
 
-import ru.debajo.todos.java.utils.JvmAesHelper
+import ru.debajo.todos.java.utils.SecureRandomUtils
 
-actual fun randomSalt(): String = JvmAesHelper.generateSalt()
+actual fun randomSalt(): String = SecureRandomUtils.generateSalt()
 
-actual fun randomIV(): ByteArray = JvmAesHelper.generateIV()
+actual fun randomIV(): ByteArray = SecureRandomUtils.generateIV()

@@ -19,7 +19,7 @@ class DatabaseSnapshotHelper(
     private val fileSession: FileSession
         get() = fileSessionManager.fileSession
 
-    suspend fun getSnapshot(timestamp: Instant): StorageSnapshotWithMeta {
+    suspend fun getSnapshot(timestamp: Instant, encrypted: Boolean): StorageSnapshotWithMeta {
         val currentFile = requireNotNull(fileSession.currentFile)
         return StorageSnapshotWithMeta(
             editTimestampUtc = timestamp.toEpochMilliseconds(),
@@ -29,6 +29,7 @@ class DatabaseSnapshotHelper(
                 todos = fileSession.dbTodoItemTable.getAll().map { it.convert() },
             ),
             absolutePath = currentFile.absolutePath,
+            encrypted = encrypted,
         )
     }
 

@@ -7,10 +7,11 @@ import ru.debajo.todos.data.storage.model.StorageSnapshot
 import ru.debajo.todos.data.storage.model.StorageSnapshotWithMeta
 import ru.debajo.todos.security.AesHelper
 import ru.debajo.todos.security.Base64Utils
-import ru.debajo.todos.security.EncryptionUnit
 import ru.debajo.todos.security.decryptString
 import ru.debajo.todos.security.decryptStringAsync
 import ru.debajo.todos.security.encryptStringAsync
+import ru.debajo.todos.security.randomIV
+import ru.debajo.todos.security.randomSalt
 
 /**
  * Tokens:
@@ -40,6 +41,8 @@ class StorageFileCodec01(
         val tokens = tokensProvider(file).drop(1).take(5).toList()
         val encrypted = tokens[0].toEncryptedFlagStrict()
         val timestamp = tokens[1].toTimestamp(encrypted, pinHash)
+        val iv = tokens[2].toIv()
+        val salt = tokens[3]
         val rawContent = tokens[4]
         val snapshotJson = if (encrypted) {
             AesHelper.decryptStringAsync(pinHash!!.pinHash, rawContent)
@@ -51,11 +54,7 @@ class StorageFileCodec01(
             snapshot = snapshot,
             absolutePath = file.absolutePath,
             editTimestampUtc = timestamp,
-            encryptionUnit = if (encrypted) {
-                EncryptionUnit(tokens[2].toIv(), tokens[3])
-            } else {
-                null
-            }
+            encrypted = encrypted,
         )
     }
 
@@ -74,8 +73,17 @@ class StorageFileCodec01(
                 Base64Utils.encodeString(snapshot.editTimestampUtc.toString())
             }
         )
-        stringBuilder.appendLine(snapshot.encryptionUnit?.iv?.joinToString(separator = ",") { it.toString() }.orEmpty())
-        stringBuilder.appendLine(snapshot.encryptionUnit?.salt.orEmpty())
+        val iv: ByteArray
+        val salt: String
+        if (snapshot.encrypted) {
+            iv = randomIV()
+            salt = randomSalt()
+        } else {
+            iv = EmptyByteArray
+            salt = ""
+        }
+        stringBuilder.appendLine(iv.joinToString(separator = ",") { it.toString() })
+        stringBuilder.appendLine(salt)
         stringBuilder.appendLine(
             if (snapshot.encrypted) {
                 AesHelper.encryptStringAsync(pinHash!!.pinHash, rawData)
@@ -88,7 +96,7 @@ class StorageFileCodec01(
 
     private fun StorageFileToken.toIv(): ByteArray {
         if (isEmpty()) {
-            return ByteArray(0)
+            return byteArrayOf()
         }
         return split(",").map { it.toByte() }.toByteArray()
     }
@@ -110,6 +118,7 @@ class StorageFileCodec01(
     }
 
     companion object {
+        val EmptyByteArray: ByteArray = byteArrayOf()
         const val Tds01: String = "TDS01"
     }
 }

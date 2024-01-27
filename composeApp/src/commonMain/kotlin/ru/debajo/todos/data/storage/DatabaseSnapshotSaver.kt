@@ -13,13 +13,14 @@ import ru.debajo.todos.auth.PinHash
 import ru.debajo.todos.common.runCatchingAsync
 import ru.debajo.todos.data.storage.codec.FileCodecHelper
 import ru.debajo.todos.data.storage.model.StorageFile
+import ru.debajo.todos.data.storage.model.StorageSnapshot
 import ru.debajo.todos.data.storage.model.StorageSnapshotWithMeta
 import ru.debajo.todos.security.HashUtils
 import ru.debajo.todos.security.SecuredPreferences
 
 internal class DatabaseSnapshotSaver(
     private val databaseSnapshotHelper: DatabaseSnapshotHelper,
-    private val storageFileManager: StorageFileManager,
+    private val storageFilesList: StorageFilesList,
     private val fileHelper: FileHelper,
     private val filePinStorage: FilePinStorage,
     private val fileCodecHelper: FileCodecHelper,
@@ -31,7 +32,7 @@ internal class DatabaseSnapshotSaver(
 
     suspend fun save() {
         mutex.locked {
-            val file = storageFileManager.currentFile
+            val file = storageFilesList.currentFile
             if (file != null) {
                 saveFile(file)
             }
@@ -40,6 +41,7 @@ internal class DatabaseSnapshotSaver(
 
     suspend fun saveEmpty(file: StorageFile, pinHash: PinHash?) {
         val snapshot = StorageSnapshotWithMeta(
+            snapshot = StorageSnapshot(),
             absolutePath = file.absolutePath,
             editTimestampUtc = Clock.System.now().toEpochMilliseconds(),
             encrypted = pinHash != null,
@@ -77,11 +79,12 @@ internal class DatabaseSnapshotSaver(
         }
 
         val pinHash = filePinStorage.get(file)
-        if (fileCodecHelper.isEncrypted(file) && pinHash == null) {
+        val encrypted = fileCodecHelper.isEncrypted(file)
+        if (encrypted && pinHash == null) {
             return
         }
 
-        val snapshot = databaseSnapshotHelper.getSnapshot(needToSave.timestamp)
+        val snapshot = databaseSnapshotHelper.getSnapshot(needToSave.timestamp, encrypted)
         if (snapshot.absolutePath != file.absolutePath) {
             return
         }
@@ -108,13 +111,13 @@ internal class DatabaseSnapshotSaver(
     suspend fun onUpdate() {
         onUpdateMutex.locked {
             val now = Clock.System.now().toEpochMilliseconds()
-            val file = storageFileManager.awaitCurrentFile()
+            val file = storageFilesList.awaitCurrentFile()
             securedPreferences.putLong(getKey(file), now)
         }
     }
 
     private suspend fun loadUnsafe(): StorageSnapshotWithMeta {
-        val file = storageFileManager.awaitCurrentFile()
+        val file = storageFilesList.awaitCurrentFile()
         return loadFileContentUnsafe(file)
     }
 

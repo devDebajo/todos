@@ -10,7 +10,7 @@ import ru.debajo.todos.common.BaseViewModel
 import ru.debajo.todos.data.db.FileSessionManager
 import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
-import ru.debajo.todos.data.storage.StorageFileManager
+import ru.debajo.todos.data.storage.StorageFilesList
 import ru.debajo.todos.data.storage.codec.FileCodecHelper
 import ru.debajo.todos.data.storage.model.StorageFile
 import ru.debajo.todos.domain.GroupId
@@ -28,7 +28,7 @@ import ru.debajo.todos.ui.todolist.model.TodoListState
 internal class TodoListViewModel(
     private val fileSessionManager: FileSessionManager,
     private val databaseSnapshotSaver: DatabaseSnapshotSaver,
-    private val storageFileManager: StorageFileManager,
+    private val storageFilesList: StorageFilesList,
     private val fileCodecHelper: FileCodecHelper,
     private val todoItemUseCase: TodoItemUseCase,
     private val preferences: Preferences,
@@ -64,7 +64,7 @@ internal class TodoListViewModel(
             }
         }
         screenModelScope.launch {
-            val currentFile = storageFileManager.awaitCurrentFile()
+            val currentFile = storageFilesList.awaitCurrentFile()
             val encrypted = fileCodecHelper.isEncrypted(currentFile)
             securedScreenManager.setScreenSecured(encrypted)
             updateState {

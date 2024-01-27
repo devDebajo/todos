@@ -21,7 +21,7 @@ import ru.debajo.todos.common.runCatchingAsync
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
 import ru.debajo.todos.data.storage.FilePinStorage
 import ru.debajo.todos.data.storage.FileSelector
-import ru.debajo.todos.data.storage.StorageFileManager
+import ru.debajo.todos.data.storage.StorageFilesList
 import ru.debajo.todos.data.storage.codec.FileCodecHelper
 import ru.debajo.todos.data.storage.model.StorageFile
 import ru.debajo.todos.security.HashUtils
@@ -33,7 +33,7 @@ const val FilePinSize: Int = 6
 
 @Stable
 internal class FileConfigViewModel(
-    private val storageFileManager: StorageFileManager,
+    private val storageFilesList: StorageFilesList,
     private val fileSelector: FileSelector,
     private val navigatorMediator: NavigatorMediator,
     private val databaseSnapshotSaver: DatabaseSnapshotSaver,
@@ -43,14 +43,14 @@ internal class FileConfigViewModel(
 
     override fun onLaunch() {
         screenModelScope.launch {
-            storageFileManager.files.filterNotNull().collect { list ->
+            storageFilesList.files.filterNotNull().collect { list ->
                 val convertResult = list.convert()
                 removeFromList(convertResult.failed)
                 updateState { copy(files = convertResult.success) }
             }
         }
         screenModelScope.launch {
-            val isSelectLastFile = storageFileManager.isSelectLastFile()
+            val isSelectLastFile = storageFilesList.isSelectLastFile()
             updateState {
                 copy(isAutoOpenLastFile = isSelectLastFile)
             }
@@ -76,7 +76,7 @@ internal class FileConfigViewModel(
             val file = fileSelector.select()
             if (file != null) {
                 withLoading {
-                    storageFileManager.tryAddFile(file, null)
+                    storageFilesList.tryAddFile(file, null)
                 }
             }
             hideCreateFileDialogs()
@@ -102,7 +102,7 @@ internal class FileConfigViewModel(
                 val file = prepareEmptyFile(fileSelector.create(DefaultFileName))
                 if (file != null) {
                     withLoading {
-                        storageFileManager.tryAddFile(file, null)
+                        storageFilesList.tryAddFile(file, null)
                     }
                 }
                 hideCreateFileDialogs()
@@ -164,7 +164,7 @@ internal class FileConfigViewModel(
             val file = prepareEmptyFile(fileSelector.create(DefaultFileName), pinHash)
             if (file != null) {
                 withLoading {
-                    storageFileManager.tryAddFile(file, pinHash)
+                    storageFilesList.tryAddFile(file, pinHash)
                 }
             }
             hideCreateFileDialogs()
@@ -180,7 +180,7 @@ internal class FileConfigViewModel(
                     FileCodecHelper.FileReadReadiness.NoPermission -> sendNews(FileConfigNews.Toast(R.strings.noReadPermission))
                     FileCodecHelper.FileReadReadiness.UnknownFormat -> sendNews(FileConfigNews.Toast(R.strings.unknownFileFormat))
                     FileCodecHelper.FileReadReadiness.Ready -> {
-                        if (storageFileManager.selectFileFromList(domainFile)) {
+                        if (storageFilesList.selectFileFromList(domainFile)) {
                             if (databaseSnapshotSaver.load()) {
                                 navigatorMediator.replaceAll(AppScreen.List)
                             } else {
@@ -220,7 +220,7 @@ internal class FileConfigViewModel(
                 val domainFile = enterFilePinDialogState.file.toStorageFile()
                 if (fileCodecHelper.canDecryptFile(domainFile, pinHash)) {
                     updateState { copy(enterFilePinDialogState = null) }
-                    storageFileManager.savePinHash(domainFile, pinHash)
+                    storageFilesList.savePinHash(domainFile, pinHash)
                     navigatorMediator.replaceAll(AppScreen.List)
                 } else {
                     updateState {
@@ -289,7 +289,7 @@ internal class FileConfigViewModel(
         hideDeleteFileDialog()
         if (file != null) {
             screenModelScope.launch {
-                storageFileManager.deleteFileFromList(file.toStorageFile())
+                storageFilesList.deleteFileFromList(file.toStorageFile())
             }
         }
     }
@@ -311,15 +311,15 @@ internal class FileConfigViewModel(
         }
 
         screenModelScope.launch {
-            storageFileManager.setSelectLastFile(value)
+            storageFilesList.setSelectLastFile(value)
         }
     }
 
     fun tryToAutoOpen() {
         screenModelScope.launch {
-            if (storageFileManager.isSelectLastFile()) {
-                val lastFile = storageFileManager.loadLastFile()
-                if (lastFile != null && storageFileManager.selectFileFromList(lastFile)) {
+            if (storageFilesList.isSelectLastFile()) {
+                val lastFile = storageFilesList.loadLastFile()
+                if (lastFile != null && storageFilesList.selectFileFromList(lastFile)) {
                     // TODO унифицировать
                     if (databaseSnapshotSaver.load()) {
                         navigatorMediator.replaceAll(AppScreen.List)
@@ -399,7 +399,7 @@ internal class FileConfigViewModel(
                         )
                     }
                     hideChangeFilePinDialog()
-                    val convertResult = storageFileManager.files.value.orEmpty().convert()
+                    val convertResult = storageFilesList.files.value.orEmpty().convert()
                     removeFromList(convertResult.failed)
                     updateState { copy(files = convertResult.success) }
                 } else {
@@ -487,7 +487,7 @@ internal class FileConfigViewModel(
 
     private suspend fun removeFromList(files: List<StorageFile>) {
         for (file in files) {
-            storageFileManager.deleteFileFromList(file)
+            storageFilesList.deleteFileFromList(file)
         }
     }
 

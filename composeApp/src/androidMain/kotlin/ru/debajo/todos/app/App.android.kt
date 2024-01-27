@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import ru.debajo.todos.data.db.FileSession
-import ru.debajo.todos.data.storage.StorageFileManager
+import ru.debajo.todos.data.storage.StorageFilesList
 import ru.debajo.todos.di.ActivityResultLaunchersHolder
 import ru.debajo.todos.di.AndroidModule
 import ru.debajo.todos.di.CommonModule
@@ -82,7 +82,7 @@ internal class AppActivity : FragmentActivity() {
     private val notificationManager: TodosNotificationManager by inject()
     private val commonApplication: CommonApplication by inject()
     private val activityResultLaunchers: ActivityResultLaunchers = ActivityResultLaunchers(this)
-    private val storageFileManager: StorageFileManager by inject()
+    private val storageFilesList: StorageFilesList by inject()
     private val navigatorMediator: NavigatorMediator by inject()
     private val securedScreenManagerImpl: SecuredScreenManagerImpl by inject()
     private val appUiLifecycle: AppUiLifecycle by inject()
@@ -126,7 +126,7 @@ internal class AppActivity : FragmentActivity() {
     private fun tryToExtractUri(intent: Intent) {
         val data = intent.data ?: return
         lifecycleScope.launch {
-            if (storageFileManager.tryAddFile(data.toString())) {
+            if (storageFilesList.tryAddFile(data.toString())) {
                 navigatorMediator.navigate(AppScreen.SelectFile())
             }
         }

@@ -17,7 +17,7 @@ import ru.debajo.todos.data.storage.codec.FileCodecHelper
 import ru.debajo.todos.data.storage.model.StorageFile
 import ru.debajo.todos.security.SecuredPreferences
 
-class StorageFileManager(
+class StorageFilesList(
     private val preferences: Preferences,
     private val securedPreferences: SecuredPreferences,
     appScope: CoroutineScope,
