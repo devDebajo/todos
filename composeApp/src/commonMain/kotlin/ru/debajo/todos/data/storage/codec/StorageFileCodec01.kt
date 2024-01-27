@@ -7,6 +7,7 @@ import ru.debajo.todos.data.storage.model.StorageSnapshot
 import ru.debajo.todos.data.storage.model.StorageSnapshotWithMeta
 import ru.debajo.todos.security.AesHelper
 import ru.debajo.todos.security.Base64Utils
+import ru.debajo.todos.security.Empty
 import ru.debajo.todos.security.IV
 import ru.debajo.todos.security.Salt
 import ru.debajo.todos.security.asSalt
@@ -37,11 +38,11 @@ class StorageFileCodec01(
 
     override suspend fun getTimestamp(file: StorageFile, pinHash: PinHash?): Long {
         val tokens = tokensProvider(file).drop(1).take(4).toList()
-        require(tokens.size == 2)
+        require(tokens.size == 4)
         val encrypted = tokens[0].toEncryptedFlagStrict()
         val iv = tokens[1].ivFromString()
         val salt = tokens[2].asSalt()
-        return tokens[4].toTimestamp(encrypted, pinHash, iv, salt)
+        return tokens[3].toTimestamp(encrypted, pinHash, iv, salt)
     }
 
     override suspend fun decode(file: StorageFile, pinHash: PinHash?): StorageSnapshotWithMeta {
@@ -75,7 +76,7 @@ class StorageFileCodec01(
             iv = generateIV()
             salt = generateSalt()
         } else {
-            iv = IV(EmptyByteArray)
+            iv = IV.Empty
             salt = "".asSalt()
         }
         val rawData = json.encodeToString(StorageSnapshot.serializer(), snapshot.snapshot)
@@ -128,7 +129,6 @@ class StorageFileCodec01(
     }
 
     companion object {
-        val EmptyByteArray: ByteArray = byteArrayOf()
         const val Tds01: String = "TDS01"
     }
 }
