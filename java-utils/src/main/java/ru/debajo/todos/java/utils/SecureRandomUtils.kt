@@ -1,6 +1,7 @@
 package ru.debajo.todos.java.utils
 
 import java.security.SecureRandom
+import kotlin.random.Random
 
 object SecureRandomUtils {
 
@@ -15,7 +16,8 @@ object SecureRandomUtils {
     fun generateSalt(size: Int = 30): String {
         val builder = StringBuilder()
         repeat(size) {
-            builder.append(secureRandom.nextInt('0'.code, 'z'.code).toChar())
+            // TODO переделать на secureRandom
+            builder.append(Random.nextInt('0'.code, 'z'.code).toChar())
         }
         return builder.toString()
     }
