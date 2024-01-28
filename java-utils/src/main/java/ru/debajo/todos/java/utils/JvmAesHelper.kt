@@ -1,6 +1,5 @@
 package ru.debajo.todos.java.utils
 
-import java.nio.charset.Charset
 import java.util.concurrent.ConcurrentHashMap
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
@@ -31,7 +30,7 @@ object JvmAesHelper {
     private fun createKey(secret: String, salt: String): SecretKey {
         return keyCache.getOrPut(secret + salt) {
             val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-            val spec = PBEKeySpec(secret.toCharArray(), salt.toByteArray(Charset.defaultCharset()), 65536, 256)
+            val spec = PBEKeySpec(secret.toCharArray(), salt.toByteArray(AppCharset), 65536, 256)
             SecretKeySpec(factory.generateSecret(spec).encoded, "AES")
         }
     }

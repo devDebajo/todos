@@ -9,7 +9,6 @@ import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import io.github.aakira.napier.Napier
-import java.nio.charset.Charset
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -19,6 +18,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import ru.debajo.todos.app.ActivityResultLaunchers
 import ru.debajo.todos.common.runCatchingAsync
 import ru.debajo.todos.data.preferences.Preferences
+import ru.debajo.todos.java.utils.AppCharset
 import ru.debajo.todos.strings.R
 
 // https://gist.github.com/frengky/b2b96a4b1ec234080e9d8a9164240f1a
@@ -49,7 +49,7 @@ internal class BiometricDelegateImpl(
         val biometricResult = awaitBiometricPrompt(cipher)
 
         if (biometricResult is BiometricResult.Succeeded) {
-            val encodedData = cipher.doFinal(rawData.toByteArray(Charset.defaultCharset()))
+            val encodedData = cipher.doFinal(rawData.toByteArray(AppCharset))
             saveToPrefsBytes(IV_KEY, cipher.iv)
             return Base64.encodeToString(encodedData, Base64.NO_WRAP)
         }
@@ -76,7 +76,7 @@ internal class BiometricDelegateImpl(
 
         if (biometricResult is BiometricResult.Succeeded) {
             val decodedData = cipher.doFinal(Base64.decode(encryptedData, Base64.NO_WRAP))
-            return String(decodedData, Charset.defaultCharset())
+            return String(decodedData, AppCharset)
         }
 
         return null
