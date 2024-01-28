@@ -11,10 +11,9 @@ interface CommonStrings {
     val appName: String
 
     val settingsTitle: String
-    val aboutTitle: String
-    val aboutAppVersion: String
-    val aboutAppDeveloper: String
-    val aboutEmailToDeveloper: String
+    val settingsAppVersion: String
+    val settingsAppDeveloper: String
+    val settingsEmailToDeveloper: String
 
     val welcome: String
     val welcomeOnboarding: String

@@ -13,6 +13,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -20,6 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import ru.debajo.todos.app.sendEmail
+import ru.debajo.todos.buildconfig.BuildConfig
 import ru.debajo.todos.common.ScreenToolbar
 import ru.debajo.todos.strings.R
 
@@ -46,6 +49,19 @@ internal fun SettingsScreen(viewModel: SettingsViewModel) {
                 checked = state.isAutoOpenLastFile,
                 onChanged = { viewModel.onAutoOpenSwitchChanged(it) }
             )
+            SettingsKeyValueText(
+                key = R.strings.settingsAppVersion,
+                value = "${BuildConfig.APP_VERSION} (${BuildConfig.VERSION_NUMBER})",
+            )
+            SettingsKeyValueText(
+                key = R.strings.settingsAppDeveloper,
+                value = BuildConfig.DEVELOPER_NAME,
+            )
+            TextButton(
+                modifier = Modifier.align(Alignment.End),
+                onClick = { sendEmail(BuildConfig.DEVELOPER_EMAIL) },
+                content = { Text(R.strings.settingsEmailToDeveloper) }
+            )
         }
     }
 }
@@ -70,5 +86,24 @@ private fun SettingsSwitch(
             checked = checked,
             onCheckedChange = { onChanged(it) }
         )
+    }
+}
+
+@Composable
+private fun SettingsKeyValueText(
+    modifier: Modifier = Modifier,
+    key: String,
+    value: String,
+) {
+    Row(
+        modifier = modifier.height(ItemHeight),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            modifier = Modifier.weight(1f),
+            text = "$key:",
+        )
+        Spacer(Modifier.size(6.dp))
+        Text(text = value)
     }
 }

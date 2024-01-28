@@ -59,7 +59,6 @@ import ru.debajo.todos.common.calculatePopupPosition
 import ru.debajo.todos.common.contextClickable
 import ru.debajo.todos.common.formatKmp
 import ru.debajo.todos.strings.R
-import ru.debajo.todos.ui.about.AboutDialog
 import ru.debajo.todos.ui.pin.EnterPin1Dialog
 import ru.debajo.todos.ui.pin.EnterPin2Dialog
 import ru.debajo.todos.ui.pin.EnterPin3Dialog
@@ -178,9 +177,6 @@ internal fun FileConfigScreen(viewModel: FileConfigViewModel) {
 
     SnackbarHost(viewModel)
     BlockingLoaderDialog(state.showBlockingLoading)
-    if (state.showAboutDialog) {
-        AboutDialog { viewModel.hideAboutDialog() }
-    }
 }
 
 @Composable

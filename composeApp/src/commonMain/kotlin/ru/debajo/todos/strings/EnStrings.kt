@@ -11,10 +11,9 @@ object EnStrings : CommonStrings {
     override val fileSessionNotificationClose: String = "Close file"
     override val appName: String = BuildConfig.APP_NAME
     override val settingsTitle: String = "Settings"
-    override val aboutTitle: String = "About $appName"
-    override val aboutAppVersion: String = "Version: %s (%s)"
-    override val aboutAppDeveloper: String = "Developer: %s"
-    override val aboutEmailToDeveloper: String = "Contact with developer"
+    override val settingsAppVersion: String = "Version"
+    override val settingsAppDeveloper: String = "Developer"
+    override val settingsEmailToDeveloper: String = "Contact with developer"
     override val welcome: String = "Welcome"
     override val welcomeOnboarding: String = "Before you begin, you need to configure data protection in the application"
     override val selectPreferredSecurityType: String = "Select your preferred security type"

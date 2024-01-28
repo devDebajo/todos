@@ -13,7 +13,6 @@ data class FileConfigState(
     val creatingFile: Boolean = false,
     val enterFilePinDialogState: EnterFilePinDialogState? = null,
     val filePopupMenuState: FilePopupMenuState? = null,
-    val showAboutDialog: Boolean = false,
 ) {
     val showBlockingLoading: Boolean = files == null || isLoading
 }

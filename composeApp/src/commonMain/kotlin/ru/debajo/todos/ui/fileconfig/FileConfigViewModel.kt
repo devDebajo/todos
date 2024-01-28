@@ -406,15 +406,10 @@ internal class FileConfigViewModel(
         }
     }
 
-    fun hideAboutDialog() {
-        updateState { copy(showAboutDialog = false) }
-    }
-
     fun openSettings() {
         screenModelScope.launch {
             navigatorMediator.navigate(AppScreen.Settings)
         }
-        //updateState { copy(showAboutDialog = true) }
     }
 
     private suspend fun prepareEmptyFile(file: StorageFile?, pinHash: PinHash? = null): StorageFile? {

@@ -9,10 +9,9 @@ object RuStrings : CommonStrings {
     override val fileSessionNotificationClose: String = "Закрыть файл"
     override val appName: String by EnStrings::appName
     override val settingsTitle: String = "Настройки"
-    override val aboutTitle: String = "О приложении $appName"
-    override val aboutAppVersion: String = "Версия: %s (%s)"
-    override val aboutAppDeveloper: String = "Разработчик: %s"
-    override val aboutEmailToDeveloper: String = "Связаться с разработчиком"
+    override val settingsAppVersion: String = "Версия"
+    override val settingsAppDeveloper: String = "Разработчик"
+    override val settingsEmailToDeveloper: String = "Связаться с разработчиком"
     override val welcome: String = "Добро пожаловать"
     override val welcomeOnboarding: String = "Прежде чем начать нужно настроить защиту приложения"
     override val selectPreferredSecurityType: String = "Выберите предпочтительный тип защиты"
