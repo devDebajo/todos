@@ -1,6 +1,6 @@
 package ru.debajo.todos.data.storage
 
-import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.Instant
 import ru.debajo.todos.data.storage.model.StorageFile
 
 internal class FileHelperImpl : FileHelper {
@@ -20,7 +20,7 @@ internal class FileHelperImpl : FileHelper {
         TODO("Not yet implemented")
     }
 
-    override fun observeChanged(files: List<StorageFile>): Flow<StorageFile> {
+    override fun getLastModified(file: StorageFile): Instant? {
         TODO("Not yet implemented")
     }
 }

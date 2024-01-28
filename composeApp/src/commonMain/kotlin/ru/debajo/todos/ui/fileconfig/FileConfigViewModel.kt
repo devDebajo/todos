@@ -28,6 +28,7 @@ import ru.debajo.todos.data.storage.FileSelector
 import ru.debajo.todos.data.storage.StorageFilesList
 import ru.debajo.todos.data.storage.codec.FileCodecHelper
 import ru.debajo.todos.data.storage.model.StorageFile
+import ru.debajo.todos.data.storage.observeChanged
 import ru.debajo.todos.security.PinHasher
 import ru.debajo.todos.strings.R
 import ru.debajo.todos.ui.NavigatorMediator
@@ -61,9 +62,7 @@ internal class FileConfigViewModel(
             storageFilesList.files.filterNotNull()
                 .distinctUntilChanged()
                 .flatMapLatest { files -> fileHelper.observeChanged(files) }
-                .collect {
-                    updateFiles(storageFilesList.files.value.orEmpty())
-                }
+                .collect { updateFiles(storageFilesList.files.value.orEmpty()) }
         }
     }
 

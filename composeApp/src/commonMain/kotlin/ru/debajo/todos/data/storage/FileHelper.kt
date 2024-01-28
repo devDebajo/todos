@@ -1,7 +1,12 @@
 package ru.debajo.todos.data.storage
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.datetime.Instant
 import ru.debajo.todos.common.syncMutableMap
 import ru.debajo.todos.data.storage.model.StorageFile
 
@@ -14,7 +19,7 @@ interface FileHelper {
 
     fun openFileReader(file: StorageFile): FileReader
 
-    fun observeChanged(files: List<StorageFile>): Flow<StorageFile>
+    fun getLastModified(file: StorageFile): Instant?
 }
 
 internal expect fun createFileHelper(): FileHelper
@@ -49,10 +54,38 @@ internal class FileHelperContentCache(private val delegate: FileHelper) : FileHe
         }
     }
 
-    // TODO это сломает работу с файлом в режиме открытого файла. Поэтому пока использовать можно только в FileConfigViewModel
-    override fun observeChanged(files: List<StorageFile>): Flow<StorageFile> {
-        return delegate.observeChanged(files).onEach { file ->
-            cache.remove(file.absolutePath)
+    fun clearCache(file: StorageFile) {
+        cache.remove(file.absolutePath)
+    }
+}
+
+// TODO это сломает работу с файлом в режиме открытого файла. Поэтому пока использовать можно только в FileConfigViewModel
+private fun FileHelper.invalidateCacheIfCan(file: StorageFile) {
+    if (this is FileHelperContentCache) {
+        clearCache(file)
+    }
+}
+
+fun FileHelper.observeChanged(files: List<StorageFile>): Flow<StorageFile> {
+    val currentState = HashMap<String, Instant>()
+    for (file in files) {
+        val lastModified = getLastModified(file)
+        if (lastModified != null) {
+            currentState[file.absolutePath] = lastModified
         }
     }
+
+    return flow {
+        while (true) {
+            delay(2000)
+            for (file in files) {
+                val lastModified = getLastModified(file) ?: continue
+                if (currentState[file.absolutePath] != lastModified) {
+                    currentState[file.absolutePath] = lastModified
+                    this@observeChanged.invalidateCacheIfCan(file)
+                    emit(file)
+                }
+            }
+        }
+    }.flowOn(Dispatchers.IO)
 }

@@ -3,12 +3,12 @@ package ru.debajo.todos.data.storage
 import android.content.ContentResolver
 import android.content.Intent
 import android.net.Uri
+import android.provider.DocumentsContract
 import android.provider.MediaStore
 import io.github.aakira.napier.Napier
 import java.io.InputStream
 import java.io.OutputStream
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.datetime.Instant
 import ru.debajo.todos.common.canRead
 import ru.debajo.todos.data.storage.model.StorageFile
 import ru.debajo.todos.java.utils.content
@@ -38,7 +38,26 @@ internal class FileHelperImpl(
         return FileReaderImpl(contentResolver.openInputStream(Uri.parse(file.absolutePath))!!)
     }
 
-    override fun observeChanged(files: List<StorageFile>): Flow<StorageFile> = emptyFlow()
+    override fun getLastModified(file: StorageFile): Instant? {
+        val ms = runCatching { file.lastModifiedUnsafe() }.getOrNull() ?: return null
+        return Instant.fromEpochMilliseconds(ms)
+    }
+
+    private fun StorageFile.lastModifiedUnsafe(): Long? {
+        return contentResolver.query(
+            Uri.parse(absolutePath),
+            arrayOf(DocumentsContract.Document.COLUMN_LAST_MODIFIED),
+            null,
+            null,
+            null
+        )?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                cursor.getLong(cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_LAST_MODIFIED))
+            } else {
+                null
+            }
+        }
+    }
 
     private fun Uri.requestPersistablePermission() {
         if (contentResolver.persistedUriPermissions.any { it.uri == this && it.isWritePermission && it.isReadPermission }) {

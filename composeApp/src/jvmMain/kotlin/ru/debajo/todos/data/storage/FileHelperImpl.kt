@@ -3,9 +3,7 @@ package ru.debajo.todos.data.storage
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.datetime.Instant
 import ru.debajo.todos.data.storage.model.StorageFile
 import ru.debajo.todos.java.utils.content
 import ru.debajo.todos.java.utils.write
@@ -32,28 +30,11 @@ internal class FileHelperImpl : FileHelper {
         return FileReaderImpl(File(file.absolutePath).inputStream())
     }
 
-    override fun observeChanged(files: List<StorageFile>): Flow<StorageFile> {
-        val currentState = HashMap<String, Long>()
-        for (file in files) {
-            currentState[file.absolutePath] = File(file.absolutePath).lastModified()
-        }
-
-        return flow {
-            while (true) {
-                delay(2000)
-                for (file in files) {
-                    val lastModified = file.lastModified
-                    if (currentState[file.absolutePath] != lastModified) {
-                        currentState[file.absolutePath] = lastModified
-                        emit(file)
-                    }
-                }
-            }
-        }
+    override fun getLastModified(file: StorageFile): Instant? {
+        return runCatching {
+            Instant.fromEpochMilliseconds(File(file.absolutePath).lastModified())
+        }.getOrNull()
     }
-
-    private val StorageFile.lastModified: Long
-        get() = File(absolutePath).lastModified()
 }
 
 private class FileWriterImpl(private val outputStream: OutputStream) : FileWriter {
