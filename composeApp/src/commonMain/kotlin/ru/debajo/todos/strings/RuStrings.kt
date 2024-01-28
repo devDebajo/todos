@@ -8,6 +8,7 @@ object RuStrings : CommonStrings {
     override val fileSessionNotificationAutoClose: String = "Закроется через %s сек."
     override val fileSessionNotificationClose: String = "Закрыть файл"
     override val appName: String by EnStrings::appName
+    override val settingsTitle: String = "Настройки"
     override val aboutTitle: String = "О приложении $appName"
     override val aboutAppVersion: String = "Версия: %s (%s)"
     override val aboutAppDeveloper: String = "Разработчик: %s"

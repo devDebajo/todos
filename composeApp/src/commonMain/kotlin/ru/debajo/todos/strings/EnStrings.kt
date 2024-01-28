@@ -10,6 +10,7 @@ object EnStrings : CommonStrings {
     override val fileSessionNotificationAutoClose: String = "Will close in %s sec."
     override val fileSessionNotificationClose: String = "Close file"
     override val appName: String = BuildConfig.APP_NAME
+    override val settingsTitle: String = "Settings"
     override val aboutTitle: String = "About $appName"
     override val aboutAppVersion: String = "Version: %s (%s)"
     override val aboutAppDeveloper: String = "Developer: %s"

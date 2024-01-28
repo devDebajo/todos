@@ -9,6 +9,7 @@ import ru.debajo.todos.ui.fileconfig.FileConfigViewModel
 import ru.debajo.todos.ui.newpin.NewPinScreen
 import ru.debajo.todos.ui.onboarding.OnboardingScreen
 import ru.debajo.todos.ui.pin.PinScreen
+import ru.debajo.todos.ui.settings.SettingsScreen
 import ru.debajo.todos.ui.splash.SplashScreen
 import ru.debajo.todos.ui.todolist.HorizontalTodoListScreen
 import ru.debajo.todos.ui.todolist.TodoListScreen
@@ -61,6 +62,13 @@ internal sealed interface AppScreen : Screen {
                 }
             }
             FileConfigScreen(viewModelFromDi())
+        }
+    }
+
+    data object Settings : AppScreen {
+        @Composable
+        override fun Content() {
+            SettingsScreen(viewModelFromDi())
         }
     }
 

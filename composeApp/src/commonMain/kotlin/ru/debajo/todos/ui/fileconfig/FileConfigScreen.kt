@@ -1,6 +1,10 @@
 package ru.debajo.todos.ui.fileconfig
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.HoverInteraction
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,8 +20,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -25,7 +29,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -38,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -73,11 +77,23 @@ internal fun FileConfigScreen(viewModel: FileConfigViewModel) {
             title = R.strings.fileConfigTitle,
             menuButton = {
                 IconButton(
-                    onClick = { viewModel.showAbout() },
+                    onClick = { viewModel.openSettings() },
                     content = {
+                        val interactionSource = remember { MutableInteractionSource() }
+                        var rotated by remember { mutableStateOf(false) }
+                        val rotation by animateFloatAsState(if (rotated) 0f else -180f)
+                        LaunchedEffect(interactionSource) {
+                            interactionSource.interactions.collect { interaction ->
+                                when (interaction) {
+                                    is HoverInteraction.Enter -> rotated = true
+                                    is HoverInteraction.Exit -> rotated = false
+                                }
+                            }
+                        }
                         Icon(
+                            modifier = Modifier.hoverable(interactionSource).rotate(rotation),
                             contentDescription = null,
-                            imageVector = Icons.Default.Info,
+                            imageVector = Icons.Rounded.Settings,
                         )
                     }
                 )
@@ -92,8 +108,6 @@ internal fun FileConfigScreen(viewModel: FileConfigViewModel) {
                 viewModel.onFileSecondaryClick(file, coordinates.calculatePopupPosition(itemOffset))
             },
         )
-        Spacer(Modifier.size(8.dp))
-        IsAutoOpenSwitch(checked = state.isAutoOpenLastFile) { viewModel.onAutoOpenSwitchChanged(it) }
         Spacer(Modifier.size(8.dp))
         Row {
             Button(onClick = { viewModel.createNewFile() }) {
@@ -211,28 +225,6 @@ private fun FileContextClickPopupMenu(
             modifier = Modifier.widthIn(min = 100.dp),
             text = R.strings.deleteFromList,
             onClick = onDeleteClick,
-        )
-    }
-}
-
-@Composable
-private fun IsAutoOpenSwitch(
-    modifier: Modifier = Modifier,
-    checked: Boolean,
-    onChanged: (Boolean) -> Unit,
-) {
-    Row(
-        modifier = modifier.height(48.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            modifier = Modifier.weight(1f),
-            text = R.strings.autoOpenLastFile
-        )
-        Spacer(Modifier.size(6.dp))
-        Switch(
-            checked = checked,
-            onCheckedChange = { onChanged(it) }
         )
     }
 }

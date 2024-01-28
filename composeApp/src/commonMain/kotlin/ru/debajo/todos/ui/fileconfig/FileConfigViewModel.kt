@@ -53,12 +53,6 @@ internal class FileConfigViewModel(
             storageFilesList.files.filterNotNull().collect { list -> updateFiles(list) }
         }
         screenModelScope.launch {
-            val isSelectLastFile = storageFilesList.isSelectLastFile()
-            updateState {
-                copy(isAutoOpenLastFile = isSelectLastFile)
-            }
-        }
-        screenModelScope.launch {
             storageFilesList.files.filterNotNull()
                 .distinctUntilChanged()
                 .flatMapLatest { files -> fileHelper.observeChanged(files) }
@@ -314,16 +308,6 @@ internal class FileConfigViewModel(
         }
     }
 
-    fun onAutoOpenSwitchChanged(value: Boolean) {
-        updateState {
-            copy(isAutoOpenLastFile = value)
-        }
-
-        screenModelScope.launch {
-            storageFilesList.setSelectLastFile(value)
-        }
-    }
-
     fun tryToAutoOpen() {
         screenModelScope.launch {
             if (storageFilesList.isSelectLastFile()) {
@@ -426,8 +410,11 @@ internal class FileConfigViewModel(
         updateState { copy(showAboutDialog = false) }
     }
 
-    fun showAbout() {
-        updateState { copy(showAboutDialog = true) }
+    fun openSettings() {
+        screenModelScope.launch {
+            navigatorMediator.navigate(AppScreen.Settings)
+        }
+        //updateState { copy(showAboutDialog = true) }
     }
 
     private suspend fun prepareEmptyFile(file: StorageFile?, pinHash: PinHash? = null): StorageFile? {

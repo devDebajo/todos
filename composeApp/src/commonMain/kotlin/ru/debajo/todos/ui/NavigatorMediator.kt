@@ -3,27 +3,56 @@ package ru.debajo.todos.ui
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.staticCompositionLocalOf
+import cafe.adriel.voyager.navigator.Navigator
 import kotlinx.coroutines.flow.MutableSharedFlow
 import ru.debajo.todos.app.AppScreen
+import ru.debajo.todos.ui.security.SecuredScreenManager
 
 @Stable
-internal class NavigatorMediator {
+internal class NavigatorMediator(
+    private val securedScreenManager: SecuredScreenManager,
+) {
 
-    private val flow: MutableSharedFlow<Navigate> = MutableSharedFlow()
+    private val flow: MutableSharedFlow<Command> = MutableSharedFlow()
 
     suspend fun navigate(screen: AppScreen) {
-        flow.emit(Navigate(screen, replaceAll = false))
+        flow.emit(Command.Navigate(screen, replaceAll = false))
     }
 
     suspend fun replaceAll(screen: AppScreen) {
-        flow.emit(Navigate(screen, replaceAll = true))
+        flow.emit(Command.Navigate(screen, replaceAll = true))
     }
 
-    suspend fun observeNavigate(callback: (Navigate) -> Unit) {
-        flow.collect(callback)
+    suspend fun connect(navigatorGetter: () -> Navigator?) {
+        flow.collect { command ->
+            when (command) {
+                is Command.Navigate -> {
+                    securedScreenManager.setScreenSecured(command.screen.securedByDefault)
+                    if (command.replaceAll) {
+                        navigatorGetter()?.replaceAll(command.screen)
+                    } else {
+                        navigatorGetter()?.push(command.screen)
+                    }
+                }
+
+                is Command.Back -> {
+                    navigatorGetter()?.pop()
+                    (navigatorGetter()?.lastItemOrNull as? AppScreen)?.let {
+                        securedScreenManager.setScreenSecured(it.securedByDefault)
+                    }
+                }
+            }
+        }
     }
 
-    class Navigate(val screen: AppScreen, val replaceAll: Boolean)
+    suspend fun back() {
+        flow.emit(Command.Back)
+    }
+
+    sealed interface Command {
+        class Navigate(val screen: AppScreen, val replaceAll: Boolean) : Command
+        data object Back : Command
+    }
 }
 
 internal val LocalNavigatorMediator: ProvidableCompositionLocal<NavigatorMediator> = staticCompositionLocalOf { error("") }

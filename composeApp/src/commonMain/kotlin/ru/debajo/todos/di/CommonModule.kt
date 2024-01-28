@@ -33,6 +33,7 @@ import ru.debajo.todos.ui.fileconfig.FileConfigViewModel
 import ru.debajo.todos.ui.newpin.NewPinViewModel
 import ru.debajo.todos.ui.onboarding.OnboardingViewModel
 import ru.debajo.todos.ui.pin.PinViewModel
+import ru.debajo.todos.ui.settings.SettingsViewModel
 import ru.debajo.todos.ui.splash.SplashViewModel
 import ru.debajo.todos.ui.todolist.TodoListViewModel
 
@@ -59,6 +60,7 @@ val CommonModule: Module = module {
     factoryOf(::SplashViewModel)
     factoryOf(::PinViewModel)
     factoryOf(::NewPinViewModel)
+    factoryOf(::SettingsViewModel)
     singleOf(::PinHasher)
 
     single<SecuredPreferences> {
