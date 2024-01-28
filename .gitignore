@@ -1,4 +1,3 @@
-
 *.iml
 .gradle
 .idea
@@ -13,6 +12,5 @@ xcuserdata/
 Pods/
 *.jks
 *yarn.lock
-/composeApp/todos.db
-/composeApp/todo_prefs
 /build_apk.sh
+/build_bundle.sh

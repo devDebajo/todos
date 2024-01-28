@@ -135,7 +135,7 @@ compose.desktop {
         mainClass = "MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi)
 
             val properties = Properties()
             properties.load(rootProject.file("project.properties").inputStream())
