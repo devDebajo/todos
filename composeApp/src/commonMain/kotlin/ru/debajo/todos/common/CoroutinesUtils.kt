@@ -2,7 +2,7 @@ package ru.debajo.todos.common
 
 import kotlinx.coroutines.CancellationException
 
-internal  inline fun <T> runCatchingAsync(block: () -> T): Result<T> {
+internal inline fun <T> runCatchingAsync(block: () -> T): Result<T> {
     return try {
         Result.success(block())
     } catch (e: CancellationException) {
