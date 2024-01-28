@@ -173,6 +173,7 @@ buildConfig {
     buildConfigField("String", "DEVELOPER_NAME", "\"${properties.getProperty("developerName")}\"")
     buildConfigField("String", "DEVELOPER_EMAIL", "\"${properties.getProperty("developerEmail")}\"")
     buildConfigField("String", "APP_NAME", "\"${properties.getProperty("appName")}\"")
+    buildConfigField("String", "GITHUB", "\"${properties.getProperty("sourceCode")}\"")
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {

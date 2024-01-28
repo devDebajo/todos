@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import ru.debajo.todos.app.openUrl
 import ru.debajo.todos.app.sendEmail
 import ru.debajo.todos.buildconfig.BuildConfig
 import ru.debajo.todos.common.ScreenToolbar
@@ -61,6 +62,11 @@ internal fun SettingsScreen(viewModel: SettingsViewModel) {
                 modifier = Modifier.align(Alignment.End),
                 onClick = { sendEmail(BuildConfig.DEVELOPER_EMAIL) },
                 content = { Text(R.strings.settingsEmailToDeveloper) }
+            )
+            TextButton(
+                modifier = Modifier.align(Alignment.End),
+                onClick = { openUrl(BuildConfig.GITHUB) },
+                content = { Text(R.strings.settingsSourceCode) }
             )
         }
     }

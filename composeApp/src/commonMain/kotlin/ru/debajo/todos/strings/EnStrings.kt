@@ -14,6 +14,7 @@ object EnStrings : CommonStrings {
     override val settingsAppVersion: String = "Version"
     override val settingsAppDeveloper: String = "Developer"
     override val settingsEmailToDeveloper: String = "Contact with developer"
+    override val settingsSourceCode: String = "Source code"
     override val welcome: String = "Welcome"
     override val welcomeOnboarding: String = "Before you begin, you need to configure data protection in the application"
     override val selectPreferredSecurityType: String = "Select your preferred security type"
