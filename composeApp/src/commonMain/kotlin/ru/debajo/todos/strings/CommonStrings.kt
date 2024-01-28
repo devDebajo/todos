@@ -15,6 +15,7 @@ interface CommonStrings {
     val settingsAppDeveloper: String
     val settingsEmailToDeveloper: String
     val settingsSourceCode: String
+    val settingsPrivacyPolicy: String
 
     val welcome: String
     val welcomeOnboarding: String

@@ -68,6 +68,11 @@ internal fun SettingsScreen(viewModel: SettingsViewModel) {
                 onClick = { openUrl(BuildConfig.GITHUB) },
                 content = { Text(R.strings.settingsSourceCode) }
             )
+            TextButton(
+                modifier = Modifier.align(Alignment.End),
+                onClick = { openUrl(BuildConfig.PRIVACY_POLICY) },
+                content = { Text(R.strings.settingsPrivacyPolicy) }
+            )
         }
     }
 }

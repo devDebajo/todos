@@ -13,6 +13,7 @@ object RuStrings : CommonStrings {
     override val settingsAppDeveloper: String = "Разработчик"
     override val settingsEmailToDeveloper: String = "Связаться с разработчиком"
     override val settingsSourceCode: String = "Исходный код"
+    override val settingsPrivacyPolicy: String = "Политика конфиденциальности"
     override val welcome: String = "Добро пожаловать"
     override val welcomeOnboarding: String = "Прежде чем начать нужно настроить защиту приложения"
     override val selectPreferredSecurityType: String = "Выберите предпочтительный тип защиты"

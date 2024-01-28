@@ -309,6 +309,11 @@ internal class FileConfigViewModel(
     }
 
     fun tryToAutoOpen() {
+        if (state.value.autoOpenCalled) {
+            return
+        }
+        updateState { copy(autoOpenCalled = true) }
+
         screenModelScope.launch {
             if (storageFilesList.isSelectLastFile()) {
                 val lastFile = storageFilesList.loadLastFile()
