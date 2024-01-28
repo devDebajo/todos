@@ -7,6 +7,8 @@ import android.provider.MediaStore
 import io.github.aakira.napier.Napier
 import java.io.InputStream
 import java.io.OutputStream
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import ru.debajo.todos.common.canRead
 import ru.debajo.todos.data.storage.model.StorageFile
 import ru.debajo.todos.java.utils.content
@@ -35,6 +37,8 @@ internal class FileHelperImpl(
     override fun openFileReader(file: StorageFile): FileReader {
         return FileReaderImpl(contentResolver.openInputStream(Uri.parse(file.absolutePath))!!)
     }
+
+    override fun observeChanged(files: List<StorageFile>): Flow<StorageFile> = emptyFlow()
 
     private fun Uri.requestPersistablePermission() {
         if (contentResolver.persistedUriPermissions.any { it.uri == this && it.isWritePermission && it.isReadPermission }) {

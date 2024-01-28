@@ -16,6 +16,14 @@ abstract class BaseViewModel<S, N>(initialState: S) : StateScreenModel<S>(initia
 
     private val mutableNews: MutableSharedFlow<N> = MutableSharedFlow()
     val news: Flow<N> = mutableNews.asSharedFlow()
+    private var launched: Boolean = false
+
+    fun onLaunchedInternal() {
+        if (!launched) {
+            launched = true
+            onLaunch()
+        }
+    }
 
     open fun onLaunch() = Unit
 
@@ -28,6 +36,10 @@ abstract class BaseViewModel<S, N>(initialState: S) : StateScreenModel<S>(initia
         do {
             val currentState = mutableState.value
             val newState = currentState.block()
+            if (currentState == newState) {
+                return
+            }
+
             success = mutableState.compareAndSet(currentState, newState)
         } while (!success)
     }
@@ -36,6 +48,6 @@ abstract class BaseViewModel<S, N>(initialState: S) : StateScreenModel<S>(initia
 @Composable
 internal inline fun <reified T : BaseViewModel<*, *>> Screen.viewModelFromDi(tag: String? = null): T {
     val viewModel = rememberScreenModel(tag) { getFromDi<T>() }
-    LaunchedEffect(viewModel) { viewModel.onLaunch() }
+    LaunchedEffect(viewModel) { viewModel.onLaunchedInternal() }
     return viewModel
 }

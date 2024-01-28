@@ -1,5 +1,7 @@
 package ru.debajo.todos.data.storage
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onEach
 import ru.debajo.todos.common.syncMutableMap
 import ru.debajo.todos.data.storage.model.StorageFile
 
@@ -11,6 +13,8 @@ interface FileHelper {
     fun openFileWriter(file: StorageFile): FileWriter
 
     fun openFileReader(file: StorageFile): FileReader
+
+    fun observeChanged(files: List<StorageFile>): Flow<StorageFile>
 }
 
 internal expect fun createFileHelper(): FileHelper
@@ -42,6 +46,13 @@ internal class FileHelperContentCache(private val delegate: FileHelper) : FileHe
             }
         } else {
             ConstantReader(content)
+        }
+    }
+
+    // TODO это сломает работу с файлом в режиме открытого файла. Поэтому пока использовать можно только в FileConfigViewModel
+    override fun observeChanged(files: List<StorageFile>): Flow<StorageFile> {
+        return delegate.observeChanged(files).onEach { file ->
+            cache.remove(file.absolutePath)
         }
     }
 }

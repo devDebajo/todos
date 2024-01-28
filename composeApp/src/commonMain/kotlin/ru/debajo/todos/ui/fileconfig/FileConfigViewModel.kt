@@ -6,8 +6,11 @@ import androidx.compose.ui.unit.IntOffset
 import cafe.adriel.voyager.core.model.screenModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Instant
@@ -19,6 +22,7 @@ import ru.debajo.todos.common.errorToNapier
 import ru.debajo.todos.common.limit
 import ru.debajo.todos.common.runCatchingAsync
 import ru.debajo.todos.data.storage.DatabaseSnapshotSaver
+import ru.debajo.todos.data.storage.FileHelper
 import ru.debajo.todos.data.storage.FilePinStorage
 import ru.debajo.todos.data.storage.FileSelector
 import ru.debajo.todos.data.storage.StorageFilesList
@@ -39,21 +43,27 @@ internal class FileConfigViewModel(
     private val filePinStorage: FilePinStorage,
     private val fileCodecHelper: FileCodecHelper,
     private val pinHasher: PinHasher,
+    private val fileHelper: FileHelper,
 ) : BaseViewModel<FileConfigState, FileConfigNews>(FileConfigState()) {
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun onLaunch() {
         screenModelScope.launch {
-            storageFilesList.files.filterNotNull().collect { list ->
-                val convertResult = list.convert()
-                removeFromList(convertResult.failed)
-                updateState { copy(files = convertResult.success) }
-            }
+            storageFilesList.files.filterNotNull().collect { list -> updateFiles(list) }
         }
         screenModelScope.launch {
             val isSelectLastFile = storageFilesList.isSelectLastFile()
             updateState {
                 copy(isAutoOpenLastFile = isSelectLastFile)
             }
+        }
+        screenModelScope.launch {
+            storageFilesList.files.filterNotNull()
+                .distinctUntilChanged()
+                .flatMapLatest { files -> fileHelper.observeChanged(files) }
+                .collect {
+                    updateFiles(storageFilesList.files.value.orEmpty())
+                }
         }
     }
 
@@ -399,9 +409,7 @@ internal class FileConfigViewModel(
                         )
                     }
                     hideChangeFilePinDialog()
-                    val convertResult = storageFilesList.files.value.orEmpty().convert()
-                    removeFromList(convertResult.failed)
-                    updateState { copy(files = convertResult.success) }
+                    updateFiles(storageFilesList.files.value.orEmpty())
                 } else {
                     updateState {
                         copy(
@@ -498,6 +506,12 @@ internal class FileConfigViewModel(
         } finally {
             updateState { copy(isLoading = false) }
         }
+    }
+
+    private suspend fun updateFiles(files: List<StorageFile>) {
+        val convertResult = files.convert()
+        removeFromList(convertResult.failed)
+        updateState { copy(files = convertResult.success) }
     }
 
     private class ConvertResult(
