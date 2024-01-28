@@ -88,21 +88,45 @@ android {
         versionCode = properties.getProperty("versionNumber").toInt()
         versionName = properties.getProperty("packageVersion")
     }
+
     sourceSets["main"].apply {
         manifest.srcFile("src/androidMain/AndroidManifest.xml")
         res.srcDirs("src/androidMain/resources")
         resources.srcDirs("src/commonMain/resources")
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     buildFeatures {
         compose = true
         buildConfig = true
     }
+
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.4"
+    }
+
+    signingConfigs {
+        create("release") {
+            keyAlias = rootProject.properties["RELEASE_KEY_ALIAS"] as? String
+            keyPassword = rootProject.properties["RELEASE_KEY_PASSWORD"] as? String
+            storeFile = file(rootProject.properties["RELEASE_STORE_FILE"] as String)
+            storePassword = rootProject.properties["RELEASE_STORE_PASSWORD"] as? String
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+        }
+        release {
+            isMinifyEnabled = true
+            signingConfig = signingConfigs["release"]
+            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+        }
     }
 }
 

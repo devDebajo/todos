@@ -8,6 +8,7 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import ru.debajo.todos.app.QuitHelper
+import ru.debajo.todos.common.isDebug
 import ru.debajo.todos.data.preferences.FilePreferencesImpl
 import ru.debajo.todos.data.preferences.Preferences
 import ru.debajo.todos.data.storage.FileSelector
@@ -37,4 +38,7 @@ private val appDirectory: File by lazy {
         }
 }
 
-private fun getPrefsPath(): File = File(appDirectory, "todo_prefs")
+private fun getPrefsPath(): File {
+    val fileName = if (isDebug) "todo_prefs_debug" else "todo_prefs"
+    return File(appDirectory, fileName)
+}
